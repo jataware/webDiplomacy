@@ -84,7 +84,7 @@ class adminActions extends adminActionsForms
 		'joinGame' => array(
 			'name' => 'Join a user to a game',
 			'description' => 'Join a user to a game',
-			'params' => array('gameID' => 'gameID', 'userID' => 'userID')
+			'params' => array('gameID' => 'gameID', 'userName' => 'userName')
 		),
 		'banUser' => array(
 			'name' => 'Ban a user',
@@ -797,8 +797,11 @@ class adminActions extends adminActionsForms
 	public function joinGame(array $params)
 	{
 		global $DB;
+		list($userID) = $DB->sql_row("SELECT id FROM wD_Users WHERE username = '" . $params['userName'] . "'");
+		
+
 		$DB->sql_put("INSERT INTO wD_Members SET
-			userID = ".$params['userID'].", gameID = ".$params['gameID'].", countryID="."0".", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = "."3");
+			userID = ".$userID.", gameID = ".$params['gameID'].", countryID="."0".", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = "."3");
 
 		return "done";
 	}
