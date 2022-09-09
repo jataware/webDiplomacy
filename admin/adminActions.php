@@ -81,7 +81,11 @@ class adminActions extends adminActionsForms
 			'description' => 'Creates a new game with no users',
 			'params' => array('gameName' => 'gameName')
 		),
-
+		'joinGame' => array(
+			'name' => 'Join a user to a game',
+			'description' => 'Join a user to a game',
+			'params' => array('gameID' => 'gameID', 'userID' => 'userID')
+		),
 		'banUser' => array(
 			'name' => 'Ban a user',
 			'description' => 'Bans a user, setting their games to civil disorder, and removing their points.',
@@ -788,6 +792,15 @@ class adminActions extends adminActionsForms
 		);
 
 		return "A new game has been created.";
+	}
+
+	public function joinGame(array $params)
+	{
+		global $DB;
+		$DB->sql_put("INSERT INTO wD_Members SET
+			userID = ".$params['userID'].", gameID = ".$params['gameID'].", countryID="."0".", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = "."3");
+
+		return "done";
 	}
 
 	public function generateRegistrationLink(array $params)
