@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-webdiplomacybetabrc-dev-95733-authRole",
+      "UnauthRoleArn": "arn:aws:iam::595603857057:role/amplify-webdiplomacybetabrc-dev-95733-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::595603857057:role/amplify-webdiplomacybetabrc-dev-95733-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-webdiplomacybetabrc-dev-95733-deployment",
+      "UnauthRoleName": "amplify-webdiplomacybetabrc-dev-95733-unauthRole",
+      "StackName": "amplify-webdiplomacybetabrc-dev-95733",
+      "StackId": "arn:aws:cloudformation:us-east-1:595603857057:stack/amplify-webdiplomacybetabrc-dev-95733/dc41e470-32a2-11ed-b88b-0a73c1316d37",
+      "AmplifyAppId": "d32xmaf7tocqpb"
+    },
+    "categories": {
+      "auth": {
+        "webdiplomacybetabrc2ee57c11": {}
+      }
+    }
+  }
+}
