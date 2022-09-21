@@ -4,24 +4,8 @@ import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
 import { useAppDispatch } from "./state/hooks";
 import { loadGame } from "./state/game/game-api-slice";
-import axios, { AxiosResponse } from "axios";
-import { OneKPlusOutlined } from "@mui/icons-material";
 import { useAppSelector } from "./state/hooks";
 import { playerActiveGames } from "./state/game/game-api-slice";
-
-
-
-const api = axios.create({
-  // why do we need multipart form-data?
-  // headers: {
-  //   "Content-Type": "multipart/form-data",
-  // },
-});
-
-const aactiveGames = (props) => {
-  // Get active games for logged in player
-  return api.get(`../api.php?route=players/active_games`);
-}
 
 const App: React.FC = function (): React.ReactElement {
   const urlParams = new URLSearchParams(window.location.search);
