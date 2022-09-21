@@ -81,7 +81,7 @@ const WelcomeMessage = (props) => {
         top: "33%",
         left: "0%",
         width: "100%",
-        WebkitTextStroke: "1px black"}}> {quotes[randomNumber]} </div>
+        WebkitTextStroke: "1px grey"}}> {quotes[randomNumber]} </div>
 }
 
 
