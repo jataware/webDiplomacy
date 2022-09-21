@@ -14,3 +14,7 @@
   transition: opacity 0.5s ease-out;
   pointer-events: none;
 }
+
+#webpack-dev-server-client-overlay {
+  display: none;
+}

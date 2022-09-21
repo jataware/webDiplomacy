@@ -1,5 +1,15 @@
 import * as React from "react";
 import DOMPurify from "dompurify";
+import { Box, IconButton } from "@mui/material";
+import GppMaybeIcon from '@mui/icons-material/GppMaybe';
+import { useAppSelector } from "../../state/hooks";
+import {
+  gameOverview,
+} from "../../state/game/game-api-slice";
+import ApiRoute from "../../enums/ApiRoute";
+import {
+  postGameApiRequest,
+} from "../../utils/api";
 import Device from "../../enums/Device";
 import useViewport from "../../hooks/useViewport";
 import getDevice from "../../utils/getDevice";
@@ -12,6 +22,30 @@ interface WDMessageProps {
   userCountry: CountryTableData | null;
   allCountries: CountryTableData[];
   viewedPhaseIdx: number;
+}
+
+async function saveSuspectedIncomingDeception(message, gameID) {
+
+  const { timeSent, fromCountryID, toCountryID } = message;
+
+  try {
+    const response = await postGameApiRequest(
+      ApiRoute.ANNOTATE_MESSAGE,
+      {
+        gameID,
+        timeSent,
+        fromCountryID,
+        toCountryID,
+        answer: "1",
+        direction: "incoming"
+      },
+    );
+
+  } catch(e) {
+    console.log('Request to annotate message failed, e:', e);
+  } finally {
+    // TODO
+  }
 }
 
 const WDMessage: React.FC<WDMessageProps> = function ({
@@ -29,6 +63,8 @@ const WDMessage: React.FC<WDMessageProps> = function ({
     device === Device.MOBILE_LANDSCAPE ||
     device === Device.MOBILE_LG_LANDSCAPE ||
     device === Device.MOBILE;
+
+  const { gameID } = useAppSelector(gameOverview);
 
   const getCountry = (countryID: number) =>
     allCountries.find((cand) => cand.countryID === countryID);
@@ -56,7 +92,7 @@ const WDMessage: React.FC<WDMessageProps> = function ({
               {fromCountry?.country.toUpperCase().slice(0, 3)}
             </span>
             {": "}
-            {/* Here's a robust but dangerous choice... 
+            {/* Here's a robust but dangerous choice...
             The messages are all sanitized in gamemessage.php, and newlines
             converted to <br/>
             */}
@@ -74,12 +110,22 @@ const WDMessage: React.FC<WDMessageProps> = function ({
                 <>{turnAsDate(message.turn, "Classic")}</>
               )}
             </div>
-            <div className="ml-4">
+            <Box
+              ml="0"
+              className="ml-4"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between">
+              <Box mr="2">
+                <IconButton size="small" onClick={() => saveSuspectedIncomingDeception(message, gameID)}>
+                  <GppMaybeIcon />
+                </IconButton>
+              </Box>
               {msgTime.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
-            </div>
+            </Box>
           </div>
         </div>
       </div>

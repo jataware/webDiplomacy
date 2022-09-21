@@ -1193,6 +1193,56 @@ class SendMessage extends ApiEntry {
 }
 
 /**
+ * API entry game/sendmessage
+ */
+class AnnotateMessage extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/annotatemessage', 'JSON', '',
+                            array('gameID', 'timeSent','fromCountryID','toCountryID', 'answer', 'direction'), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $Game, $DB;
+		$args = $this->getArgs();
+
+		if ($args['toCountryID'] === null)
+			throw new RequestException('toCountryID is required.');
+
+		$gameID = intval($args['gameID']);
+		$countryID = intval($args['fromCountryID']);
+		$toCountryID = intval($args['toCountryID']);
+		$timeSent = intval($args['timeSent']);
+		$answer = $args['answer'];
+		$direction = $args['direction'];
+
+		$Game = $this->getAssociatedGame();
+
+		$allowed = ($Game->pressType == 'Regular') ||
+		           ($countryID == $toCountryID) ||
+		           ($Game->pressType == 'RulebookPress' && ($Game->phase == 'Diplomacy' || $Game->phase == 'Finished')) ||
+		           ($Game->pressType == 'PublicPressOnly' && $toCountryID == 0);
+		if (!$allowed) {
+			throw new RequestException("Message is invalid in $Game->pressType");
+		}
+
+		if (!(isset($Game->Members->ByUserID[$userID]) && $countryID == $Game->Members->ByUserID[$userID]->countryID)) {
+			throw new ClientForbiddenException('User does not have explicit permission to make this API call.');
+		}
+
+		if ($toCountryID < 0 || $toCountryID > count($Game->Members->ByID) || $toCountryID == $countryID) {
+			throw new RequestException('Invalid toCountryID');
+		}
+
+        // Result is a boolean indicating success
+		$result = libGameMessage::annotate($toCountryID, $countryID, $timeSent, $gameID, $answer, $direction);
+
+		$ret = [
+			"done" => $result
+		];
+		return json_encode($ret);
+	}
+}
+
+/**
  * API entry game/getmessages
  */
 class GetMessages extends ApiEntry {
@@ -1200,6 +1250,15 @@ class GetMessages extends ApiEntry {
 		parent::__construct('game/getmessages', 'GET', 'getStateOfAllGames', array('gameID','countryID','sinceTime'), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
+
+        // NOTE Sample loggin to docker output:
+        // $json = '{
+        //   "msg": "Invalid username",
+        //   "code": "601",
+        //   "username": "ae2ivz!"
+        // }';
+        // error_log($json);
+
 		global $DB, $MC;
 		$args = $this->getArgs();
 		$countryID = $args['countryID'] ?? 0;
@@ -1248,7 +1307,7 @@ class GetMessages extends ApiEntry {
 			$where = "($where) AND timeSent >= $sinceTime";
 		}
 
-		$tabl = $DB->sql_tabl("SELECT message, toCountryID, fromCountryID, turn, timeSent, phaseMarker
+		$tabl = $DB->sql_tabl("SELECT message, toCountryID, fromCountryID, turn, timeSent, phaseMarker, intentDeceive, suspectedIncomingDeception
 		FROM wD_GameMessages WHERE gameID = $gameID AND ($where)");
 		while ($message = $DB->tabl_hash($tabl)) {
 			$messages[] = [
@@ -1257,7 +1316,12 @@ class GetMessages extends ApiEntry {
 				'timeSent' => (int) $message['timeSent'],
 				'toCountryID' => (int) $message['toCountryID'],
 				'turn' => (int) $message['turn'],
-				'phaseMarker' => $message['phaseMarker'],
+				'phaseMarker' => $message['phaseMarker']
+
+                // TODO Add if we wish to expose this, conditionally, to UI;
+                //      as in only expose if user that annotated is the one viewing the message
+                // 'intentDeceive' => $message['intentDeceive'],
+                // 'suspectedIncomingDeception' => $message['suspectedIncomingDeception']
 			];
 		}
 		// Return Messages.
@@ -1548,6 +1612,7 @@ try {
 	$api->load(new ToggleVote());
 	$api->load(new SetVote());
 	$api->load(new SendMessage());
+	$api->load(new AnnotateMessage());
 	$api->load(new GetMessages());
 	$api->load(new MessagesSeen());
 	$api->load(new MarkBackFromLeft());

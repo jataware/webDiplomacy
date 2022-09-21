@@ -35,7 +35,7 @@
     "lodash": "^4.17.21"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
     "build": "react-scripts build && rm -rf ../beta && mv build ../beta",
     "build:local": "env-cmd -f .env.local npm run build",
     "build:production": "env-cmd -f .env.production npm run build",
@@ -43,7 +43,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "prepare": "cd .. && husky install beta-src/.husky",
-    "start:local": "nodemon server.js"
+    "start:local": "nodemon server.js",
+    "lint": "eslint --ext .tsx src"
   },
   "eslintConfig": {
     "extends": [

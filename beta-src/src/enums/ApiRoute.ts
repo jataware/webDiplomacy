@@ -7,6 +7,7 @@ enum ApiRoute {
   PLAYERS_ACTIVE_GAMES = "players/active_games",
   // post
   SEND_MESSAGE = "game/sendmessage",
+  ANNOTATE_MESSAGE = "game/annotatemessage",
   MESSAGES_SEEN = "game/messagesseen",
   GAME_SETVOTE = "game/setvote",
   SET_BACK_FROM_LEFT = "game/markbackfromleft",
