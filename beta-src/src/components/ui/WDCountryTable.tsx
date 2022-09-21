@@ -131,9 +131,6 @@ const WDCountryTable: React.FC<WDCountryTableProps> = function ({
                 })}
               </tr>
               <tr>
-                <td className="pt-0 text-sm font-roboto pb-2">
-                  {country.username}
-                </td>
                 <td
                   className="text-xss pt-0 font-medium pb-2"
                   colSpan={columns.length}

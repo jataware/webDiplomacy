@@ -95,11 +95,6 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
                   );
                 })}
               </tr>
-              <tr>
-                <td className="text-left text-xs pb-2 font-roboto">
-                  {country.username}
-                </td>
-              </tr>
             </React.Fragment>
           ))}
         </tbody>
