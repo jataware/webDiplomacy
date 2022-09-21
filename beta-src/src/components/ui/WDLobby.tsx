@@ -13,7 +13,14 @@ import vessel2 from "../../assets/waiting-room-backgrounds/vessel2.jpg";
 import veteran from "../../assets/waiting-room-backgrounds/wwii-veteran.jpg";
 
 const LogOutButton = (props) => {
-    return <button onClick={props.onClick}>Log Out</button>
+    return <a style={{
+        fontSize: "15px",
+        color: "white",
+        position: "absolute",
+        top: "2%",
+        left:"3%",
+        width: "10%"}}
+        href="logon.php?logoff=on">Log off</a>
 }
 
 const WelcomeMessage = (props) => {
@@ -61,7 +68,7 @@ const WelcomeMessage = (props) => {
 
 
 // https://www.imgacademy.com/sites/default/files/2022-07/img-homepage-meta.jpg
-const Background = (props) => {
+const Lobby = (props) => {
         var images = [chess1, chess2, conference, monument, plane1, plane2, plane3, soldier, vessel, vessel2, veteran]
         var randomNumber = Math.floor((Math.random() * images.length));
         var image = images[randomNumber]
@@ -73,18 +80,10 @@ const Background = (props) => {
             backgroundRepeat: 'no-repeat',
             width: '100vw',
             height: '100vh'}}>
+                <LogOutButton />
                 <WelcomeMessage />
           </div>
         );
       }
-
-const Lobby = (props) => {
-    return (
-        <Background>
-            <LogOutButton />
-            <WelcomeMessage />
-        </Background>
-        )
-    }
     
-    export default Lobby
+export default Lobby
