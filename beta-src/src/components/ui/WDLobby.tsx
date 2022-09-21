@@ -32,7 +32,7 @@ const Instructions = (props) => {
         width: "100%", 
         textAlign: "Center"}}> Welcome to Diplomacy. Glad to have you onboard. <br />
         A game admin will assign you to a new game soon. <br />
-    This usually doesn’t take long, you will receive an e-mail once the game is ready. <br />
+    This usually doesn’t take long, you will receive an e-mail once the game is ready. <br /> <br /> 
     In the meantime, a couple of reminders: <br />
     <b> * Users must remain anonymous. Do not divulge your identity. <br /> 
     * Annotate as many incoming/outgoing messages that you believe are meant to deceive a player. This tournament is for research purposes, help as much as you can! <br /> </b>
