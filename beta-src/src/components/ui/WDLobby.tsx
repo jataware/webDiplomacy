@@ -23,6 +23,24 @@ const LogOutButton = (props) => {
         href="logon.php?logoff=on">Log off</a>
 }
 
+const Instructions = (props) => {
+    var message = <p style={{
+        fontSize: "13px",
+        color: "white",
+        position: "absolute",
+        top: "10%",
+        width: "100%", 
+        textAlign: "Center"}}> Welcome to Diplomacy. Glad to have you onboard. <br />
+        A game admin will assign you to a new game soon. <br />
+    This usually doesn’t take long, you will receive an e-mail once the game is ready. <br />
+    In the meantime, a couple of reminders: <br />
+    <b> * Users must remain anonymous. Do not divulge your identity. <br /> 
+    * Annotate as many incoming/outgoing messages that you believe are meant to deceive a player. This tournament is for research purposes, help as much as you can! <br /> </b>
+    Have fun! <br />
+    </p>
+    return message
+}
+
 const WelcomeMessage = (props) => {
     var quotes = [<p> “The friend in my adversity I shall always cherish most. I can better trust those who have helped to relieve the gloom of my dark hours than those who are so ready to enjoy with me the sunshine of my prosperity.”
         <br/> - Ulysses S. Grant </ p>,
@@ -80,8 +98,11 @@ const Lobby = (props) => {
             backgroundRepeat: 'no-repeat',
             width: '100vw',
             height: '100vh'}}>
+                <div style ={{backgroundColor: " rgba(100,100,100,.5)", width: "100%", height: "100%"}}>
                 <LogOutButton />
+                <Instructions />
                 <WelcomeMessage />
+                </div>
           </div>
         );
       }
