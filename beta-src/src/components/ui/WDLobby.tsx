@@ -11,7 +11,6 @@ import soldier from "../../assets/waiting-room-backgrounds/soldier.jpg";
 import vessel from "../../assets/waiting-room-backgrounds/vessel.jpg";
 import vessel2 from "../../assets/waiting-room-backgrounds/vessel2.jpg";
 import veteran from "../../assets/waiting-room-backgrounds/wwii-veteran.jpg";
-import Quotes from "./WDQuotes";
 
 const LogOutButton = (props) => {
     return <button onClick={props.onClick}>Log Out</button>

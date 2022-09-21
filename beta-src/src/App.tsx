@@ -29,7 +29,7 @@ const App: React.FC = function (): React.ReactElement {
   const dispatch = useAppDispatch();
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
   console.log("userCurrentActiveGames", userCurrentActiveGames);
-  if (userCurrentActiveGames.length === 1) {
+  if (userCurrentActiveGames.length === 0) {
     var mainElement = <WDLobby />;
   }
   else
