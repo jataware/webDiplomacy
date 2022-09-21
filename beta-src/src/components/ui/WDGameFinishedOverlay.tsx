@@ -152,6 +152,7 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
                   );
                 })}
               </TableRow>
+              
             </React.Fragment>
           ))}
         </TableBody>
