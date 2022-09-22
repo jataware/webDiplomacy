@@ -152,18 +152,7 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
                   );
                 })}
               </TableRow>
-              <TableRow>
-                <WDTableCell
-                  sx={{
-                    paddingTop: "0px !important",
-                    borderTop: 0,
-                    fontSize: "10pt",
-                    fontFamily: "Roboto",
-                  }}
-                >
-                  {country.username}
-                </WDTableCell>
-              </TableRow>
+              
             </React.Fragment>
           ))}
         </TableBody>

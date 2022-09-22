@@ -1147,6 +1147,6 @@ ALTER TABLE `wD_Users`
 ADD COLUMN `mobileCountryCode` MEDIUMINT UNSIGNED NULL DEFAULT NULL AFTER `optInFeatures`,
 ADD COLUMN `mobileNumber` BIGINT UNSIGNED NULL DEFAULT NULL AFTER `mobileCountryCode`,
 ADD COLUMN `isMobileValidated` BIT NOT NULL DEFAULT 0 AFTER `mobileNumber`;
-
+  
 ALTER TABLE `wD_GameMessages` ADD `intentDeceive` VARCHAR(6);
 ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` BOOLEAN;

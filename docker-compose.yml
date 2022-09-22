@@ -48,10 +48,7 @@ services:
       - ${PHPMYADMIN_PORT:-8080}:80
     environment:
       - PMA_ARBITRARY=1
-
-  # clickhouse:
-  #   image: "yandex/clickhouse-server:latest"
-
+      
   # This is necessary for doing live React dev for the new board, but isn't needed after doing a build
   # if the nginx config is changed to not redirect /beta/ to port 3000:
   beta:
