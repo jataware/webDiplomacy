@@ -592,7 +592,10 @@ class GetGameMembers extends ApiEntry {
 			'timeLoggedIn' => $member->timeLoggedIn,
 			'unitNo' => $member->unitNo,
 			'userID' => $member->userID,
+
+            // TODO potentially not return this. Check is UI would bahave correctly if we stop sending it.
 			'username' => $this->isAnon && $member->Game->gameOver == 'No' && !$retrievePrivateData ? '' : $member->username,
+
 			'votes' => $votes,
 		];
 	}
@@ -1316,12 +1319,12 @@ class GetMessages extends ApiEntry {
 				'timeSent' => (int) $message['timeSent'],
 				'toCountryID' => (int) $message['toCountryID'],
 				'turn' => (int) $message['turn'],
-				'phaseMarker' => $message['phaseMarker']
+				'phaseMarker' => $message['phaseMarker'],
 
                 // TODO Add if we wish to expose this, conditionally, to UI;
                 //      as in only expose if user that annotated is the one viewing the message
-                // 'intentDeceive' => $message['intentDeceive'],
-                // 'suspectedIncomingDeception' => $message['suspectedIncomingDeception']
+                'intentDeceive' => $message['intentDeceive'],
+                'suspectedIncomingDeception' => $message['suspectedIncomingDeception']
 			];
 		}
 		// Return Messages.
