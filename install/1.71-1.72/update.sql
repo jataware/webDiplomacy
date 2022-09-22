@@ -823,3 +823,6 @@ ON DUPLICATE KEY UPDATE
 	day6hour23 = day6hour23 + IF(d=6 AND h=23,c,0),
 	totalHits = totalHits + c
 	;
+
+ALTER TABLE `wD_GameMessages` ADD `intentDeceive` VARCHAR(6);
+ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` BOOLEAN;
