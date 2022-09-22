@@ -30,6 +30,11 @@ const App: React.FC = function (): React.ReactElement {
 
   const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
+  const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
+    .find(g => g.gameID == currentGameID));
+
+  console.log('isUserInCurrentGame', isUserInCurrentGame);
+
   if (shouldRedirectToGame) {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
   }
@@ -37,8 +42,7 @@ const App: React.FC = function (): React.ReactElement {
   if (userCurrentActiveGames.length === 0) {
     var mainElement = <WDLobby />;
   }
-  else
-  {
+  else {
     dispatch(loadGame(String(currentGameID)));
     var mainElement = <WDMain />;
   }
