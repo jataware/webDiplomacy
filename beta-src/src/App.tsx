@@ -3,18 +3,38 @@ import * as React from "react";
 import "./assets/css/App.css";
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
-import { useAppDispatch } from "./state/hooks";
 import { loadGame } from "./state/game/game-api-slice";
-import { useAppSelector } from "./state/hooks";
-import { playerActiveGames } from "./state/game/game-api-slice";
+import { useAppDispatch, useAppSelector } from "./state/hooks";
+import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
 
 const App: React.FC = function (): React.ReactElement {
+
   const urlParams = new URLSearchParams(window.location.search);
   const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
+
+  console.log('currentGameID', currentGameID);
+
+  const [fetchedGames, setFetchedGames] = React.useState(false);
+
+  if (!fetchedGames) {
+    console.log('App fetching games.');
+    dispatch(fetchPlayerActiveGames());
+    // TODO continue fetching games ocassionally on interval until we are assigned one
+    setFetchedGames(true);
+  }
+
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
+
   console.log("userCurrentActiveGames", userCurrentActiveGames);
-  if (userCurrentActiveGames.length === 0) {
+
+  const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
+
+  if (shouldRedirectToGame) {
+    window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
+  }
+
+  if (userCurrentActiveGames.length === 0 || !currentGameID) {
     var mainElement = <WDLobby />;
   }
   else
@@ -22,7 +42,6 @@ const App: React.FC = function (): React.ReactElement {
     dispatch(loadGame(String(currentGameID)));
     var mainElement = <WDMain />;
   }
-  
 
   return (
     <div className="App">
