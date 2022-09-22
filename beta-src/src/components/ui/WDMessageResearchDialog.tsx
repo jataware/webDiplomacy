@@ -1,11 +1,14 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 import { Dialog } from "@mui/material";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
+import Typography from "@mui/material/Typography";
+import ContentPasteIcon from '@mui/icons-material/NoteAltOutlined';
 
-function MessageResearchDialog({open, setOpen, dialogContents, saveResponse}) {
+function MessageResearchDialog({open, setOpen, saveResponse, message, toCountry}) {
 
   const handleClose = (event, reason) => {
     if (reason !== "backdropClick") {
@@ -23,33 +26,99 @@ function MessageResearchDialog({open, setOpen, dialogContents, saveResponse}) {
       aria-describedby="alert-dialog-description"
       sx={{
         "& .MuiDialog-paper": {
-          maxWidth: 600,
+          maxWidth: 700,
+          border: "2px solid #000"
         },
       }}
     >
-      <DialogTitle id="alert-dialog-title">
-        Your message has been submitted
+      <DialogTitle
+        id="alert-dialog-title"
+        sx={{fontWeight: 500, fontSize: "1.5rem", p: "0.75rem 1rem 0.5rem"}}
+      >
+        Your message has been submitted!
       </DialogTitle>
-      <DialogContent>
-        {dialogContents}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          color="info"
-          onClick={() => saveResponse("yes")}
-        >
-          Yes
-        </Button>
-        <Button
-          onClick={() => saveResponse("no")}
-        >
-          No
-        </Button>
-        <Button
-          onClick={() => saveResponse("unsure")}>
-          Unsure
-        </Button>
-      </DialogActions>
+
+      <Box sx={{
+        m: 1,
+        border: "1px solid #d2d2d2",
+        borderRadius: 1
+      }}>
+        <DialogContent sx={{p: 2, pb: 0}}>
+
+          <Box display="flex">
+            <ContentPasteIcon sx={{fontSize: "5rem", color: "#d04f32b3"}} />
+
+              <Box flex="1">
+              <Typography variant="h5" sx={{m: "0.5rem 0"}}>
+                Research Follow-up
+              </Typography>
+
+              <Typography variant="h6">
+                You just sent this message to {toCountry}:
+              </Typography>
+
+              <Typography
+                gutterBottom
+                component="div"
+                variant="body1"
+                sx={(theme) => ({
+                  maxHeight: "11rem",
+                  overflowY: "auto",
+                  width: 'fit-content',
+                  color: theme.palette.text.secondary,
+                  bgcolor: theme.palette.grey[50],
+                  border: `1px solid ${theme.palette.grey[300]}`,
+                  padding: "0.75rem 1rem",
+                  margin: "0.75rem 0 0.75rem",
+                  fontSize: '1.25rem'
+                })}>
+                {message}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Typography
+            variant="h5"
+            sx={{
+              color: "#D04F32",
+              fontWeight: "bold"
+            }}
+          >
+            Research Question
+          </Typography>
+
+          <Typography
+            variant="h6"
+            gutterBottom
+          >
+            Was this message meant to deceive {toCountry}?
+          </Typography>
+
+        </DialogContent>
+
+        <DialogActions sx={{justifyContent: "left"}}>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => saveResponse("yes")}
+          >
+            Yes
+          </Button>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => saveResponse("no")}
+          >
+            No
+          </Button>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => saveResponse("unsure")}>
+            Unsure
+          </Button>
+        </DialogActions>
+      </Box>
     </Dialog>
   );
 }

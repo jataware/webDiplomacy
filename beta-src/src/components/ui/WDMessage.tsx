@@ -1,7 +1,6 @@
 import * as React from "react";
 import DOMPurify from "dompurify";
 import { Box, IconButton } from "@mui/material";
-import GppMaybeIcon from '@mui/icons-material/GppMaybe';
 import { useAppSelector } from "../../state/hooks";
 import {
   gameOverview,
@@ -24,29 +23,32 @@ interface WDMessageProps {
   viewedPhaseIdx: number;
 }
 
-async function saveSuspectedIncomingDeception(message, gameID) {
+// NOTE Maybe use app actions to have changes flow through app instead of manual sync.
+// With more time, investigate. No big deal for our purposes.
+async function saveSuspectedIncomingDeception(message, gameID, answer) {
 
   const { timeSent, fromCountryID, toCountryID } = message;
 
   try {
-    const response = await postGameApiRequest(
+    await postGameApiRequest(
       ApiRoute.ANNOTATE_MESSAGE,
       {
         gameID,
         timeSent,
         fromCountryID,
         toCountryID,
-        answer: "1",
+        answer,
         direction: "incoming"
       },
     );
 
   } catch(e) {
     console.log('Request to annotate message failed, e:', e);
-  } finally {
-    // TODO
   }
 }
+
+// Useful for the future here or under WDPress.tsx
+/* const getUniqueMsgID = (message) => `${message.toCountryID}-${message.fromCountryID}-${message.timeSent}`; */
 
 const WDMessage: React.FC<WDMessageProps> = function ({
   message,
@@ -54,8 +56,6 @@ const WDMessage: React.FC<WDMessageProps> = function ({
   allCountries,
   viewedPhaseIdx,
 }): React.ReactElement {
-  const padding = "10px";
-  const margin = "6px";
 
   const [viewport] = useViewport();
   const device = getDevice(viewport);
@@ -64,10 +64,22 @@ const WDMessage: React.FC<WDMessageProps> = function ({
     device === Device.MOBILE_LG_LANDSCAPE ||
     device === Device.MOBILE;
 
-  const { gameID } = useAppSelector(gameOverview);
+  const { user, gameID, turn: currentGameTurn } = useAppSelector(gameOverview);
+
+  const [isAnnotatedDeceptive, setAnnotatedDeceptive] = React.useState(message.suspectedIncomingDeception === "1");
+
+  const annotateMessage = (message) => {
+    const answer = isAnnotatedDeceptive ? "0" : "1";
+    saveSuspectedIncomingDeception(message, gameID, answer);
+    setAnnotatedDeceptive(!isAnnotatedDeceptive);
+  };
+
+  const isUserRecipient = Boolean(message?.toCountryID && (message?.toCountryID === user?.member?.countryID));
+  const isMessageCurrentTurn = message.turn === currentGameTurn;
 
   const getCountry = (countryID: number) =>
     allCountries.find((cand) => cand.countryID === countryID);
+
   const fromCountry = getCountry(message.fromCountryID);
   const msgWidth = mobileLandscapeLayout ? "170px" : "250px";
   const justify =
@@ -76,6 +88,7 @@ const WDMessage: React.FC<WDMessageProps> = function ({
       : "start";
   const msgTime = new Date(0);
   msgTime.setUTCSeconds(message.timeSent);
+
   return (
     <div className={`flex justify-${justify}`}>
       <div
@@ -116,11 +129,23 @@ const WDMessage: React.FC<WDMessageProps> = function ({
               display="flex"
               alignItems="center"
               justifyContent="space-between">
-              <Box mr="2">
-                <IconButton size="small" onClick={() => saveSuspectedIncomingDeception(message, gameID)}>
-                  <GppMaybeIcon />
-                </IconButton>
-              </Box>
+              {(isUserRecipient && isMessageCurrentTurn) && (
+                <Box mr="2" className="research-actions">
+                  <IconButton
+                    size="large"
+                    onClick={() => annotateMessage(message)}
+                    color="warning"
+                    sx={{
+                      background: isAnnotatedDeceptive ? "#ffcc88" : "#eaeaea",
+                      padding: 0,
+                      mr: 1
+                    }}
+                  >
+                    <img src={`beta/backstab.png`} width="30" height="30" />
+                  </IconButton>
+                </Box>
+
+              )}
               {msgTime.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",

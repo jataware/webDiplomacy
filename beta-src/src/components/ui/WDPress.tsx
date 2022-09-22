@@ -286,24 +286,8 @@ const WDPress: FC<WDPressProps> = function ({
       <MessageResearchDialog
         open={researchDialogOpen}
         setOpen={setResearchDialogOpen}
-        dialogContents={(
-          <div>
-            <Typography variant="h6">Research Follow-up</Typography>
-            <p>You just sent this message to {lastMessageData.toCountry}:</p>
-            <Typography sx={(theme) => ({
-              bgcolor: theme.palette.grey[100],
-              border: `1px solid ${theme.palette.grey[300]}`,
-              padding: '1rem',
-              margin: '1rem'
-            })}>
-              <pre>
-                {lastMessageData.message}
-              </pre>
-            </Typography>
-            <Typography variant="h6">Research Question</Typography>
-            <p>Was this message meant to deceive {lastMessageData.toCountry}?</p>
-          </div>
-        )}
+        toCountry={lastMessageData.toCountry}
+        message={lastMessageData.message}
         saveResponse={saveResearchResponse}
       />
     </Box>
