@@ -225,10 +225,6 @@ const WDUI: React.FC<WDUIProps> = function ({
   return (
     <>
       <WDPositionContainer position={Position.TOP_RIGHT}>
-        <Link href="/">
-          <WDHomeIcon />
-        </Link>
-
         <Box
           sx={{
             pt: "15px",

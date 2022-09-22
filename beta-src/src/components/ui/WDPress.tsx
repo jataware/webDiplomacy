@@ -11,6 +11,7 @@ import { Email, Send } from "@mui/icons-material";
 import useLocalStorageState from "use-local-storage-state";
 
 import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 import useViewport from "../../hooks/useViewport";
 import getDevice from "../../utils/getDevice";
 import WDMessageList from "./WDMessageList";
@@ -23,6 +24,11 @@ import {
   sendMessage,
 } from "../../state/game/game-api-slice";
 import { store } from "../../state/store";
+import ApiRoute from "../../enums/ApiRoute";
+import {
+  postGameApiRequest,
+} from "../../utils/api";
+import MessageResearchDialog from "./WDMessageResearchDialog";
 
 interface WDPressProps {
   children: ReactNode;
@@ -50,9 +56,20 @@ const WDPress: FC<WDPressProps> = function ({
   const countryIDSelected = useAppSelector(
     ({ game }) => game.messages.countryIDSelected,
   );
+
   const newMessagesFrom = useAppSelector(
     ({ game }) => game.messages.newMessagesFrom,
   );
+
+  const [researchDialogOpen, setResearchDialogOpen] = React.useState(false);
+  const [lastMessageData, setLastMessageData] = React.useState({
+    gameID: 0,
+    fromCountryID: 3,
+    fromCountry: "",
+    toCountry: "",
+    toCountryID: 0,
+    message: ""
+  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -61,21 +78,74 @@ const WDPress: FC<WDPressProps> = function ({
     messagesEndRef.current?.scrollIntoView();
   }, [messages, countryIDSelected]);
 
+  async function saveResearchResponse (answer) {
+
+    const savedMessage = messages.find(message => {
+      return message.fromCountryID === lastMessageData.fromCountryID &&
+             message.toCountryID === lastMessageData.toCountryID &&
+             message.message === lastMessageData.message;
+    })
+
+    if (!savedMessage) {
+      console.error('There\'s been an error and we couldn\'t find the saved message to annotate.');
+      return;
+    }
+
+    const { fromCountryID, toCountryID, timeSent } = savedMessage;
+
+    try {
+      const response = await postGameApiRequest(
+        ApiRoute.ANNOTATE_MESSAGE,
+        {
+          gameID,
+          timeSent,
+          fromCountryID,
+          toCountryID,
+          answer,
+          direction: "outgoing"
+        },
+      );
+
+    } catch(e) {
+      console.log('Request to annotate message failed, e:', e);
+    } finally {
+      setResearchDialogOpen(false);
+    }
+  }
+
   const clickSend = () => {
+
     if (!userCountry) {
       return;
     }
-    if (messageStack[countryIDSelected]) {
+    const message = messageStack[countryIDSelected];
+
+    if (message) {
       dispatch(
         sendMessage({
           gameID: String(gameID),
           countryID: String(userCountry.countryID),
           toCountryID: String(countryIDSelected),
-          message: messageStack[countryIDSelected],
+          message
         }),
       );
+
+      const recipientCountryData = allCountries.find(country => country.countryID === countryIDSelected);
+
+      if (countryIDSelected > 0) { // Not sending to everyone; sending to specific 1:1 country
+        setLastMessageData({
+          gameID: gameID,
+          fromCountryID: userCountry.countryID,
+          fromCountry: userCountry.country,
+          toCountry: recipientCountryData.country,
+          toCountryID: recipientCountryData.countryID,
+          message
+        });
+        setResearchDialogOpen(true);
+      }
     }
     const ms = { ...messageStack };
+
     ms[countryIDSelected] = "";
     setMessageStack(ms);
   };
@@ -171,16 +241,6 @@ const WDPress: FC<WDPressProps> = function ({
       {userCountry && (
         <Box>
           <Stack alignItems="center" direction="row">
-            {/* <Button
-            href="#message-reload-button"
-            onClick={dispatchFetchMessages}
-            style={{
-              maxWidth: "12px",
-              minWidth: "12px",
-            }}
-          >
-            <AutorenewIcon sx={{ fontSize: "medium" }} />
-          </Button> */}
             <TextField
               id="user-msg"
               label="Send Message"
@@ -223,6 +283,13 @@ const WDPress: FC<WDPressProps> = function ({
           </Stack>
         </Box>
       )}
+      <MessageResearchDialog
+        open={researchDialogOpen}
+        setOpen={setResearchDialogOpen}
+        toCountry={lastMessageData.toCountry}
+        message={lastMessageData.message}
+        saveResponse={saveResearchResponse}
+      />
     </Box>
   );
 };
