@@ -29,7 +29,7 @@ const Instructions = (props) => {
         color: "white",
         position: "absolute",
         top: "10%",
-        width: "100%", 
+        width: "100%",
         textAlign: "Center"}}> Welcome to Diplomacy. Glad to have you onboard. <br />
         A game admin will assign you to a new game soon. <br />
     This usually doesn’t take long, you will receive an e-mail once the game is ready. <br /> <br /> 
@@ -39,7 +39,7 @@ const Instructions = (props) => {
     Have fun! <br />
     </p>
     return message
-}
+};
 
 const WelcomeMessage = (props) => {
     var quotes = [<p> “The friend in my adversity I shall always cherish most. I can better trust those who have helped to relieve the gloom of my dark hours than those who are so ready to enjoy with me the sunshine of my prosperity.”
@@ -82,7 +82,7 @@ const WelcomeMessage = (props) => {
         left: "0%",
         width: "100%",
         WebkitTextStroke: "1px grey"}}> {quotes[randomNumber]} </div>
-}
+};
 
 
 // https://www.imgacademy.com/sites/default/files/2022-07/img-homepage-meta.jpg
@@ -90,21 +90,21 @@ const Lobby = (props) => {
         var images = [chess1, chess2, conference, monument, plane1, plane2, plane3, soldier, vessel, vessel2, veteran]
         var randomNumber = Math.floor((Math.random() * images.length));
         var image = images[randomNumber]
-        
+
         return (
-          <div style={{ background: `url(${image})`, 
-          backgroundPosition: 'center',
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            width: '100vw',
-            height: '100vh'}}>
-                <div style ={{backgroundColor: " rgba(100,100,100,.5)", width: "100%", height: "100%"}}>
+          <div style={{ backgroundImage: `url(${image})`,
+          backgroundPosition: "center",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            width: "100vw",
+            height: "100vh"}}>
+                <div style ={{backgroundColor: "rgba(100,100,100,.5)", width: "100%", height: "100%"}}>
                 <LogOutButton />
                 <Instructions />
                 <WelcomeMessage />
                 </div>
           </div>
         );
-      }
-    
-export default Lobby
+      };
+
+export default Lobby;
