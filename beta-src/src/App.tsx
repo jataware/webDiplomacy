@@ -34,7 +34,7 @@ const App: React.FC = function (): React.ReactElement {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
   }
 
-  if (userCurrentActiveGames.length === 0 || !currentGameID) {
+  if (userCurrentActiveGames.length === 0) {
     var mainElement = <WDLobby />;
   }
   else
