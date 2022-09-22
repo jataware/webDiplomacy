@@ -15,6 +15,7 @@ import getDevice from "../../utils/getDevice";
 import { turnAsDate } from "../../utils/formatTime";
 import { GameMessage } from "../../state/interfaces/GameMessages";
 import { CountryTableData } from "../../interfaces/CountryTableData";
+import backstabIcon from '../../assets/png/backstab.png';
 
 interface WDMessageProps {
   message: GameMessage;
@@ -141,7 +142,7 @@ const WDMessage: React.FC<WDMessageProps> = function ({
                       mr: 1
                     }}
                   >
-                    <img src={`beta/backstab.png`} width="30" height="30" />
+                    <img src={backstabIcon} width="30" height="30" />
                   </IconButton>
                 </Box>
 
