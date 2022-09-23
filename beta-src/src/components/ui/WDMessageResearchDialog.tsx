@@ -6,7 +6,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import Typography from "@mui/material/Typography";
-import ContentPasteIcon from '@mui/icons-material/NoteAltOutlined';
+import clipboardImg from "../../assets/png/clipboard-3.png";
 
 function MessageResearchDialog({open, setOpen, saveResponse, message, toCountry}) {
 
@@ -26,30 +26,33 @@ function MessageResearchDialog({open, setOpen, saveResponse, message, toCountry}
       aria-describedby="alert-dialog-description"
       sx={{
         "& .MuiDialog-paper": {
-          maxWidth: 700,
-          border: "2px solid #000"
+          maxWidth: 650,
+          border: "2px solid #000",
+          p: 1
         },
       }}
     >
       <DialogTitle
         id="alert-dialog-title"
-        sx={{fontWeight: 500, fontSize: "1.5rem", p: "0.75rem 1rem 0.5rem"}}
+        sx={{
+          fontSize: "1.5rem",
+          p: "1.25rem 1rem 0rem",
+          fontWeight: "bold"
+        }}
       >
         Your message has been submitted!
       </DialogTitle>
 
       <Box sx={{
         m: 1,
-        border: "1px solid #d2d2d2",
-        borderRadius: 1
       }}>
         <DialogContent sx={{p: 2, pb: 0}}>
 
           <Box display="flex">
-            <ContentPasteIcon sx={{fontSize: "5rem", color: "#d04f32b3"}} />
+            <img src={clipboardImg} style={{width: "6rem", height: "6rem"}} />
 
               <Box flex="1">
-              <Typography variant="h5" sx={{m: "0.5rem 0"}}>
+                <Typography variant="h5" sx={{m: "0.5rem 0", color: "#96d59d", fontWeight: "bold"}}>
                 Research Follow-up
               </Typography>
 
@@ -77,10 +80,12 @@ function MessageResearchDialog({open, setOpen, saveResponse, message, toCountry}
             </Box>
           </Box>
 
+          <br />
+
           <Typography
             variant="h5"
             sx={{
-              color: "#D04F32",
+              color: "#eca197",
               fontWeight: "bold"
             }}
           >
