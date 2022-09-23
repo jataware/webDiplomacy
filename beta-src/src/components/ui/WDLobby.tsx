@@ -57,8 +57,12 @@ const Instructions = (props) => {
           In the meantime, a couple of reminders:
         </Typography>
 
-        <ul style={{margin: "1rem", listStyle: "disclosure-closed", fontSize: "1rem"}}>
-          <li>
+        <ul style={{
+          margin: "1rem",
+          listStyle: "square",
+          fontSize: "1rem"
+        }}>
+          <li style={{marginBottom: "0.25rem"}}>
             Users must remain anonymous. Do not divulge your identity.
           </li>
 
