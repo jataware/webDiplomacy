@@ -22,6 +22,11 @@ import vessel from "../../assets/waiting-room-backgrounds/vessel.jpg";
 import vessel2 from "../../assets/waiting-room-backgrounds/vessel2.jpg";
 import veteran from "../../assets/waiting-room-backgrounds/wwii-veteran.jpg";
 
+import unsplash1 from "../../assets/waiting-room-backgrounds/unsplash1.jpg";
+import unsplash2 from "../../assets/waiting-room-backgrounds/unsplash2.png";
+import unsplash3 from "../../assets/waiting-room-backgrounds/unsplash3.png";
+import unsplash4 from "../../assets/waiting-room-backgrounds/unsplash4.jpg";
+
 const LogOutButton = (props) => {
   return (
     <Button
@@ -133,7 +138,15 @@ const WelcomeMessage = (props) => {
 // https://www.imgacademy.com/sites/default/files/2022-07/img-homepage-meta.jpg
 const Lobby = (props) => {
 
-  var images = [chess1, chess2, conference, monument, plane1, plane2, plane3, soldier, vessel, vessel2, veteran]
+  var images = [
+    chess1,
+    chess2, conference, monument, plane1, plane2, plane3,
+    soldier, vessel, vessel2, veteran,
+    unsplash1,
+    unsplash2,
+    unsplash3,
+    unsplash4
+  ];
   var randomNumber = Math.floor((Math.random() * images.length));
 
   const [image] = React.useState(images[randomNumber]);
@@ -161,10 +174,12 @@ const Lobby = (props) => {
         display: "block",
         height: enoughHeight ? "100%" : "unset"
       }}>
-        <AppBar position="static" sx={{background: "none", boxShadow: "none"}}>
+        <AppBar position="static" sx={{boxShadow: "none"}}>
           <Toolbar sx={{
             display: 'flex',
             justifyContent: 'space-between',
+            /* background: "#CCCCCC20", */
+            /* boxShadow: "1px 1px #999999CC" */
           }}>
             <Box sx={{display: 'flex'}}>
               <IconButton
@@ -192,7 +207,7 @@ const Lobby = (props) => {
           <Box sx={{
             margin: "1rem",
             width: "65%",
-            backgroundColor: "#EEEEEECA",
+            backgroundColor: "#FFFFFFE3",
             borderRadius: 2,
             position: "relative"
           }}>
