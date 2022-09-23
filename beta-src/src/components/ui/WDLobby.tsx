@@ -1,5 +1,4 @@
 import * as React from "react";
-/* import { useEffect, useState } from "react"; */
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -48,9 +47,7 @@ const Instructions = (props) => {
 
       <Typography
         component="div"
-        variant="body1"
-        sx={{}}
-      >
+        variant="body1" >
 
         <div style={{fontSize: "1rem"}}>
           A game admin will assign you to a new game soon. <br />
@@ -122,8 +119,6 @@ const WelcomeMessage = (props) => {
 
     var randomNumber = Math.floor((Math.random() * quotes.length));
 
-
-  /* WebkitTextStroke: "1px grey", */
   return (
     <div style={{
       fontSize: "35px",
@@ -178,8 +173,6 @@ const Lobby = (props) => {
           <Toolbar sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            /* background: "#CCCCCC20", */
-            /* boxShadow: "1px 1px #999999CC" */
           }}>
             <Box sx={{display: 'flex'}}>
               <IconButton
