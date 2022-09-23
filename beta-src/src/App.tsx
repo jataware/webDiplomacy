@@ -38,6 +38,13 @@ const App: React.FC = function (): React.ReactElement {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
   }
 
+  /* console.log('window.location', window.location); */
+
+  if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
+    window.location.replace(window.location.origin + window.location.pathname);
+  }
+
+  // TODO check user type (admin) to allow admins spectatew
   if (userCurrentActiveGames.length === 0) {
     var mainElement = <WDLobby />;
   }
@@ -57,3 +64,22 @@ const App: React.FC = function (): React.ReactElement {
 };
 
 export default App;
+
+/*
+   User types
+   - User: to distinguish between a registered user and a guest person navigating to app
+   - Player: A type of user. non-admin user that is assigned to and plays games.
+   - Admin: Non-player user that manages game assignment, can expectate, use admin dashboard.
+
+   Rules
+
+   - User not logged in => Redirect to login page (App.tsx)
+   - GameID on URL does not exist => Stay/Redirect to Lobby (WdMain.tsx)
+   - GameID on url exists, player not assigned to game => Redirect to Lobby
+   - Player on Lobby, then assigned to Game => Redirect to Game ID route
+   - Player assigned to Game => Display app
+   - Admin user on any game url => spectate game
+   - Game ends for a Player => Dialog of result is shown to Player. Dialog contains button to go back to Lobby to await for next game.
+   - Game ends while admin is spectating. Display dialog, allow admin to stay on game or leave towards admin dashboard.
+
+*/

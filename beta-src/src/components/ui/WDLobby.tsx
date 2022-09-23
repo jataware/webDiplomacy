@@ -1,5 +1,14 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+/* import { useEffect, useState } from "react"; */
+
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+
 import chess1 from "../../assets/waiting-room-backgrounds/chess1.jpg";
 import chess2 from "../../assets/waiting-room-backgrounds/chess2.jpg";
 import conference from "../../assets/waiting-room-backgrounds/conference-hall.jpg";
@@ -13,31 +22,59 @@ import vessel2 from "../../assets/waiting-room-backgrounds/vessel2.jpg";
 import veteran from "../../assets/waiting-room-backgrounds/wwii-veteran.jpg";
 
 const LogOutButton = (props) => {
-    return <a style={{
-        fontSize: "15px",
-        color: "white",
-        position: "absolute",
-        top: "2%",
-        left:"3%",
-        width: "10%"}}
-        href="logon.php?logoff=on">Log off</a>
+  return (
+    <Button
+      component="a"
+    style={{
+      fontSize: "15px",
+      color: "white",
+    }}
+    href="logon.php?logoff=on">Log off</Button>
+  );
 }
 
 const Instructions = (props) => {
-    var message = <p style={{
-        fontSize: "13px",
-        color: "white",
-        position: "absolute",
-        top: "10%",
-        width: "100%",
-        textAlign: "Center"}}> Welcome to Diplomacy. Glad to have you onboard. <br />
-        A game admin will assign you to a new game soon. <br />
-    This usually doesn’t take long, you will receive an e-mail once the game is ready. <br /> <br /> 
-    In the meantime, a couple of reminders: <br />
-    <b> * Users must remain anonymous. Do not divulge your identity. <br /> 
-    * Annotate as many incoming/outgoing messages that you believe are meant to deceive a player. This tournament is for research purposes, help as much as you can! <br /> </b>
-    Have fun! <br />
-    </p>
+  var message = (
+    <div>
+      <Typography gutterBottom variant="h3" style={{maxWidth: 600}}>
+        Welcome to Diplomacy. Glad to have you onboard.
+      </Typography>
+
+      <Typography
+        component="div"
+        variant="body1"
+        sx={{}}
+      >
+
+        <div style={{fontSize: "1rem"}}>
+          A game admin will assign you to a new game soon. <br />
+          This usually doesn’t take long, you will receive an e-mail once the game is ready.
+        </div>
+
+        <br />
+
+        <Typography variant="h6">
+          In the meantime, a couple of reminders:
+        </Typography>
+
+        <ul style={{margin: "1rem", listStyle: "disclosure-closed", fontSize: "1rem"}}>
+          <li>
+            Users must remain anonymous. Do not divulge your identity.
+          </li>
+
+          <li>
+            Annotate as many incoming/outgoing messages that you believe are meant to deceive a player.
+          </li>
+        </ul>
+
+        <Typography variant="h6">
+          Have fun!
+        </Typography>
+
+      </Typography>
+
+    </div>
+  );
     return message
 };
 
@@ -72,16 +109,19 @@ const WelcomeMessage = (props) => {
         <br/> - George Patton </ p>,
         <p> "Go forward until the last round is fired and the last drop of gas is expended…then go forward on foot!"
         <br/> - George Patton </ p>]
+
     var randomNumber = Math.floor((Math.random() * quotes.length));
-    return <div style={{
-        fontSize: "35px",
-        color: "white",
-        position: "absolute",
-        textAlign: "center",
-        top: "33%",
-        left: "0%",
-        width: "100%",
-        WebkitTextStroke: "1px grey"}}> {quotes[randomNumber]} </div>
+
+
+  /* WebkitTextStroke: "1px grey", */
+  return (
+    <div style={{
+      fontSize: "35px",
+      textAlign: "center",
+      width: "100%",
+      marginBottom: "1rem"
+    }}> {quotes[randomNumber]} </div>
+  );
 };
 
 
@@ -91,20 +131,71 @@ const Lobby = (props) => {
         var randomNumber = Math.floor((Math.random() * images.length));
         var image = images[randomNumber]
 
-        return (
-          <div style={{ backgroundImage: `url(${image})`,
-          backgroundPosition: "center",
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-            width: "100vw",
-            height: "100vh"}}>
-                <div style ={{backgroundColor: "rgba(100,100,100,.5)", width: "100%", height: "100%"}}>
-                <LogOutButton />
-                <Instructions />
-                <WelcomeMessage />
-                </div>
-          </div>
-        );
-      };
+  return (
+    <div style={{height: "100vh"}}>
+
+    <div style={{
+      backgroundImage: `url(${image})`,
+      backgroundPosition: "center",
+      backgroundSize: "cover",
+      backgroundRepeat: "no-repeat",
+      width: "100vw",
+      height: "100vh",
+      position: "fixed",
+    }}></div>
+
+      <div style={{
+        width: "100vw",
+        height: "100%",
+      }}>
+        <AppBar position="static" sx={{background: "none", boxShadow: "none"}}>
+          <Toolbar sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}>
+            <Box sx={{display: 'flex'}}>
+              <IconButton
+                size="large"
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            </Box>
+            <LogOutButton />
+          </Toolbar>
+        </AppBar>
+
+        <Box sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          height: "80%",
+          pb: 6
+        }}>
+          <Box sx={{
+            margin: "1rem",
+            width: "65%",
+            backgroundColor: "#EEEEEECA",
+            borderRadius: 2,
+            position: "relative"
+          }}>
+
+            <Box sx={{
+              p: 5,
+            }}>
+              <Instructions />
+              <br />
+              <WelcomeMessage />
+            </Box>
+          </Box>
+        </Box>
+      </div>
+    </div>
+  );
+};
 
 export default Lobby;
