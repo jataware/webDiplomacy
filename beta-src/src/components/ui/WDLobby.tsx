@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import chess1 from "../../assets/waiting-room-backgrounds/chess1.jpg";
 import chess2 from "../../assets/waiting-room-backgrounds/chess2.jpg";
@@ -131,26 +132,34 @@ const WelcomeMessage = (props) => {
 
 // https://www.imgacademy.com/sites/default/files/2022-07/img-homepage-meta.jpg
 const Lobby = (props) => {
-        var images = [chess1, chess2, conference, monument, plane1, plane2, plane3, soldier, vessel, vessel2, veteran]
-        var randomNumber = Math.floor((Math.random() * images.length));
-        var image = images[randomNumber]
+
+  var images = [chess1, chess2, conference, monument, plane1, plane2, plane3, soldier, vessel, vessel2, veteran]
+  var randomNumber = Math.floor((Math.random() * images.length));
+
+  const [image] = React.useState(images[randomNumber]);
+
+  const enoughHeight = useMediaQuery('(min-height:800px)');
 
   return (
     <div style={{height: "100vh"}}>
 
-    <div style={{
-      backgroundImage: `url(${image})`,
-      backgroundPosition: "center",
-      backgroundSize: "cover",
-      backgroundRepeat: "no-repeat",
-      width: "100vw",
-      height: "100vh",
-      position: "fixed",
-    }}></div>
+      <div
+        className="sticky-background"
+        style={{
+          backgroundImage: `url(${image})`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          width: "100vw",
+          height: "100vh",
+          position: "fixed",
+        }}
+      />
 
-      <div style={{
+      <Box sx={{
         width: "100vw",
-        height: "100%",
+        display: "block",
+        height: enoughHeight ? "100%" : "unset"
       }}>
         <AppBar position="static" sx={{background: "none", boxShadow: "none"}}>
           <Toolbar sx={{
@@ -197,7 +206,7 @@ const Lobby = (props) => {
             </Box>
           </Box>
         </Box>
-      </div>
+      </Box>
     </div>
   );
 };
