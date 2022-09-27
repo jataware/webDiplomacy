@@ -903,17 +903,6 @@ class libHTML
 			$menu .= '
 				<div id="header-welcome">&nbsp;</div>
 				<div id="header-goto">
-					<div class="nav-wrap">
-						<div class="nav-tab">
-							<a style="color:white" href="index.php">'.l_t('Home').'</a>
-						</div>
-						<div class="nav-tab">
-							<a href="botgamecreate.php" title="Go to the account-based server">Start a New Game</a>
-						</div>
-						<div class="nav-tab">
-							<a href="https://webdiplomacy.net/" title="Go to the account-based server">Go to the Community Site</a>
-						</div>
-					</div>
 				</div>';
 		}	
 		else
@@ -941,132 +930,13 @@ class libHTML
 				/* begin dropdown menu */
 				$menu .= '
 				<div id="header-goto">
-				<div class="nav-wrap">
-				<div class = "nav-tab"> <a href="index.php?" title="See what\'s happening">Home</a> </div>';
-				if( isset(Config::$customForumURL) )
-				{
-					$menu.='<div class = "nav-tab"> <a href="'.Config::$customForumURL.'" title="The forum; chat, get help, help others, arrange games, discuss strategies">Forum</a> </div>';
-				}
-				else
-				{
-					$menu.='<div class = "nav-tab"> <a href="forum.php" title="The forum; chat, get help, help others, arrange games, discuss strategies">Forum</a> </div>';
-				}
-
-				if (is_object($User))
-				{
-					if( !$User->type['User'] )
-					{
-						$menu.='
-						<div class="nav-tab">
-							<a href="logon.php" title="Log onto webDiplomacy using an existing user account">Log on</a>
-						</div>';
-						$menu.='
-						<div class="nav-tab">
-							<a href="register.php" title="Make a new user account">Register</a>
-						</div>';
-						$menu.='
-						<div id="navSubMenu" class = "clickable nav-tab">Help ▼
-							<div id="nav-drop">
-								<a href="rules.php">Site Rules</a>
-								<a href="faq.php" title="Frequently Asked Questions">FAQ</a>
-								<a href="intro.php" title="Intro to Diplomacy">Diplomacy Intro</a>
-								<a href="points.php" title="Points and Scoring Systems">Points/Scoring</a>
-								<a href="variants.php" title="Active webDiplomacy variants">Variants</a>
-								<a href="help.php" title="Site information, guides, stats, links">More Info</a>
-								<a href="donations.php">Donate</a>
-							</div>
-						</div>';
-					}
-					else
-					{
-						$menu.='
-						<div id="navSubMenu" class="clickable nav-tab">Search ▼
-							<div id="nav-drop">
-								<a href="search.php">Find User</a>
-								<a href="gamelistings.php?gamelistType=Search">Game Search</a>
-								<a href="detailedSearch.php" title="advanced search of users and games">Advanced Search</a>
-							</div>
-						</div>
-						<div id="navSubMenu" class="clickable nav-tab">Games ▼
-							<div id="nav-drop">
-								<a href="gamelistings.php?gamelistType=New" title="Game listings; a searchable list of the games on this server">New Games</a>
-								<a href="gamelistings.php?gamelistType=Open%20Positions" title="Open positions dropped by other players, free to claim">Open Games</a>
-								<a href="gamecreate.php" title="Start up a new game">Start a New Game</a>
-								<a href="botgamecreate.php" title="Start up a new bots-only game">Start an AI/Bot Game</a>
-								<a href="gamelistings.php?gamelistType=Active" title="View/Spectate games currently running">Active Games</a>
-								<!-- <a href="ghostRatings.php" title="Ghost Ratings Information">Ghost Ratings</a> -->
-								<a href="tournaments.php" title="Information about tournaments on webDiplomacy">Tournaments</a>
-								<a href="halloffame.php" title="Information about tournaments on webDiplomacy">Hall of Fame</a>
-							</div>
-						</div>
-						<div id="navSubMenu" class="clickable nav-tab">Account ▼
-							<div id="nav-drop">';
-							if( isset(Config::$customForumURL) ) {
-								$menu.='
-									<a href="contrib/phpBB3/ucp.php?i=pm" title="Read your messages">Private Messages</a>
-									<a href="contrib/phpBB3/ucp.php?i=179" title="Change your forum user settings">Forum Settings</a>';
-							}
-							$menu.='
-								<a href="usercp.php" title="Change your user specific settings">Site Settings</a>
-								<a href="group.php" title="Manage your user relationships">User Relationships</a>
-							</div>
-						</div>
-						<div id="navSubMenu" class = "clickable nav-tab">Help ▼
-							<div id="nav-drop">
-								<a href="rules.php">Site Rules</a>
-								<a href="faq.php" title="Frequently Asked Questions">FAQ</a>
-								<a href="intro.php" title="Intro to Diplomacy">Diplomacy Intro</a>
-								<a href="points.php" title="Points and Scoring Systems">Points/Scoring</a>
-								<a href="variants.php" title="Active webDiplomacy variants">Variants</a>
-								<a href="help.php" title="Site information; guides, stats, links">More Info</a>
-								<a href="contactUsDirect.php">Contact Us</a>
-								<a href="donations.php">Donate</a>
-							</div>
-						</div>';
-					}
-				}
-
-				if ( is_object($User) )
-				{
-					if ( $User->type['Admin'] or $User->type['Moderator'] )
-					{
-						$menu.=' <div id="navSubMenu" class = "clickable nav-tab">Mods ▼
-							<div id="nav-drop">
-								<a href="admincp.php">Admin CP</a>';
-
-						if( isset(Config::$customForumURL) ) { $menu.='<a href="contrib/phpBB3/mcp.php">Forum CP</a>'; }
-
-						$menu.='
-							<a href="admincp.php?tab=Multi-accounts">Multi Finder</a>
-							<a href="admincp.php?tab=Chatlogs">Pull Press</a>
-							<a href="admincp.php?tab=AccessLog">Access Log</a>
-							<a href="search.php">Find User</a>';
-
-						if ( $User->type['Admin'] && isset(Config::$customForumURL))
-						{
-							$menu.='<a href="adminInfo.php">Admin Info</a>';
-						}
-
-						$menu.=' </div>
-						</div>';
-					}
-				}
+				<div class="nav-wrap">';
 				$menu.='</div></div></div>';
 			}
 			else
 			{
 				$menu .= '
-					<div id="header-welcome">&nbsp;</div>
-						<div id="header-goto">
-							<div class="nav-wrap">
-								<div class="nav-tab">
-									<a style="color:white" href="index.php">'.l_t('Home').'</a>
-								</div>
-								<div class="nav-tab">
-								<a style="color:white" href="'.$scriptname.'">'.l_t('Reload current page').'</a>
-								</div>
-							</div>
-						</div>';
+					<div id="header-welcome">&nbsp;</div>';
 			}
 		}
 		$menu .= '
