@@ -93,6 +93,63 @@ class libGameMessage
 		return $timeSent;
 	}
 
+    /**
+	 * Annotate a previously-sent game message.
+	 *
+	 * @param int $toCountryID The countryID being sent to. 'Global' sends to all.
+	 * @param int $fromCountryID The county being sent from. 'GameMaster' can also be used.
+	 * @param string $timeSent timestamp of previous sent msg since we don't have an ID for it
+	 * @param int $gameID The game ID to use. If not given the current global Game is sent to.
+     * @param string $answer the annotation itself (yes/no/unsure/backstab)
+     * @param string $direction if the message annotated is incoming or outgoing (to user or by user)
+	 *
+	 * @return boolean $result true if successful, false otherwise
+	 */
+	static public function annotate($toCountryID, $fromCountryID, $timeSent, $gameID=-1, $answer, $direction="outgoing")
+	{
+		global $DB;
+
+		if ( !is_numeric($toCountryID) )
+			$toCountryID=0;
+
+		if ( !is_numeric($fromCountryID) )
+		{
+			$fromCountryID=0;
+		}
+
+        // TODO check if incoming or outgoing and save annotation
+        //   if outgoing check country/user is "author" of previous message
+        //   if incoming verify the annotation can be done by recipient only
+        // TODO check correct turn, etc so that messages can't be revised/annotated when they shouldn't?
+        $result = false;
+        if ($direction === "outgoing") {
+            $result = $DB->sql_put_safe("UPDATE wD_GameMessages
+                        SET intentDeceive = ?
+                      WHERE
+                        toCountryID = ?
+                      AND
+                        fromCountryID = ?
+                      AND
+                        timeSent = ?
+                      AND
+                        gameID = ?", [$answer, $toCountryID, $fromCountryID, $timeSent, $gameID], "siiii");
+        } elseif ($direction === "incoming") {
+            $intAnswer = intval($answer);
+            $result = $DB->sql_put_safe("UPDATE wD_GameMessages
+                        SET suspectedIncomingDeception = ?
+                      WHERE
+                        toCountryID = ?
+                      AND
+                        fromCountryID = ?
+                      AND
+                        timeSent = ?
+                      AND
+                        gameID = ?", [$intAnswer, $toCountryID, $fromCountryID, $timeSent, $gameID], "iiiii");
+        }
+
+		return $result;
+	}
+
 	/**
 	 * Notify a countryID that you sent them a message, uses the global Game
 	 *

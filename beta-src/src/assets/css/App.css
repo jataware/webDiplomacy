@@ -2,6 +2,7 @@
   position: "relative";
 }
 
+
 .no-pointer-events {
   pointer-events: none;
 }
@@ -13,4 +14,8 @@
   opacity: 0;
   transition: opacity 0.5s ease-out;
   pointer-events: none;
+}
+
+#webpack-dev-server-client-overlay {
+  display: none;
 }

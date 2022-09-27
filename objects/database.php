@@ -398,6 +398,28 @@ class Database {
 			$this->profiler($timeStart, $sql);
 	}
 
+    public function sql_put_safe($sql, $values, $types)
+	{
+        $stmt = $this->link->prepare($sql);
+        $stmt->bind_param($types, ...$values);
+
+		$this->putqueries++;
+
+        if( Config::$debug )
+			$timeStart=microtime(true);
+
+        $result = $stmt->execute();
+
+        if (!$result) {
+			trigger_error(mysqli_error($this->link));
+        }
+
+        if( Config::$debug )
+			$this->profiler($timeStart, $sql);
+
+        return $result;
+	}
+
 	public function last_affected()
 	{
 		return mysqli_affected_rows($this->link);
