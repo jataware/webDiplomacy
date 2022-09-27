@@ -1,6 +1,6 @@
 import * as React from "react";
 import DOMPurify from "dompurify";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton } from "@mui/material"; // TODO import individually
 import { useAppSelector } from "../../state/hooks";
 import {
   gameOverview,
@@ -15,7 +15,15 @@ import getDevice from "../../utils/getDevice";
 import { turnAsDate } from "../../utils/formatTime";
 import { GameMessage } from "../../state/interfaces/GameMessages";
 import { CountryTableData } from "../../interfaces/CountryTableData";
+import Popover from "@mui/material/Popover";
 import backstabIcon from '../../assets/png/backstab.png';
+import clipboardImg from "../../assets/png/clipboard-3.png";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import Button from "@mui/material/Button";
+import ArrowUpIcon from "@mui/icons-material/ArrowDropUpOutlined";
+import GoodIcon from '@mui/icons-material/GppGoodRounded';
+import DoneIcon from '@mui/icons-material/DoneRounded';
 
 interface WDMessageProps {
   message: GameMessage;
@@ -51,6 +59,104 @@ async function saveSuspectedIncomingDeception(message, gameID, answer) {
 // Useful for the future here or under WDPress.tsx
 /* const getUniqueMsgID = (message) => `${message.toCountryID}-${message.fromCountryID}-${message.timeSent}`; */
 
+const ResearchPopover = ({isOpen, anchorEl, handleClose, handleDeceptive, handleTrustworthy}) => {
+  return (
+    <Popover
+      open={isOpen}
+      anchorEl={anchorEl}
+      onClose={handleClose}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "center",
+      }}
+      PaperProps={{
+        style: {
+          backgroundColor: "transparent",
+          boxShadow: "none",
+          borderRadius: 0
+        }
+      }}
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "center",
+      }}
+    >
+      <Box
+        className="popover-outer"
+        sx={{
+          pt: 1,
+        }}>
+        <Box
+          className="popover-inner"
+          sx={{
+            p: 2.5,
+            backgroundColor: "white",
+            border: "2px solid gray",
+            borderRadius: 1.5
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              width: "100%",
+              top: 0,
+              left: 0,
+              marginTop: "-10px",
+              display: "flex",
+              justifyContent: "center"
+            }}
+          >
+            <ArrowUpIcon sx={{color: "gray", fontSize: "2rem"}} />
+          </Box>
+
+          <Typography
+            variant="h5"
+            gutterBottom
+          >
+            Research Annotation
+          </Typography>
+
+          <Typography paragraph>How are you feeling about this message?</Typography>
+
+          <Box>
+            <Button
+              sx={{mr: 1}}
+              startIcon={
+                <Icon>
+                  <img
+                    src={backstabIcon}
+                    width="30"
+                    height="30"
+                    alt="Backstab Deception Icon"
+                  />
+                </Icon>
+              }
+            >
+              Deceptive
+            </Button>
+
+            <Button
+              startIcon={
+                <GoodIcon
+                  width="30"
+                  height="30"
+                  alt="Trustworthy Icon"
+                />
+              }
+            >
+              Trustworthy
+            </Button>
+          </Box>
+
+          <br />
+          <Typography variant="caption">Internally saved for research. Not shared with any users.</Typography>
+        </Box>
+      </Box>
+    </Popover>
+  );
+}
+
+
 const WDMessage: React.FC<WDMessageProps> = function ({
   message,
   userCountry,
@@ -68,6 +174,14 @@ const WDMessage: React.FC<WDMessageProps> = function ({
   const { user, gameID, turn: currentGameTurn } = useAppSelector(gameOverview);
 
   const [isAnnotatedDeceptive, setAnnotatedDeceptive] = React.useState(message.suspectedIncomingDeception === "1");
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const isPopOverOpen = Boolean(anchorEl);
 
   const annotateMessage = (message) => {
     const answer = isAnnotatedDeceptive ? "0" : "1";
@@ -124,28 +238,37 @@ const WDMessage: React.FC<WDMessageProps> = function ({
                 <>{turnAsDate(message.turn, "Classic")}</>
               )}
             </div>
+
             <Box
               ml="0"
               className="ml-4"
               display="flex"
               alignItems="center"
               justifyContent="space-between">
-              {(isUserRecipient && isMessageCurrentTurn) && (
+              {(isUserRecipient && isMessageCurrentTurn) || true && (
                 <Box mr="2" className="research-actions">
                   <IconButton
+                    onClick={(event) => setAnchorEl(event.currentTarget)}
                     size="large"
-                    onClick={() => annotateMessage(message)}
                     color="warning"
                     sx={{
                       background: isAnnotatedDeceptive ? "#ffcc88" : "#eaeaea",
-                      padding: 0,
+                      padding: 0.25,
                       mr: 1
                     }}
                   >
-                    <img src={backstabIcon} width="30" height="30" />
+                    <DoneIcon
+                      sx={{
+                        fontSize: "1.5rem",
+                        marginRight: -1,
+                        color: "success.light",
+                        position: "absolute",
+                        zIndex: 2
+                      }}
+                    />
+                    <img src={clipboardImg} width="20" height="25" />
                   </IconButton>
                 </Box>
-
               )}
               {msgTime.toLocaleTimeString([], {
                 hour: "2-digit",
@@ -155,8 +278,16 @@ const WDMessage: React.FC<WDMessageProps> = function ({
           </div>
         </div>
       </div>
+
+      <ResearchPopover
+        isOpen={isPopOverOpen}
+        anchorEl={anchorEl}
+        handleClose={handlePopoverClose} />
+
     </div>
   );
 };
 
 export default WDMessage;
+
+/* onClick={() => annotateMessage(message)} */
