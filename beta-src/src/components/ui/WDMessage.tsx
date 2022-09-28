@@ -246,27 +246,47 @@ const WDMessage: React.FC<WDMessageProps> = function ({
               alignItems="center"
               justifyContent="space-between">
               {(isUserRecipient && isMessageCurrentTurn) || true && (
-                <Box mr="2" className="research-actions">
+                <Box
+                  className="research-actions"
+                  sx={{
+                    border: "1px solid gray",
+                    borderRadius: 2,
+                    display: "flex",
+                    justifyContent: "space-evenly",
+                    alignItems: "center",
+                    padding: "4px",
+                    mr: 1
+                  }}
+                >
+                  <Icon sx={{borderRadius: 1}}>
+                    <img src={clipboardImg} width="20" height="25" />
+                  </Icon>
+
+                  &nbsp;
+
                   <IconButton
                     onClick={(event) => setAnchorEl(event.currentTarget)}
-                    size="large"
                     color="warning"
                     sx={{
                       background: isAnnotatedDeceptive ? "#ffcc88" : "#eaeaea",
                       padding: 0.25,
-                      mr: 1
+                      mr: "2px"
                     }}
                   >
-                    <DoneIcon
-                      sx={{
-                        fontSize: "1.5rem",
-                        marginRight: -1,
-                        color: "success.light",
-                        position: "absolute",
-                        zIndex: 2
-                      }}
-                    />
-                    <img src={clipboardImg} width="20" height="25" />
+                    <img src={backstabIcon} width="25" height="30" />
+                  </IconButton>
+
+                  <IconButton
+                    onClick={(event) => setAnchorEl(event.currentTarget)}
+                    color="success"
+                    sx={{
+                      background: isAnnotatedDeceptive ? "#ffcc88" : "#eaeaea",
+                      fontSize: "0.25rem",
+                      p: 0.5,
+                      mr: "2px"
+                    }}
+                  >
+                    <GoodIcon />
                   </IconButton>
                 </Box>
               )}
