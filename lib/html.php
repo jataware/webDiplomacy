@@ -566,14 +566,30 @@ class libHTML
 
 		$pages = libHTML::pages();
 		$playerAccessiblePages = ['register.php', 'logon.php'];
-		$userIsPlayer = isset($User) && ($User->type['User'] or $User->type['Guest']) && !$User->type['Banned'];
+		$userIsAdmin = $User->type['Admin'] or $User->type['Moderator'];
+		$attemptingAdminSet = false;
+		$gameMasterSecretCorrect = false;
+		
+
+		if ($User->type['Banned']){
+			die('You are banned');
+		}
 		
 		in_array($scriptname, $playerAccessiblePages) ? $playerAccessible = true : $playerAccessible = false;
+		in_array('gameMasterSecret', $_GET) and ($scriptname == 'gamemaster.php') ? $attemptingAdminSet = true : $attemptingAdminSet = false;
+		
+		
+		if ($attemptingAdminSet){
+			$_GET['gameMasterSecret'] == '' ? $gameMasterSecretCorrect = true : $gameMasterSecretCorrect = false;
+			// if gameMasterSecret is correct ^
+		}
 
-		if ($userIsPlayer and !$playerAccessible) {
+		if (!$userIsAdmin && !$playerAccessible && !$gameMasterSecretCorrect) {
 			header('Location: /logon.php');
 			die();
 		}
+
+		
 
 		print libHTML::prebody($title===FALSE ? l_t($pages[$scriptname]['name']) : $title,
 			$scriptname == 'botgamecreate.php'). // Don't let robots into the account create page
