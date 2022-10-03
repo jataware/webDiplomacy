@@ -560,7 +560,7 @@ class libHTML
 	 */
 	static public function starthtml($title=false)
 	{
-		global $User, $DB;
+		global $User, $DB, $gameMasterSecret;
 
 		self::$scriptname = $scriptname = basename($_SERVER['PHP_SELF']);
 
@@ -569,24 +569,23 @@ class libHTML
 		$userIsAdmin = $User->type['Admin'] or $User->type['Moderator'];
 		$attemptingAdminSet = false;
 		$gameMasterSecretCorrect = false;
+		in_array($scriptname, $playerAccessiblePages) ? $playerAccessible = true : $playerAccessible = false;
+		in_array('gameMasterSecret', $_GET) and ($scriptname == 'gamemaster.php') ? $attemptingAdminSet = true : $attemptingAdminSet = false;
 		
-
 		if ($User->type['Banned']){
 			die('You are banned');
 		}
 		
-		in_array($scriptname, $playerAccessiblePages) ? $playerAccessible = true : $playerAccessible = false;
-		in_array('gameMasterSecret', $_GET) and ($scriptname == 'gamemaster.php') ? $attemptingAdminSet = true : $attemptingAdminSet = false;
-		
-		
 		if ($attemptingAdminSet){
-			$_GET['gameMasterSecret'] == '' ? $gameMasterSecretCorrect = true : $gameMasterSecretCorrect = false;
+			$_GET['gameMasterSecret'] == Config::$secret ? $gameMasterSecretCorrect = true : $gameMasterSecretCorrect = false;
 			// if gameMasterSecret is correct ^
 		}
 
-		if (!$userIsAdmin && !$playerAccessible && !$gameMasterSecretCorrect) {
-			header('Location: /logon.php');
-			die();
+		if (!$userIsAdmin) {
+			if (!$playerAccessible && !$gameMasterSecretCorrect) {
+				header('Location: /logon.php');
+				die();
+			}
 		}
 
 		
