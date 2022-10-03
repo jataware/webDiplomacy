@@ -36,13 +36,15 @@ interface WDPressProps {
   allCountries: CountryTableData[];
 }
 
+const ALL_COUNTRY = "ALL";
+
 const WDPress: FC<WDPressProps> = function ({
   children,
   userCountry,
   allCountries,
 }): ReactElement {
-  const [viewport] = useViewport();
-  const device = getDevice(viewport);
+  /* const [viewport] = useViewport(); */
+  /* const device = getDevice(viewport); */
   const dispatch = useAppDispatch();
 
   const padding = 0;
@@ -132,17 +134,15 @@ const WDPress: FC<WDPressProps> = function ({
 
       const recipientCountryData = allCountries.find(country => country.countryID === countryIDSelected);
 
-      if (countryIDSelected > 0) { // Not sending to everyone; sending to specific 1:1 country
-        setLastMessageData({
-          gameID: gameID,
-          fromCountryID: userCountry.countryID,
-          fromCountry: userCountry.country,
-          toCountry: recipientCountryData.country,
-          toCountryID: recipientCountryData.countryID,
-          message
-        });
-        setResearchDialogOpen(true);
-      }
+      setLastMessageData({
+        gameID: gameID,
+        fromCountryID: userCountry.countryID,
+        fromCountry: userCountry.country,
+        toCountry: recipientCountryData?.country || ALL_COUNTRY, // Special constant
+        toCountryID: recipientCountryData?.countryID || 0,
+        message
+      });
+      setResearchDialogOpen(true);
     }
     const ms = { ...messageStack };
 

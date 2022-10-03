@@ -8,6 +8,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Typography from "@mui/material/Typography";
 import clipboardImg from "../../assets/png/clipboard-3.png";
 
+const ALL_COUNTRY = "ALL";
+
 function MessageResearchDialog({open, setOpen, saveResponse, message, toCountry}) {
 
   const handleClose = (event, reason) => {
@@ -57,7 +59,7 @@ function MessageResearchDialog({open, setOpen, saveResponse, message, toCountry}
               </Typography>
 
               <Typography variant="h6">
-                You just sent this message to {toCountry}:
+                You just sent this message {toCountry === ALL_COUNTRY ? "in" : " to"} {toCountry}:
               </Typography>
 
               <Typography
@@ -96,7 +98,7 @@ function MessageResearchDialog({open, setOpen, saveResponse, message, toCountry}
             variant="h6"
             gutterBottom
           >
-            Was this message meant to deceive {toCountry}?
+            Was this message meant to deceive {toCountry === ALL_COUNTRY ? "anyone" : toCountry}?
           </Typography>
 
         </DialogContent>
