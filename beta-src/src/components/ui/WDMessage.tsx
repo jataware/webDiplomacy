@@ -1,6 +1,8 @@
 import * as React from "react";
 import DOMPurify from "dompurify";
-import { Box, IconButton } from "@mui/material"; // TODO import individually
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { useAppSelector } from "../../state/hooks";
 import {
   gameOverview,
@@ -24,6 +26,8 @@ import Button from "@mui/material/Button";
 import ArrowUpIcon from "@mui/icons-material/ArrowDropUpOutlined";
 import GoodIcon from '@mui/icons-material/GppGoodRounded';
 import DoneIcon from '@mui/icons-material/DoneRounded';
+import Divider from '@mui/material/Divider';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 interface WDMessageProps {
   message: GameMessage;
@@ -31,6 +35,10 @@ interface WDMessageProps {
   allCountries: CountryTableData[];
   viewedPhaseIdx: number;
 }
+
+const DECEPTIVE = "0";
+const TRUSTWORTHY = "1";
+const NULL = "2";
 
 // NOTE Maybe use app actions to have changes flow through app instead of manual sync.
 // With more time, investigate. No big deal for our purposes.
@@ -59,6 +67,7 @@ async function saveSuspectedIncomingDeception(message, gameID, answer) {
 // Useful for the future here or under WDPress.tsx
 /* const getUniqueMsgID = (message) => `${message.toCountryID}-${message.fromCountryID}-${message.timeSent}`; */
 
+// Not used anymore. Leaving here in case we change our mind.
 const ResearchPopover = ({isOpen, anchorEl, handleClose, handleDeceptive, handleTrustworthy}) => {
   return (
     <Popover
@@ -156,6 +165,17 @@ const ResearchPopover = ({isOpen, anchorEl, handleClose, handleDeceptive, handle
   );
 }
 
+const HtmlTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: '#f5f5f9',
+    color: 'rgba(0, 0, 0, 0.87)',
+    maxWidth: 220,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid #dadde9',
+  },
+}));
 
 const WDMessage: React.FC<WDMessageProps> = function ({
   message,
@@ -173,20 +193,24 @@ const WDMessage: React.FC<WDMessageProps> = function ({
 
   const { user, gameID, turn: currentGameTurn } = useAppSelector(gameOverview);
 
-  const [isAnnotatedDeceptive, setAnnotatedDeceptive] = React.useState(message.suspectedIncomingDeception === "1");
+  // We don't re-fetch messages on each annotation change, so we store this locally in order
+  // to show the button as highlighted (user selected this option). Not perfect but good enough
+  // for our tournament purposes.
+  const [isAnnotatedDeceptive, setAnnotatedDeceptive] = React.useState(message.suspectedIncomingDeception === DECEPTIVE);
+  const [isAnnotatedTrustworthy, setAnnotatedTrustworthy] = React.useState(message.suspectedIncomingDeception === TRUSTWORTHY);
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const annotateMessage = (message, answer) => { // answer 0 or 1
 
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
+    let answerToSave = answer;
 
-  const isPopOverOpen = Boolean(anchorEl);
+    if (isAnnotatedDeceptive && answer === DECEPTIVE || isAnnotatedTrustworthy && answer === TRUSTWORTHY) {
+      answerToSave = NULL;
+    }
 
-  const annotateMessage = (message) => {
-    const answer = isAnnotatedDeceptive ? "0" : "1";
-    saveSuspectedIncomingDeception(message, gameID, answer);
-    setAnnotatedDeceptive(!isAnnotatedDeceptive);
+    saveSuspectedIncomingDeception(message, gameID, answerToSave);
+
+    setAnnotatedDeceptive(answerToSave === DECEPTIVE);
+    setAnnotatedTrustworthy(answerToSave === TRUSTWORTHY);
   };
 
   const isUserRecipient = Boolean(message?.toCountryID && (message?.toCountryID === user?.member?.countryID));
@@ -205,6 +229,7 @@ const WDMessage: React.FC<WDMessageProps> = function ({
   msgTime.setUTCSeconds(message.timeSent);
 
   return (
+
     <div className={`flex justify-${justify}`}>
       <div
         id={`message-${message.timeSent}`}
@@ -245,49 +270,80 @@ const WDMessage: React.FC<WDMessageProps> = function ({
               display="flex"
               alignItems="center"
               justifyContent="space-between">
-              {(isUserRecipient && isMessageCurrentTurn) || true && (
+              {(isUserRecipient && isMessageCurrentTurn) && (
                 <Box
                   className="research-actions"
                   sx={{
-                    border: "1px solid gray",
-                    borderRadius: 2,
+                    backgroundColor: "#e5edfc",
+                    borderRadius: 1,
                     display: "flex",
                     justifyContent: "space-evenly",
                     alignItems: "center",
                     padding: "4px",
-                    mr: 1
+                    mr: 0.75,
                   }}
                 >
-                  <Icon sx={{borderRadius: 1}}>
-                    <img src={clipboardImg} width="20" height="25" />
-                  </Icon>
+
+                  <HtmlTooltip
+                    title={
+                      <React.Fragment>
+                        <Typography
+                          variant="h6"
+                          sx={{fontSize: "1rem"}}
+                          color="inherit">
+                          Research Question
+                        </Typography>
+                        <p>Select incoming message perception.</p>
+                        <Typography variant="caption">
+                          Answer not shared with opponents.
+                        </Typography>
+                      </React.Fragment>
+                    }
+                    placement="left"
+                  >
+                    <AssignmentIcon sx={{color: "#6887fd"}} />
+                  </HtmlTooltip>
 
                   &nbsp;
 
-                  <IconButton
-                    onClick={(event) => setAnchorEl(event.currentTarget)}
-                    color="warning"
+                  <Button
+                    size="small"
+                    color="info"
+                    variant={isAnnotatedDeceptive ? "outlined" : ""}
+                    onClick={() => annotateMessage(message, DECEPTIVE)}
                     sx={{
-                      background: isAnnotatedDeceptive ? "#ffcc88" : "#eaeaea",
-                      padding: 0.25,
-                      mr: "2px"
-                    }}
-                  >
-                    <img src={backstabIcon} width="25" height="30" />
-                  </IconButton>
-
-                  <IconButton
-                    onClick={(event) => setAnchorEl(event.currentTarget)}
-                    color="success"
-                    sx={{
-                      background: isAnnotatedDeceptive ? "#ffcc88" : "#eaeaea",
-                      fontSize: "0.25rem",
                       p: 0.5,
-                      mr: "2px"
+                      mr: "2px",
+                      borderRadius: "4px",
+                      color: "#4e8eff"
                     }}
                   >
-                    <GoodIcon />
-                  </IconButton>
+                    Deceptive
+                  </Button>
+
+                  <Divider
+                    sx={{
+                      borderColor: "#9cbaf3"
+                    }}
+                    orientation="vertical"
+                    flexItem
+                  />
+
+                  <Button
+                    size="small"
+                    color="info"
+                    variant={isAnnotatedTrustworthy ? "outlined" : ""}
+                    onClick={() => annotateMessage(message, TRUSTWORTHY)}
+                    sx={{
+                      ml: "2px",
+                      mr: "2px",
+                      p: 0.5,
+                      borderRadius: "4px",
+                      color: "#4e8eff"
+                    }}
+                  >
+                    Trustworthy
+                  </Button>
                 </Box>
               )}
               {msgTime.toLocaleTimeString([], {
@@ -298,12 +354,6 @@ const WDMessage: React.FC<WDMessageProps> = function ({
           </div>
         </div>
       </div>
-
-      <ResearchPopover
-        isOpen={isPopOverOpen}
-        anchorEl={anchorEl}
-        handleClose={handlePopoverClose} />
-
     </div>
   );
 };
@@ -311,3 +361,12 @@ const WDMessage: React.FC<WDMessageProps> = function ({
 export default WDMessage;
 
 /* onClick={() => annotateMessage(message)} */
+
+/* <ResearchPopover */
+/* isOpen={isPopOverOpen}
+ * anchorEl={anchorEl}
+ * handleClose={handlePopoverClose} /> */
+
+/* <Icon>
+ * <img src={clipboardImg} width="20" height="25" />
+ * </Icon> */
