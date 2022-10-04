@@ -1,7 +1,16 @@
 import * as React from "react";
 import { styled } from "@mui/material/styles";
+import map from "lodash/map";
+import isEmpty from "lodash/isEmpty";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+
+import Avatar from '@mui/material/Avatar';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+
+import Tooltip from '@mui/material/Tooltip';
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -16,15 +25,21 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import EyeIcon from '@mui/icons-material/RemoveRedEye';
 import EndIcon from '@mui/icons-material/DoDisturbOn';
 
+import {
+  postGameApiRequest,
+  getGameApiRequest
+} from "./utils/api";
+
+/* import ApiRoute from "./enums/ApiRoute"; */
+
 import "./assets/css/AdminDashboard.css";
 
-/* import { DataGrid } from "@mui/x-data-grid"; */
 /* import Tabs from '@mui/material/Tabs';
  * import Tab from '@mui/material/Tab'; */
 
 import unsplash1 from "./assets/waiting-room-backgrounds/unsplash1.jpg";
 
-/* const redColor = "rgb(236,93,98)"; */
+const redColor = "rgb(236,93,98)";
 const grayColor = "rgb(202,210,245)";
 const purpleColor = "rgb(109, 97, 246)";
 
@@ -34,9 +49,9 @@ const users = [
   { id: 3, username: 'happyPterodactyl', game: 'is Amazing' },
 ];
 const games = [
-  { id: 1, name: "Hello", turn: 6, status: "Not-processing", phase: "", gameOver: "Yes" },
-  { id: 2, name: "DataGridPro", turn: 0, status: "Crashed", phase: "Pre-game", gameOver: null },
-  { id: 3, name: "MUI", turn: 0, status: "Processing", phase: "Diplomacy", gameOver: null },
+  { gameID: 1, name: "Hello", turn: 6, processStatus: "Not-processing", phase: "", gameOver: "Yes" },
+  { gameID: 2, name: "DataGridPro", turn: 0, processStatus: "Crashed", phase: "Pre-game", gameOver: null },
+  { gameID: 3, name: "MUI", turn: 0, processStatus: "Processing", phase: "Diplomacy", gameOver: null },
 ];
 
 /* const userColumns = [
@@ -51,16 +66,16 @@ const games = [
  *   {field: "phase", headerName: "Phase", width: 150},
  * ]; */
 
-const unassignedPlayers = [
-  {id: 1, username: 'lolaPlays'},
-  {id: 2, username: 'happyPath1'},
-  {id: 3, username: 'neoForever'},
-  {id: 4, username: 'loremJitsu'},
-  {id: 5, username: '007timesThree'},
-  {id: 6, username: 'fifthElement'},
-  {id: 7, username: 'silverCow'},
-  {id: 8, username: 'rapidSilvester'},
-];
+/* const unassignedPlayers = [
+ *   {id: 1, username: 'lolaPlays'},
+ *   {id: 2, username: 'happyPath1'},
+ *   {id: 3, username: 'neoForever'},
+ *   {id: 4, username: 'loremJitsu'},
+ *   {id: 5, username: '007timesThree'},
+ *   {id: 6, username: 'fifthElement'},
+ *   {id: 7, username: 'silverCow'},
+ *   {id: 8, username: 'rapidSilvester'},
+ * ]; */
 
 const randomColors = [
   "rgb(233, 30, 99)",  // pink
@@ -70,6 +85,8 @@ const randomColors = [
   "rgb(205, 220, 57)", // lime
   "rgb(255, 193, 7)",  // amber
   "rgb(244, 67, 54)",  // red
+  "rgb(0, 188, 212)",  // cyan
+  "rgb(63, 81, 181)",  // indigo
 ];
 
 const BaseButton = styled(Button)(() => `
@@ -86,6 +103,234 @@ const PurpleButton = styled(BaseButton)(() => `
     border-color: ${purpleColor};
   }
 `);
+
+/**
+ * TODO maybe use?
+ **/
+function endpointFactory(path, paramKey) {
+  return async function(paramValue) {
+    try {
+      const response = await getGameApiRequest(
+        path,
+        paramKey ? {[paramKey]: paramValue} : {hello: "world"}
+      );
+
+      return response.data;
+
+    } catch(e) {
+      console.log(`Request to fetch ${path} failed, e:`, e);
+    }
+  }
+}
+
+// TODO probably move these fetch definitions to their own files
+
+async function fetchAllPlayers() {
+  try {
+    const players = await getGameApiRequest(
+      "players/all",
+      {hello: "world"}
+    );
+
+    return players.data;
+
+  } catch(e) {
+    console.log('Request to fetch players failed, e:', e);
+  }
+}
+
+/**
+ *
+ **/
+async function fetchOngoingGames() {
+  try {
+    const ongoingGames = await getGameApiRequest(
+      "game/ongoingGames",
+      {hello: "world"}
+    );
+
+    return ongoingGames.data; // Array with IDs for all ongoing games
+
+  } catch(e) {
+    console.log('Request to fetch ongoinggames failed, e:', e);
+  }
+}
+
+/**
+ *
+ **/
+async function fetchWaitingGames() {
+  try {
+    const waitingGames = await getGameApiRequest(
+      "game/waitingGames",
+      {hello: "world"}
+    );
+
+    return waitingGames.data; // Array with IDs for all ongoing games
+
+  } catch(e) {
+    console.log('Request to fetch ongoinggames failed, e:', e);
+  }
+}
+
+/**
+ *
+ **/
+async function fetchGameOverview(ID) {
+
+  try {
+    const overview = await getGameApiRequest(
+      "game/overview",
+      {gameID: ID}
+    );
+
+    return overview.data.data; // Array with IDs for all ongoing games
+
+  } catch(e) {
+    console.log('Request to fetch ongoinggames failed, e:', e);
+  }
+
+}
+
+/**
+ *
+ **/
+async function fetchGameMembers(ID) {
+  try {
+    const response = await getGameApiRequest(
+      "game/members",
+      {gameID: ID}
+    );
+
+    return response.data.data.members; // Array with IDs for all ongoing games
+
+  } catch(e) {
+    console.log('Request to fetch ongoinggames failed, e:', e);
+  }
+}
+
+/**
+ *
+ **/
+/* function fetchAllGameData(ID) {
+ * 
+ *   try {
+ * 
+ *     return Promise
+ *       .all([fetchGameOverview(ID), fetchGameMembers(ID)])
+ *       .then(([overview, members]) => {
+ *         return {
+ *           overview, members
+ *         };
+ *       });
+ * 
+ *   } catch(e) {
+ *     console.log('Request to fetch all game data failed, e:', e);
+ *   }
+ * 
+ * } */
+
+/**
+ *
+ **/
+async function fetchAllGameDataforIDs(IDs) {
+  try {
+
+    const result = await Promise
+      .all(IDs.map(fetchGameOverview));
+
+    return result;
+
+  } catch(e) {
+    console.log('Request to fetch all game data by IDs failed, e:', e);
+  }
+
+}
+
+async function fetchWaitingPlayers() {
+
+  // POST
+  /* game/create | gameName
+   * game/join  | 'gameID', 'userID' */
+
+  try {
+    const players = await getGameApiRequest(
+      "players/waiting",
+      {hello: "world"}
+    );
+
+    return players.data;
+
+  } catch(e) {
+    console.log('Request to fetch players failed, e:', e);
+  }
+}
+
+const PlayerList = (props) => {
+
+  const [players, setPlayers] = React.useState([]);
+
+  React.useEffect(() => {
+    fetchAllPlayers()
+      .then(responsePlayers => {
+        setPlayers(responsePlayers);
+      })
+  }, []); // TODO only on mount for now
+
+  console.log("players on playerList:", players);
+
+  return (
+    <section
+      style={{
+        padding: "1rem",
+        backgroundColor: "rgb(47,50,67)"
+      }}
+    >
+
+      <Typography
+        sx={{color: grayColor, textTransform: "uppercase"}}
+        variant="h5"
+        paragraph>
+        All Players
+      </Typography>
+
+      <Grid
+        container
+        spacing={2}
+      >
+        {players.map(player => (
+          <Grid
+            key={player.id}
+            item>
+            <Card sx={{position: "relative"}}>
+              <>
+              {player.tempBan && (
+                <Tooltip title="This user has a temporary ban.">
+                  <EndIcon sx={{position: "absolute", color: "red", top: "0.5rem", right: "0.5rem"}} />
+                </Tooltip>
+              )}
+              <CardHeader
+                avatar={
+                  <Avatar
+                    sx={{ backgroundColor: player.type === "User" ? purpleColor : redColor}}
+                  >
+                    {player.id}
+                  </Avatar>
+                }
+                title={player.username}
+                subheader={`Games played: ${player.gameCount}`}
+              />
+              </>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <br />
+
+    </section>
+  );
+}
 
 const Navigation = (props) => {
   return (
@@ -140,8 +385,6 @@ const Game = ({game, displayProperties}) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
-  /* const gameProperties = Object.keys(game); */
-
   return (
     <Box
       sx={{
@@ -194,7 +437,7 @@ const Game = ({game, displayProperties}) => {
             >
               End
             </BaseButton>
-        </>
+            </>
           ) : (
             <>
               <IconButton sx={{
@@ -262,6 +505,35 @@ const GamePlayerBox = ({gameName}) => {
 }
 
 const GameAssignment = (props) => {
+
+  const [unassignedPlayers, setUnassignedPlayers] = React.useState([]);
+
+  React.useEffect(() => {
+    fetchWaitingPlayers()
+      .then(response => {
+        setUnassignedPlayers(response);
+      })
+  }, []); // TODO on mount only for now
+
+  // TODO waitingGames result unused for now
+  const [waitingGames, setWaitingGames] = React.useState([]);
+
+  React.useEffect(() => {
+    fetchWaitingGames() // IDs
+      .then(waitingGameIDs => {
+
+        /* console.log('waiting game IDs', waitingGameIDs); */
+
+        /* fetchAllGameDataforIDs(waitingGameIDs)
+         *   .then(games => {
+         *     setWaitingGames(games);
+         *   }); */
+
+        // TODO for each  waiting game ID, fetch game data:
+        /* setUnassignedPlayers(response); */
+      })
+  }, []); // TODO on mount only for now
+
   return (
     <section
       style={{
@@ -289,7 +561,7 @@ const GameAssignment = (props) => {
             variant="h6"
             gutterBottom
           >
-            Available Players
+            Waiting Players
           </Typography>
 
           <Paper sx={{ width: 200, height: 230, overflow: 'auto' }}>
@@ -310,7 +582,7 @@ const GameAssignment = (props) => {
         </Box>
 
         <ArrowRightIcon sx={{
-          color: "white",
+          color: "#514966",
           alignSelf: "center",
           marginTop: "3rem",
           fontSize: "4rem"
@@ -333,6 +605,7 @@ const GameAssignment = (props) => {
             container
             spacing={2}
           >
+            {/* TODO loop through games in state */}
             <Grid item>
               <GamePlayerBox
                 gameId="1"
@@ -361,14 +634,34 @@ const GameAssignment = (props) => {
   );
 }
 
+const gamePropertyMappings = {
+  processStatus: "status",
+  gameID: "id"
+};
+
 const GameList = (props) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
-  const desktopOnlyProperties = ["id", "gameOver", "phase"];
+  const desktopOnlyProperties = ["gameID", "gameOver", "phase"];
 
-  const gamePropertiesToDisplay = Object
-    .keys(games[0])
+  const [ongoingGames, setOngoingGames] = React.useState([]);
+
+  React.useEffect(() => {
+    fetchOngoingGames()
+    .then(ongoingGamesIDs => {
+      // IDs
+      fetchAllGameDataforIDs(ongoingGamesIDs)
+      .then(games => {
+        setOngoingGames(games);
+      });
+    });
+
+  }, []);
+
+  /* console.log('ongoing games', ongoingGames); */
+
+  const gamePropertiesToDisplay = ["gameID", "name", "turn", "processStatus", "phase", "gameOver"]
     .filter(property => {
       if (!isDesktop && desktopOnlyProperties.includes(property)) {
         return false;
@@ -390,19 +683,13 @@ const GameList = (props) => {
         Ongoing Games
       </Typography>
 
-      {/* display: "table",
-          width: "100%" */}
-      <Box
-        component="article"
-        sx={{
-        }}
-      >
+      <Box component="article">
         <Box component="ul"
           sx={{
-          p: 1,
-          display: "flex",
-          justifyContent: "start",
-          alignItems: "center"
+            p: 1,
+            display: "flex",
+            justifyContent: "start",
+            alignItems: "center"
         }}>
           {gamePropertiesToDisplay
             .map(propertyName => (
@@ -412,7 +699,7 @@ const GameList = (props) => {
                 <Typography sx={{
                   fontWeight: "bold"
                 }}>
-                  {propertyName}
+                  {gamePropertyMappings[propertyName] || propertyName}
                 </Typography>
               </li>
           ))}
@@ -426,12 +713,14 @@ const GameList = (props) => {
             </Typography>
           </li>
         </Box>
-        {games.map(game => (
+        <div style={{maxHeight: "15rem", overflowY: "auto"}}>
+        {ongoingGames.map(game => (
           <Game
-            key={game.id}
+            key={game.gameID}
             game={game}
             displayProperties={gamePropertiesToDisplay} />
         ))}
+        </div>
       </Box>
     </section>
   );
@@ -509,23 +798,7 @@ const TournamentDashboard = (props) => {
 
               <br />
 
-              <section
-                style={{
-                  padding: "1rem",
-                  backgroundColor: "rgb(47,50,67)"
-                }}
-              >
-
-                <Typography
-                  sx={{color: grayColor, textTransform: "uppercase"}}
-                  variant="h5"
-                  paragraph>
-                  All Players
-                </Typography>
-
-                <p>Player here</p>
-
-              </section>
+              <PlayerList />
 
             </Box> {/* main */}
 
