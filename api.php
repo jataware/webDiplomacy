@@ -558,12 +558,14 @@ class WaitingPlayers extends ApiEntry {
 		
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
-			$toPush = [
-				"id"=> intval($ret[0]), 
+			
+      $toPush = [
+			"id"=> intval($ret[0]), 
 			"username" => $ret[1],
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
 			"gameCount" => intval($gameCount[0])];
+      
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
 		}
