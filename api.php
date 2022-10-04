@@ -638,19 +638,27 @@ class CreateGame extends ApiEntry
 {
 	public function __construct()
 	{
-		parent::__construct('game/create', 'GET', 'getStateOfAllGames', array('gameName'), true);
+		parent::__construct('game/create', 'GET', 'getStateOfAllGames', array('gameName', 'variantID'), true);
 	}
 	public function run($userID, $permissionIsExplicit)
 	{
 		global $DB;
 		$args = $this->getArgs();
+		error_log(print_r($args, true));
+
+		if (array_key_exists('variantID', $args)){
+			$variantID = $args['variantID'];
+		}
+		else{
+			$variantID = 1;
+		}
 
 		require_once(l_r('gamemaster/game.php')); //processGame = gamemaster/game.php
 
 		//libGameMaster::updatePhasePerYearCount(true);
 		//libGameMaster::updateReliabilityRating();
 		processGame::create(
-			15,
+			$variantID,
 			$args['gameName'],
 			'',
 			-1,
