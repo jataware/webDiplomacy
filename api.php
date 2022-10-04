@@ -546,7 +546,7 @@ class GetGamesStates extends ApiEntry {
 
 class WaitingPlayers extends ApiEntry {
 	public function __construct() {
-		parent::__construct('players/waitingplayers', 'GET', 'getStateOfAllGames', array(), false);
+		parent::__construct('players/waiting', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
