@@ -1,24 +1,22 @@
 import * as React from "react";
 import { styled } from "@mui/material/styles";
-import map from "lodash/map";
 import isEmpty from "lodash/isEmpty";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import random from "lodash/random";
 
 import Avatar from '@mui/material/Avatar';
+
+import Box from "@mui/material/Box";
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
-import CardContent from '@mui/material/CardContent';
-
 import Tooltip from '@mui/material/Tooltip';
+import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-import ListItemText from '@mui/material/ListItemText';
+/* import ListItemText from '@mui/material/ListItemText'; */
 import Paper from '@mui/material/Paper';
-import random from "lodash/random";
 import AddIcon from '@mui/icons-material/Add';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -26,11 +24,9 @@ import EyeIcon from '@mui/icons-material/RemoveRedEye';
 import EndIcon from '@mui/icons-material/DoDisturbOn';
 
 import {
-  postGameApiRequest,
+  postGameApiRequest, // TODO use to create games, assign players to games, as well as end games
   getGameApiRequest
 } from "./utils/api";
-
-/* import ApiRoute from "./enums/ApiRoute"; */
 
 import "./assets/css/AdminDashboard.css";
 
@@ -42,40 +38,6 @@ import unsplash1 from "./assets/waiting-room-backgrounds/unsplash1.jpg";
 const redColor = "rgb(236,93,98)";
 const grayColor = "rgb(202,210,245)";
 const purpleColor = "rgb(109, 97, 246)";
-
-const users = [
-  { id: 1, username: 'lonelyHippo', game: 'World' },
-  { id: 2, username: 'degradedLizard', game: 'is Awesome' },
-  { id: 3, username: 'happyPterodactyl', game: 'is Amazing' },
-];
-const games = [
-  { gameID: 1, name: "Hello", turn: 6, processStatus: "Not-processing", phase: "", gameOver: "Yes" },
-  { gameID: 2, name: "DataGridPro", turn: 0, processStatus: "Crashed", phase: "Pre-game", gameOver: null },
-  { gameID: 3, name: "MUI", turn: 0, processStatus: "Processing", phase: "Diplomacy", gameOver: null },
-];
-
-/* const userColumns = [
- *   {field: "username", headerName: "Username"},
- *   {field: "game", headerName: "Game Name"},
- * ]; */
-
-/* const gameColumns = [
- *   {field: "name", headerName: "Name", flex: 1 },
- *   {field: "turn", headerName: "Turn", width: 150},
- *   {field: "status", headerName: "Status", flex: 1},
- *   {field: "phase", headerName: "Phase", width: 150},
- * ]; */
-
-/* const unassignedPlayers = [
- *   {id: 1, username: 'lolaPlays'},
- *   {id: 2, username: 'happyPath1'},
- *   {id: 3, username: 'neoForever'},
- *   {id: 4, username: 'loremJitsu'},
- *   {id: 5, username: '007timesThree'},
- *   {id: 6, username: 'fifthElement'},
- *   {id: 7, username: 'silverCow'},
- *   {id: 8, username: 'rapidSilvester'},
- * ]; */
 
 const randomColors = [
   "rgb(233, 30, 99)",  // pink
@@ -456,12 +418,11 @@ const Game = ({game, displayProperties}) => {
   );
 }
 
-const GamePlayerBox = ({gameName}) => {
+const GamePlayerBox = ({gameId, gameName, players}) => {
 
   const color = React.useMemo(() => {return randomColors[random(randomColors.length - 1)]}, [gameName]);
 
-  const [players, setPlayers] = React.useState([`Player ${random(90)}`, `Player ${random(90)}`, `Player ${random(90)}`]);
-
+  const playersToDisplay = isEmpty(players) ? [{username: "<Empty>", userID: 0}] : players;
   return (
     <Box>
       <Typography
@@ -477,12 +438,12 @@ const GamePlayerBox = ({gameName}) => {
       </Typography>
       <Paper sx={{minWidth: "9rem"}}>
         <List>
-          {players.map(playerUsername => (
+          {playersToDisplay.map(player => (
             <ListItem
-              key={playerUsername}
+              key={player.userID}
               button
             >
-              {playerUsername}
+              {player.username}
             </ListItem>
           ))}
           <ListItem
@@ -522,15 +483,12 @@ const GameAssignment = (props) => {
     fetchWaitingGames() // IDs
       .then(waitingGameIDs => {
 
-        /* console.log('waiting game IDs', waitingGameIDs); */
+        /* console.logz('waitingGameIDs', waitingGameIDs) */
 
-        /* fetchAllGameDataforIDs(waitingGameIDs)
-         *   .then(games => {
-         *     setWaitingGames(games);
-         *   }); */
-
-        // TODO for each  waiting game ID, fetch game data:
-        /* setUnassignedPlayers(response); */
+        fetchAllGameDataforIDs(waitingGameIDs)
+          .then(games => {
+            setWaitingGames(games);
+          });
       })
   }, []); // TODO on mount only for now
 
@@ -577,6 +535,20 @@ const GameAssignment = (props) => {
                   {player.id} &nbsp; {player.username}
                 </ListItem>
               ))}
+                <ListItem
+                  role="listitem"
+                  button
+                >
+                  <div style={{
+                    height: "3rem",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}>
+                  Assign All
+                  </div>
+                </ListItem>
             </List>
           </Paper>
         </Box>
@@ -605,27 +577,15 @@ const GameAssignment = (props) => {
             container
             spacing={2}
           >
-            {/* TODO loop through games in state */}
-            <Grid item>
-              <GamePlayerBox
-                gameId="1"
-                gameName="Testing IT"
-              />
-            </Grid>
-
-            <Grid item>
-              <GamePlayerBox
-                gameId="2"
-                gameName="Yoga Tournament"
-              />
-            </Grid>
-
-            <Grid item>
-              <GamePlayerBox
-                gameId="3"
-                gameName="Weekend"
-              />
-            </Grid>
+            {waitingGames.map(gameItem => (
+              <Grid item>
+                <GamePlayerBox
+                  gameId={gameItem.gameID}
+                  gameName={gameItem.name}
+                  players={gameItem.members}
+                />
+              </Grid>
+            ))}
           </Grid>
         </Box>
       </Box>
