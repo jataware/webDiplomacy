@@ -574,6 +574,36 @@ class WaitingPlayers extends ApiEntry {
 	}
 }
 
+class AllPlayers extends ApiEntry {
+	public function __construct() {
+		parent::__construct('players/all', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		//$params['userID'] = (int)$params['userID'];
+		global $DB;
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id > 10;");
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+		
+		while ($ret){
+			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
+			$toPush = [
+				"id"=> intval($ret[0]), 
+			"username" => $ret[1],
+			"type" => $ret[2], 
+			"tempBan" => $ret[3],
+			"gameCount" => intval($gameCount[0])];
+			array_push($return_array, $toPush);
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+
+		$return_array = json_encode($return_array);
+		
+		return $return_array;
+	}
+}
+
 class WaitingGames extends ApiEntry {
 	public function __construct() {
 		parent::__construct('game/waitinggames', 'GET', 'getStateOfAllGames', array(), false);
@@ -687,6 +717,51 @@ class CreateGame extends ApiEntry
 		return "A new game has been created.";
 	}
 }
+
+class CancelGame extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('game/cancel', 'GET', 'getStateOfAllGames', array('gameID'), true);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB, $Game;
+		require_once(l_r('gamemaster/game.php'));
+		$args = $this->getArgs();
+		$gameID = (int)$args['gameID'];
+		$DB->sql_put("BEGIN");
+
+		$Variant=libVariant::loadFromGameID($gameID);
+		$Game = $Variant->processGame($gameID);
+		$Game->setCancelled();
+		$DB->sql_put("COMMIT");
+		return "Game Cancelled";
+	}
+}
+
+class DrawGame extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('game/draw', 'GET', 'getStateOfAllGames', array('gameID'), true);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB, $Game;
+		require_once(l_r('gamemaster/game.php'));
+		$args = $this->getArgs();
+		$gameID = (int)$args['gameID'];
+		$DB->sql_put("BEGIN");
+
+		$Variant=libVariant::loadFromGameID($gameID);
+		$Game = $Variant->processGame($gameID);
+		$Game->setDrawn();
+		$DB->sql_put("COMMIT");
+		return "Game Drawn";
+	}
+}
+
 class JoinGame extends ApiEntry
 {
     public function __construct()
@@ -1798,6 +1873,9 @@ try {
 	$api->load(new WaitingGames());
 	$api->load(new OngoingGames());
 	$api->load(new FinishedGames());
+	$api->load(new CancelGame());
+	$api->load(new DrawGame());
+	$api->load(new AllPlayers());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
