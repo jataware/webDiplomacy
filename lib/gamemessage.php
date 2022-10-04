@@ -147,6 +147,11 @@ class libGameMessage
                         gameID = ?", [$answer, $toCountryID, $fromCountryID, $timeSent, $gameID], "siiii");
         } elseif ($direction === "incoming") {
             $intAnswer = intval($answer);
+
+            if ($intAnswer === 2) {
+                $intAnswer = null;
+            }
+
             $result = $DB->sql_put_safe("UPDATE wD_GameMessages
                         SET suspectedIncomingDeception = ?
                       WHERE
