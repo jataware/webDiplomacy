@@ -644,7 +644,6 @@ class CreateGame extends ApiEntry
 	{
 		global $DB;
 		$args = $this->getArgs();
-		error_log(print_r($args, true));
 
 		if (array_key_exists('variantID', $args)){
 			$variantID = $args['variantID'];
