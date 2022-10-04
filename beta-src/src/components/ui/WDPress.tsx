@@ -29,11 +29,14 @@ interface WDPressProps {
   allCountries: CountryTableData[];
 }
 
+const ALL_COUNTRY = "ALL";
+
 const WDPress: FC<WDPressProps> = function ({
   children,
   userCountry,
   allCountries,
 }): ReactElement {
+
   const dispatch = useAppDispatch();
 
   const [messageStack, setMessageStack] = useLocalStorageState("messageStack", {
@@ -127,17 +130,15 @@ const WDPress: FC<WDPressProps> = function ({
 
       const recipientCountryData = allCountries.find(country => country.countryID === countryIDSelected);
 
-      if (countryIDSelected > 0) { // Not sending to everyone; sending to specific 1:1 country
-        setLastMessageData({
-          gameID: gameID,
-          fromCountryID: userCountry.countryID,
-          fromCountry: userCountry.country,
-          toCountry: recipientCountryData.country,
-          toCountryID: recipientCountryData.countryID,
-          message
-        });
-        setResearchDialogOpen(true);
-      }
+      setLastMessageData({
+        gameID: gameID,
+        fromCountryID: userCountry.countryID,
+        fromCountry: userCountry.country,
+        toCountry: recipientCountryData?.country || ALL_COUNTRY, // Special constant
+        toCountryID: recipientCountryData?.countryID || 0,
+        message
+      });
+      setResearchDialogOpen(true);
     }
     const ms = { ...messageStack };
 
