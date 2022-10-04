@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=swap');
+
+html, body {
+  background-color: #fcfcfc;
+  box-sizing: border-box;
+  margin: 0;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-style: normal;
+
+  @media only screen and (max-width: 450px) {
+    font-size: 100%;
+  }
+  @media only screen and (max-width: 700px) {
+    font-size: 95%;
+  }
+  @media only screen and (min-width: 1000px) {
+    font-size: 115%;
+  }
+  @media only screen and (min-width: 1600px) {
+    font-size: 140%;
+  }
+
+  overflowX: hidden;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+p {
+  margin: auto;
+  padding: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+h1,h2,h3,h4,h5 {
+  margin: unset;
+}
