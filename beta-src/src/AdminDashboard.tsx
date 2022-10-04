@@ -85,7 +85,7 @@ function endpointFactory(path, paramKey) {
   }
 }
 
-// TODO probably move these fetch definitions to their own files
+// TODO Move these fetch definitions to their own files
 
 async function fetchAllPlayers() {
   try {
@@ -170,27 +170,6 @@ async function fetchGameMembers(ID) {
     console.log('Request to fetch ongoinggames failed, e:', e);
   }
 }
-
-/**
- *
- **/
-/* function fetchAllGameData(ID) {
- * 
- *   try {
- * 
- *     return Promise
- *       .all([fetchGameOverview(ID), fetchGameMembers(ID)])
- *       .then(([overview, members]) => {
- *         return {
- *           overview, members
- *         };
- *       });
- * 
- *   } catch(e) {
- *     console.log('Request to fetch all game data failed, e:', e);
- *   }
- * 
- * } */
 
 /**
  *
@@ -446,19 +425,6 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
               {player.username}
             </ListItem>
           ))}
-          <ListItem
-            button
-          >
-            <div style={{
-              height: "3rem",
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center"
-            }}>
-              <AddIcon />
-            </div>
-          </ListItem>
         </List>
       </Paper>
     </Box>
@@ -476,14 +442,11 @@ const GameAssignment = (props) => {
       })
   }, []); // TODO on mount only for now
 
-  // TODO waitingGames result unused for now
   const [waitingGames, setWaitingGames] = React.useState([]);
 
   React.useEffect(() => {
     fetchWaitingGames() // IDs
       .then(waitingGameIDs => {
-
-        /* console.logz('waitingGameIDs', waitingGameIDs) */
 
         fetchAllGameDataforIDs(waitingGameIDs)
           .then(games => {
@@ -544,7 +507,8 @@ const GameAssignment = (props) => {
                     width: "100%",
                     display: "flex",
                     justifyContent: "center",
-                    alignItems: "center"
+                    alignItems: "center",
+                    fontWeight: "bold"
                   }}>
                   Assign All
                   </div>
@@ -578,7 +542,10 @@ const GameAssignment = (props) => {
             spacing={2}
           >
             {waitingGames.map(gameItem => (
-              <Grid item>
+              <Grid
+                item
+                key={gameItem.gameID}
+              >
                 <GamePlayerBox
                   gameId={gameItem.gameID}
                   gameName={gameItem.name}
@@ -618,8 +585,6 @@ const GameList = (props) => {
     });
 
   }, []);
-
-  /* console.log('ongoing games', ongoingGames); */
 
   const gamePropertiesToDisplay = ["gameID", "name", "turn", "processStatus", "phase", "gameOver"]
     .filter(property => {
