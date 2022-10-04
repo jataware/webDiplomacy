@@ -607,6 +607,172 @@ class GetGamesStates extends ApiEntry {
 	}
 }
 
+class WaitingPlayers extends ApiEntry {
+	public function __construct() {
+		parent::__construct('players/waitingplayers', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		//$params['userID'] = (int)$params['userID'];
+		global $DB;
+		$tabl = $DB->sql_tabl("Select id from wD_Users where id not in (Select userID from wD_Members) and id > 10;");
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+		
+		while ($ret){
+			array_push($return_array, intval($ret[0]));
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+
+		$return_array = json_encode($return_array);
+		
+		return $return_array;
+	}
+}
+
+class WaitingGames extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/waitinggames', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		//$params['userID'] = (int)$params['userID'];
+		global $DB;
+		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Pre-game';");
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+		
+		while ($ret){
+			array_push($return_array, intval($ret[0]));
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+
+		$return_array = json_encode($return_array);
+		
+		return $return_array;
+	}
+}
+class OngoingGames extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/ongoinggames', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		//$params['userID'] = (int)$params['userID'];
+		global $DB;
+		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Diplomacy';");
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+		
+		while ($ret){
+			array_push($return_array, intval($ret[0]));
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+
+		$return_array = json_encode($return_array);
+		
+		return $return_array;
+	}
+}
+
+class FinishedGames extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/finishedgames', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		//$params['userID'] = (int)$params['userID'];
+		global $DB;
+		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Finished';");
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+		
+		while ($ret){
+			array_push($return_array, intval($ret[0]));
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+
+		$return_array = json_encode($return_array);
+		
+		return $return_array;
+	}
+}
+class CreateGame extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('game/create', 'GET', 'getStateOfAllGames', array('gameName', 'variantID'), true);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB;
+		$args = $this->getArgs();
+
+		if (array_key_exists('variantID', $args)){
+			$variantID = $args['variantID'];
+		}
+		else{
+			$variantID = 1;
+		}
+
+		require_once(l_r('gamemaster/game.php')); //processGame = gamemaster/game.php
+
+		//libGameMaster::updatePhasePerYearCount(true);
+		//libGameMaster::updateReliabilityRating();
+		processGame::create(
+			$variantID,
+			$args['gameName'],
+			'',
+			-1,
+			"Unranked",
+			1440,
+			10080,
+			5,
+			1,
+			100,
+			"no",
+			"NoPress",
+			"wait",
+			"draw-votes-hidden",
+			0,
+			5,
+			"Members"
+		);
+		$DB->sql_put("COMMIT");
+
+		return "A new game has been created.";
+	}
+}
+class JoinGame extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/join', 'GET', 'getStateOfAllGames', array('gameID', 'userID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+        //$params['userID'] = (int)$params['userID'];
+		global $DB, $Game;
+		
+		require_once(l_r('objects/game.php'));
+		$args = $this->getArgs();
+		$gameID = (int)$args['gameID'];
+		$Variant = libVariant::loadFromGameID((int)$gameID);
+		$Game=$Variant->Game($gameID);
+		// It is assumed this is being run within a transaction
+
+		$DB->sql_put("INSERT INTO wD_Members SET
+			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=0, orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
+
+		$Game->Members->load();
+
+		$DB->sql_put("COMMIT");
+
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		
+		return "done";
+    }
+}
 /**
  * API entry game/members
  * Retrieves member data related to a game. 
@@ -1686,6 +1852,12 @@ try {
 	$api->load(new GetMessages());
 	$api->load(new MessagesSeen());
 	$api->load(new MarkBackFromLeft());
+	$api->load(new JoinGame());
+	$api->load(new CreateGame());
+	$api->load(new WaitingPlayers());
+	$api->load(new WaitingGames());
+	$api->load(new OngoingGames());
+	$api->load(new FinishedGames());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
