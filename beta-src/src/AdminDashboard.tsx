@@ -2,6 +2,7 @@ import * as React from "react";
 import { styled } from "@mui/material/styles";
 import isEmpty from "lodash/isEmpty";
 import random from "lodash/random";
+import sortBy from "lodash/sortBy";
 
 import Avatar from '@mui/material/Avatar';
 
@@ -15,22 +16,18 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-/* import ListItemText from '@mui/material/ListItemText'; */
-import Paper from '@mui/material/Paper';
-import AddIcon from '@mui/icons-material/Add';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import EyeIcon from '@mui/icons-material/RemoveRedEye';
-import EndIcon from '@mui/icons-material/DoDisturbOn';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+import Paper from "@mui/material/Paper";
+import AddIcon from "@mui/icons-material/Add";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import EyeIcon from "@mui/icons-material/RemoveRedEye";
+import EndIcon from "@mui/icons-material/DoDisturbOn";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 
 import {
-  postGameApiRequest, // TODO use to create games, assign players to games, as well as end games
   getGameApiRequest
 } from "./utils/api";
 
@@ -212,6 +209,8 @@ const PlayerList = (props) => {
 
   const [players, setPlayers] = React.useState([]);
 
+  const isDesktop = useMediaQuery('(min-width:600px)');
+
   React.useEffect(() => {
     fetchAllPlayers()
       .then(responsePlayers => {
@@ -236,14 +235,17 @@ const PlayerList = (props) => {
 
       <Grid
         container
-        spacing={2}
+        spacing={1}
       >
         {players.map(player => (
           <Grid
             key={player.id}
+            sx={{
+              width: isDesktop ? "auto" : "100%"
+            }}
             item>
-            <Card sx={{position: "relative"}}>
-              <>
+            <Card>
+              <div>
               {player.tempBan && (
                 <Tooltip title="This user has a temporary ban.">
                   <EndIcon sx={{position: "absolute", color: "red", top: "0.5rem", right: "0.5rem"}} />
@@ -252,15 +254,17 @@ const PlayerList = (props) => {
               <CardHeader
                 avatar={
                   <Avatar
-                    sx={{ backgroundColor: player.type === "User" ? purpleColor : redColor}}
+                    sx={{
+                      backgroundColor: player.type === "User" ? purpleColor : redColor,
+                    }}
                   >
                     {player.id}
                   </Avatar>
                 }
                 title={player.username}
-                subheader={`Games played: ${player.gameCount}`}
+                subheader={`Games: ${player.gameCount}`}
               />
-              </>
+              </div>
             </Card>
           </Grid>
         ))}
@@ -345,7 +349,7 @@ const Game = ({game, displayProperties}) => {
         marginBottom: 1.5,
         cursor: "default",
         "&:hover": {
-          backgroundColor: "rgba(130,130,130,0.4)"
+          outline: "auto",
         },
         maxWidth: "100%",
         position: "relative",
@@ -355,14 +359,14 @@ const Game = ({game, displayProperties}) => {
       <ul style={{
         padding: "0 8px 8px 8px",
         display: "flex",
-        maxWidth: "100%",
-        borderBottom: "1px solid #474747",
+        maxWidth: "100%"
       }}>
 
         {loadingEndGame && (
           <div style={{
             position: "absolute",
             backgroundImage: "linear-gradient(to bottom right, rgba(70,73,84, 0.5), rgb(32,35,50), rgb(32,35,50))",
+            zIndex: 3,
             top: 0,
             bottom: 0,
             left: 0,
@@ -431,11 +435,15 @@ const Game = ({game, displayProperties}) => {
       </ul>
 
 
-      <div style={{display: "flex", alignItems: "center", height: "2rem", paddingLeft: 8, paddingRight: 8}}>
-        <Typography variant="h6" sx={{filter: "brightness(1.2)", color: purpleColor, display: "inline-block", marginRight: "0.75rem", fontSize: "14px", fontWeight: "bold"}}>
-          Members
-        </Typography>
-      {game.members.map(memberPlayer => (
+      <div style={{
+        backgroundColor: "rgba(38, 38, 38,0.5)",
+        display: "flex",
+        alignItems: "center",
+        height: "2rem",
+        paddingLeft: 8,
+        paddingRight: 8
+      }}>
+        {game.members.map(memberPlayer => (
           <Typography
             key={memberPlayer.userID}
             variant="caption"
@@ -509,10 +517,53 @@ const GameAssignment = (props) => {
       })
   }, []); // TODO on mount only for now
 
+  /**
+   * Currently assigns players in order.
+   **/
+  const assignAllPlayers = () => {
+    const sortedGames = sortBy(waitingGames, (i) => i.members.length ? -i.members.length : 0);
+
+    let gameIndex = 0;
+    let currGame = sortedGames[gameIndex];
+
+    if (!currGame) {
+      console.log("No more games to add players to.");
+      return;
+    }
+
+    let currMemberCount = currGame.members.length;
+
+    unassignedPlayers
+      .forEach(player => {
+
+        if (currMemberCount >= 7) {
+          gameIndex++;
+          currGame = sortedGames[gameIndex];
+          currMemberCount = currGame?.members?.length;
+        }
+
+        if (!currGame) {
+          console.log("No more games to add players to.");
+          return;
+        }
+
+        getGameApiRequest(
+          "game/join",
+          {
+            gameID: currGame.gameID,
+            userID: player.id
+          }
+        );
+
+        currMemberCount++;
+      });
+
+  };
+
   return (
     <section
-      style={{
-        padding: "1rem",
+    style={{
+      padding: "1rem",
         backgroundColor: "rgb(47,50,67)"
       }}
     >
@@ -539,8 +590,18 @@ const GameAssignment = (props) => {
             Waiting Players
           </Typography>
 
-          <Paper sx={{ width: 200, height: 230, overflow: 'auto' }}>
+          <Paper
+            sx={{
+              width: 200,
+              height: 250,
+              display: "flex",
+              flexDirection: "column"
+            }}>
             <List
+              sx={{
+                overflowY: "auto",
+                height: 210
+              }}
               component="div"
               role="list">
               {unassignedPlayers.map(player => (
@@ -553,22 +614,27 @@ const GameAssignment = (props) => {
                   {player.id} &nbsp; {player.username}
                 </ListItem>
               ))}
-                <ListItem
-                  role="listitem"
-                  button
-                >
-                  <div style={{
-                    height: "3rem",
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    fontWeight: "bold"
-                  }}>
-                  Assign All
-                  </div>
-                </ListItem>
             </List>
+              <Button
+                onClick={assignAllPlayers}
+                sx={{
+                  width: "100%",
+                  fontWeight: "bold",
+                  flex: 1,
+                  borderRadius: "1px",
+                  backgroundColor: purpleColor,
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: purpleColor,
+                    filter: "brightness(1.1)"
+                  }
+                }}
+                variant="contained"
+                color="info"
+              >
+                Assign All
+              </Button>
+
           </Paper>
         </Box>
 
@@ -706,6 +772,10 @@ const GameList = (props) => {
   );
 };
 
+
+/**
+ *
+ **/
 const TournamentDashboard = (props) => {
 
   const isDesktop = useMediaQuery('(min-width:600px)');
@@ -768,7 +838,11 @@ const TournamentDashboard = (props) => {
                 sx={{
                   borderRadius: 1,
                   backgroundColor: purpleColor,
-                  textTransform: "uppercase"
+                  textTransform: "uppercase",
+                  "&:hover": {
+                    backgroundColor: purpleColor,
+                    filter: "brightness(1.1)"
+                  }
                 }}
                 variant="contained"
                 color="info"
@@ -810,7 +884,7 @@ const TournamentDashboard = (props) => {
 
             <footer>
               <Typography variant="caption">
-                Nullam eu ante vel est convallis dignissim.  Fusce suscipit, wisi nec facilisis facilisis, est dui fermentum leo, quis tempor ligula erat quis odio.  Nunc porta vulputate tellus.  Nunc rutrum turpis sed pede.  Sed bibendum.  Aliquam posuere.  Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis varius mi purus non odio.  Pellentesque condimentum, magna ut suscipit hendrerit, ipsum augue ornare nulla, non luctus diam neque sit amet urna.  Curabitur vulputate vestibulum lorem.  Fusce sagittis, libero non molestie mollis, magna orci ultrices dolor, at vulputate neque nulla lacinia eros.  Sed id ligula quis est convallis tempor.  Curabitur lacinia pulvinar nibh.  Nam a sapien.
+                Hello World.
               </Typography>
             </footer>
           </div>
@@ -857,13 +931,7 @@ const TournamentDashboard = (props) => {
       </Dialog>
 
     </Box>
-
   );
 };
 
 export default TournamentDashboard;
-
-/* <DataGrid
- * autoHeight
- * rows={games}
- * columns={gameColumns} /> */
