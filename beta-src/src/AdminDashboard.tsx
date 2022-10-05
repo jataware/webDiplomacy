@@ -22,6 +22,12 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import EyeIcon from '@mui/icons-material/RemoveRedEye';
 import EndIcon from '@mui/icons-material/DoDisturbOn';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 import {
   postGameApiRequest, // TODO use to create games, assign players to games, as well as end games
@@ -189,11 +195,6 @@ async function fetchAllGameDataforIDs(IDs) {
 }
 
 async function fetchWaitingPlayers() {
-
-  // POST
-  /* game/create | gameName
-   * game/join  | 'gameID', 'userID' */
-
   try {
     const players = await getGameApiRequest(
       "players/waiting",
@@ -217,8 +218,6 @@ const PlayerList = (props) => {
         setPlayers(responsePlayers);
       })
   }, []); // TODO only on mount for now
-
-  console.log("players on playerList:", players);
 
   return (
     <section
@@ -326,21 +325,51 @@ const Game = ({game, displayProperties}) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
+  const [loadingEndGame, setLoadingEndGame] = React.useState(false);
+
+  const observeGame = () => {
+    const gameUrl = `?gameID=${game.gameID}`;
+    window.open(gameUrl, '_blank');
+  };
+
+  const endGame = () => {
+    setLoadingEndGame(true);
+    getGameApiRequest("game/draw", {gameID: game.gameID});
+  };
+
   return (
     <Box
       sx={{
         border: "1px solid lightgrey",
-        p: 1,
-        marginBottom: 1,
-        cursor: "pointer",
+        pt: 1,
+        marginBottom: 1.5,
+        cursor: "default",
         "&:hover": {
           backgroundColor: "rgba(130,130,130,0.4)"
         },
-        maxWidth: "100%"
+        maxWidth: "100%",
+        position: "relative",
       }}
     >
 
-      <ul style={{display: "flex", maxWidth: "100%"}}>
+      <ul style={{
+        padding: "0 8px 8px 8px",
+        display: "flex",
+        maxWidth: "100%",
+        borderBottom: "1px solid #474747",
+      }}>
+
+        {loadingEndGame && (
+          <div style={{
+            position: "absolute",
+            backgroundImage: "linear-gradient(to bottom right, rgba(70,73,84, 0.5), rgb(32,35,50), rgb(32,35,50))",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0
+          }} />
+        )}
+
         {displayProperties
           .map(gameProperty => (
             <li
@@ -367,12 +396,14 @@ const Game = ({game, displayProperties}) => {
           {isDesktop ? (
             <>
               <PurpleButton
+                onClick={observeGame}
                 variant="outlined"
               >
                 Observe
               </PurpleButton>
             &nbsp;&nbsp;
             <BaseButton
+              onClick={endGame}
               color="warning"
               variant="outlined"
             >
@@ -381,18 +412,40 @@ const Game = ({game, displayProperties}) => {
             </>
           ) : (
             <>
-              <IconButton sx={{
-                color: purpleColor
-              }}>
+              <IconButton
+                onClick={observeGame}
+                sx={{
+                  color: purpleColor
+                }}>
                 <EyeIcon />
               </IconButton>
-              <IconButton color="warning">
+              <IconButton
+                onClick={endGame}
+                color="warning"
+              >
                 <EndIcon />
               </IconButton>
             </>
           )}
         </Box>
       </ul>
+
+
+      <div style={{display: "flex", alignItems: "center", height: "2rem", paddingLeft: 8, paddingRight: 8}}>
+        <Typography variant="h6" sx={{filter: "brightness(1.2)", color: purpleColor, display: "inline-block", marginRight: "0.75rem", fontSize: "14px", fontWeight: "bold"}}>
+          Members
+        </Typography>
+      {game.members.map(memberPlayer => (
+          <Typography
+            key={memberPlayer.userID}
+            variant="caption"
+            style={{marginRight: "1rem", color: "gray"}}
+          >
+          {memberPlayer.username}
+          </Typography>
+      ))}
+      </div>
+
     </Box>
   );
 }
@@ -420,6 +473,7 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
           {playersToDisplay.map(player => (
             <ListItem
               key={player.userID}
+              sx={{cursor: "default"}}
               button
             >
               {player.username}
@@ -494,6 +548,7 @@ const GameAssignment = (props) => {
                   key={player.id}
                   role="listitem"
                   button
+                  sx={{cursor: "default"}}
                 >
                   {player.id} &nbsp; {player.username}
                 </ListItem>
@@ -652,6 +707,19 @@ const GameList = (props) => {
 };
 
 const TournamentDashboard = (props) => {
+
+  const isDesktop = useMediaQuery('(min-width:600px)');
+
+  const [creatingGame, setCreatingGame] = React.useState(false);
+  const startCreateGame = () => {setCreatingGame(true)};
+
+  const [inputGameName, setInputGameName] = React.useState("");
+
+  const handleCreateGame = () => {
+    getGameApiRequest("game/create", {gameName: inputGameName, variantID: 1}); // 1 for classic; 15 for  1v1
+    setCreatingGame(false);
+  }
+
   return (
     <Box sx={{display: "flex", flexDirection: "column", color: "white"}}>
 
@@ -681,32 +749,43 @@ const TournamentDashboard = (props) => {
           }}
         >
 
-          <Typography
-            gutterBottom
-            variant="h3"
-          >
-            Tournament Management
-          </Typography>
+          <Box className="header-nav-container" sx={{height: "7.5rem"}}>
+            <Typography
+              variant="h3"
+              sx={{maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}
+            >
+              Tournament Management
+            </Typography>
 
-          <Navigation />
+            <Box sx={{
+              display: "flex",
+              marginTop: 2.25
+            }}>
+              <Navigation />
 
-          <br />
-
-          <Button
-            sx={{
-              borderRadius: 1,
-              backgroundColor: purpleColor,
-              textTransform: "uppercase"
-            }}
-            variant="contained"
-            color="info"
-          >
-            Create Game
-          </Button>
+              <Button
+                onClick={startCreateGame}
+                sx={{
+                  borderRadius: 1,
+                  backgroundColor: purpleColor,
+                  textTransform: "uppercase"
+                }}
+                variant="contained"
+                color="info"
+              >
+                {isDesktop ? (
+                  <span>
+                    Create Game
+                  </span>
+                ) : (
+                  <AddIcon sx={{fontSize: "1.2rem", p: "none"}} />
+                )}
+              </Button>
+            </Box>
+          </Box>
 
           <div style={{
-            marginTop: "1.5rem",
-            height: "80%",
+            height: "calc(100% - 8rem)",
             overflowY: "auto"
           }}>
 
@@ -739,6 +818,43 @@ const TournamentDashboard = (props) => {
         </Box> {/* 90% height gradient container */}
 
       </div> {/* sticky-background */}
+
+
+      <Dialog
+        open={creatingGame}
+        onClose={() => { setCreatingGame(false); }}
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            maxWidth: 450,
+            border: "2px solid #000",
+            p: 1
+          },
+        }}
+      >
+        <DialogTitle>
+          Create Game
+        </DialogTitle>
+        <DialogContent>
+          <Box
+            sx={{display: "flex", p: 1, pl: 0, pr: 0}}
+          >
+            <TextField
+              sx={{minWidth: "15rem", marginRight: "0.75rem"}}
+              autoFocus
+              label="Game Name"
+              variant="outlined"
+              value={inputGameName}
+              onChange={e => setInputGameName(e.target.value)}
+            />
+            <PurpleButton
+              onClick={handleCreateGame}
+              variant="outlined">
+              Create
+            </PurpleButton>
+          </Box>
+        </DialogContent>
+      </Dialog>
 
     </Box>
 

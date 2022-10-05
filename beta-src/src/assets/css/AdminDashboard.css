@@ -1,32 +1,15 @@
-/* @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=swap'); */
 html, body {
   background-color: #fcfcfc;
   box-sizing: border-box;
   margin: 0;
-  /* font-family: "Source Sans Pro", sans-serif; */
   font-style: normal;
   overflowX: hidden;
 }
-/* @media only screen and (max-width: 450px) { */
-/*   html, body { */
-/*     font-size: 100%; */
-/*   } */
-/* } */
-/* @media only screen and (max-width: 700px) { */
-/*   html, body { */
-/*     font-size: 95%; */
-/*   } */
-/* } */
-/* @media only screen and (min-width: 1000px) { */
-/*   html, body { */
-/*     font-size: 115%; */
-/*   } */
-/* } */
-/* @media only screen and (min-width: 1600px) { */
-/*   html, body { */
-/*     font-size: 140%; */
-/*   } */
-/* } */
+@media only screen and (min-width: 1400px) {
+  html, body {
+    font-size: 120%;
+  }
+}
 
 *, *:before, *:after {
   box-sizing: inherit;
