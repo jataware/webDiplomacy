@@ -606,6 +606,63 @@ class GetGamesStates extends ApiEntry {
 		return $gameState->toJson();
 	}
 }
+class CreatePlayer extends ApiEntry {
+	public function __construct()
+    {
+        parent::__construct('player/create', 'GET', 'getStateOfAllGames', array('username'), false);
+    }
+
+	public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+		$uname = $this->getArgs()['username'];
+		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$uname."@gmail.com',0,'','','Yes',1154508102,'English',1154508104,0,0x00000000000000000000000000000000,'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,1.0,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
+		$DB->sql_put($sql);
+		$DB->sql_put("COMMIT");
+
+		return "Success";
+	}
+}
+class UncrashGame extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/uncrash', 'GET', 'getStateOfAllGames', array('gameID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+        global $DB;
+		$args = $this->getArgs();
+		$gameID = $args['gameID'];
+        require_once(l_r('gamemaster/game.php'));
+        $DB->sql_put("UPDATE wD_Games SET processStatus = 'Not-processing', processTime = ".time()." + 60*phaseMinutes, pauseTimeRemaining=NULL WHERE id = ".$gameID);
+        $DB->sql_put("COMMIT");
+
+        return "Success";
+    }
+}
+
+class AbandonCrashedGame extends ApiEntry 
+{
+    public function __construct()
+    {
+        parent::__construct('game/abandon', 'GET', 'getStateOfAllGames', array('gameID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+        global $DB;
+		$args = $this->getArgs();
+		$gameID = $args['gameID'];
+        require_once(l_r('gamemaster/game.php'));
+		$Variant=libVariant::loadFromGameID($gameID);
+		$Game = $Variant->processGame($gameID);
+		$Game->setDrawn();
+		$DB->sql_put("COMMIT");
+        return "Success";
+        
+    }
+}
+
 
 class WaitingPlayers extends ApiEntry {
 	public function __construct() {
@@ -614,7 +671,7 @@ class WaitingPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members) and id > 10;");
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status != 'Playing') and id > 10;");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
@@ -667,7 +724,7 @@ class AllPlayers extends ApiEntry {
 		
 		return $return_array;
 	}
-}
+}	
 
 class WaitingGames extends ApiEntry {
 	public function __construct() {
@@ -1945,6 +2002,10 @@ try {
 	$api->load(new CancelGame());
 	$api->load(new DrawGame());
 	$api->load(new AllPlayers());
+	$api->load(new CreatePlayer());
+	$api->load(new UncrashGame());
+	$api->load(new AbandonCrashedGame());
+
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
