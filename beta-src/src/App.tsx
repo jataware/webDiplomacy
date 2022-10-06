@@ -5,7 +5,7 @@ import WDLobby from "./components/ui/WDLobby";
 import { loadGame } from "./state/game/game-api-slice";
 import { useAppDispatch, useAppSelector } from "./state/hooks";
 import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
-import TournamentDashboard from './AdminDashboard';
+import TournamentDashboard from './Tournament/Dashboard';
 
 const App: React.FC = function (): React.ReactElement {
 
