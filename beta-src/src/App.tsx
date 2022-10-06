@@ -6,14 +6,29 @@ import WDLobby from "./components/ui/WDLobby";
 import { loadGame } from "./state/game/game-api-slice";
 import { useAppDispatch, useAppSelector } from "./state/hooks";
 import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
+import TournamentDashboard from './Tournament/Dashboard';
 
 const App: React.FC = function (): React.ReactElement {
 
   const urlParams = new URLSearchParams(window.location.search);
+
   const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
 
   console.log('currentGameID', currentGameID);
+
+  const adminDashboard = urlParams.get("admin");
+
+  if (adminDashboard) {
+    return (
+      <div>
+        {/* The following line prevents the UI from being scaled down when the viewport is small.
+            That leads to a very bad experience for this UI, with part of the map cut off. */}
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
+        <TournamentDashboard />
+      </div>
+    )
+  }
 
   const [fetchedGames, setFetchedGames] = React.useState(false);
 

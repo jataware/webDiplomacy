@@ -1,0 +1,41 @@
+html, body {
+  background-color: #fcfcfc;
+  box-sizing: border-box;
+  margin: 0;
+  font-style: normal;
+  overflowX: hidden;
+}
+@media only screen and (min-width: 1400px) {
+  html, body {
+    font-size: 140%;
+  }
+}
+@media only screen and (min-width: 2100px) {
+  html, body {
+    font-size: 150%;
+  }
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+p {
+  margin: auto;
+  padding: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+h1, h2, h3, h4, h5 {
+  margin: unset;
+}
+
+/*# sourceMappingURL=AdminDashboard.css.map */
