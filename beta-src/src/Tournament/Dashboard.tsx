@@ -244,7 +244,7 @@ const TournamentDashboard = (props) => {
 
             <footer>
               <Typography variant="caption">
-                Hello World.
+                Diplomacy Dashboard.
               </Typography>
             </footer>
           </div>

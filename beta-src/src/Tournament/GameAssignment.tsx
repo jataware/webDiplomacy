@@ -29,8 +29,6 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
 
   const playersToDisplay = isEmpty(players) ? [{username: "<Empty>", userID: 0}] : players;
 
-  console.log(gameId, gameName, players);
-
   return (
     <Box>
       <Typography
@@ -76,10 +74,6 @@ const GameAssignment = (props) => {
   }, []); // TODO on mount only for now
 
   const [waitingGames, setWaitingGames] = React.useState([]);
-
-  console.log("unassignedPlayers", unassignedPlayers);
-
-  console.log("waitingGames", waitingGames);
 
   React.useEffect(() => {
     fetchWaitingGames() // IDs
@@ -158,7 +152,7 @@ const GameAssignment = (props) => {
           <Typography
             sx={{
               color: grayColor,
-              marginTop: 2
+              marginTop: 2,
             }}
             variant="h6"
             gutterBottom
@@ -193,6 +187,7 @@ const GameAssignment = (props) => {
             </List>
               <Button
                 onClick={assignAllPlayers}
+                disabled={isEmpty(unassignedPlayers)}
                 sx={{
                   width: "100%",
                   fontWeight: "bold",
@@ -209,6 +204,12 @@ const GameAssignment = (props) => {
                 color="info"
               >
                 Assign All
+                &nbsp;
+                <span
+                  style={{fontSize: "0.5rem"}}
+                >
+                  ({unassignedPlayers.length})
+                </span>
               </Button>
 
           </Paper>

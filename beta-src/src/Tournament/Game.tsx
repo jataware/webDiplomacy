@@ -17,7 +17,7 @@ import { BaseButton, PurpleButton, purpleColor } from ".";
 /**
  *
  **/
-const Game = ({game, displayProperties, style}) => {
+const Game = ({game, displayProperties, style, hideActions}) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
@@ -82,49 +82,51 @@ const Game = ({game, displayProperties, style}) => {
               </Typography>
             </li>
         ))}
-        <Box
-          component="li"
-          sx={(theme) => ({
-            listStyle: "none",
-            display: "inherit",
-            width: isDesktop ? "9rem" : "6rem",
-          })}
-        >
-          {isDesktop ? (
-            <>
-              <PurpleButton
-                onClick={observeGame}
-                variant="outlined"
-              >
-                Observe
-              </PurpleButton>
-            &nbsp;&nbsp;
-            <BaseButton
-              onClick={endGame}
-              color="warning"
-              variant="outlined"
-            >
-              End
-            </BaseButton>
-            </>
-          ) : (
-            <>
-              <IconButton
-                onClick={observeGame}
-                sx={{
-                  color: purpleColor
-                }}>
-                <EyeIcon />
-              </IconButton>
-              <IconButton
+        {!hideActions && (
+          <Box
+            component="li"
+            sx={(theme) => ({
+              listStyle: "none",
+              display: "inherit",
+              width: isDesktop ? "9rem" : "6rem",
+            })}
+          >
+            {isDesktop ? (
+              <>
+                <PurpleButton
+                  onClick={observeGame}
+                  variant="outlined"
+                >
+                  Observe
+                </PurpleButton>
+              &nbsp;&nbsp;
+              <BaseButton
                 onClick={endGame}
                 color="warning"
+                variant="outlined"
               >
-                <EndIcon />
-              </IconButton>
-            </>
-          )}
-        </Box>
+                End
+              </BaseButton>
+              </>
+            ) : (
+              <>
+                <IconButton
+                  onClick={observeGame}
+                  sx={{
+                    color: purpleColor
+                  }}>
+                  <EyeIcon />
+                </IconButton>
+                <IconButton
+                  onClick={endGame}
+                  color="warning"
+                >
+                  <EndIcon />
+                </IconButton>
+              </>
+            )}
+          </Box>
+        )}
       </ul>
 
 

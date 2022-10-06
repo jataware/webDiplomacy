@@ -1,36 +1,11 @@
 import * as React from "react";
 import { styled } from "@mui/material/styles";
 import isEmpty from "lodash/isEmpty";
-import random from "lodash/random";
-import sortBy from "lodash/sortBy";
 
-import Avatar from '@mui/material/Avatar';
 
 import Box from "@mui/material/Box";
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Paper from "@mui/material/Paper";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import EyeIcon from "@mui/icons-material/RemoveRedEye";
-import EndIcon from "@mui/icons-material/DoDisturbOn";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-
-import {
-  getGameApiRequest
-} from "../utils/api";
-
 import { grayColor } from ".";
 import { fetchAllGameDataforIDs, fetchOngoingGames } from "./endpoints";
 import Game from "./Game";
@@ -43,7 +18,7 @@ const gamePropertyMappings = {
 /**
  * TODO wrapper that calls game type, and this one receives as props
  **/
-export const GameList = ({title, games}) => {
+export const GameList = ({title, games, hideActions=false}) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
@@ -71,6 +46,7 @@ export const GameList = ({title, games}) => {
         {title}
       </Typography>
 
+      {!isEmpty(games) ? (
       <Box component="article">
         <Box component="ul"
           sx={{
@@ -91,31 +67,41 @@ export const GameList = ({title, games}) => {
                 </Typography>
               </li>
           ))}
-          <li
-            style={{textTransform: "uppercase", width: "8rem"}}
-          >
-            <Typography sx={{
-              fontWeight: "bold"
-            }}>
-              Actions
-            </Typography>
-          </li>
+          {!hideActions && (
+            <li
+              style={{textTransform: "uppercase", width: "8rem"}}
+            >
+              <Typography sx={{
+                fontWeight: "bold"
+              }}>
+                Actions
+              </Typography>
+            </li>
+          )}
         </Box>
         <div
           style={{
+            marginTop: 2,
             maxHeight: "15rem",
             overflowY: "auto",
           }}
         >
           {games.map((game, idx) => (
             <Game
-              style={{backgroundColor: idx % 2 === 0 ? "#272728" : "#282c3b" }}
+              style={{backgroundColor: idx % 2 === 0 ? "#272728ab" : "#282c3b" }}
               key={game.gameID}
               game={game}
-              displayProperties={gamePropertiesToDisplay} />
+              displayProperties={gamePropertiesToDisplay}
+              hideActions={hideActions}
+            />
           ))}
         </div>
       </Box>
+      ) : (
+        <Typography variant="body1">
+          {`There are no ${title}.`}
+        </Typography>
+      )}
     </section>
   );
 };

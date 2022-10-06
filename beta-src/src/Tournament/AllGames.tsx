@@ -53,17 +53,15 @@ const AllGames = (props) => {
 
     getGameApiRequest("game/crashedgames", {hello: "word"})
       .then(ids => {
-        // IDs
-        fetchAllGameDataforIDs(ids)
+        fetchAllGameDataforIDs(ids.data)
           .then(games => {
             setCrashedGames(games);
           });
       });
 
     getGameApiRequest("game/finishedgames", {hello: "word"})
-      .then(id => {
-        // IDs
-        fetchAllGameDataforIDs(ids)
+      .then(ids => {
+        fetchAllGameDataforIDs(ids.data)
           .then(games => {
             setFinishedGames(games);
           });
@@ -72,16 +70,24 @@ const AllGames = (props) => {
   }, []); // TODO only on mount for now
 
   return (
-    <GameList
-      title="Crashed Games"
-      games={crashedGames}
-    />
-    <br />
-    <GameList
-      title="Finished Games"
-      games={finishedGames}
-    />
+    <div>
+
+      <GameList
+        title="Crashed Games"
+        games={crashedGames}
+      />
+
+      <br />
+
+      <GameList
+        title="Finished Games"
+        games={finishedGames}
+        hideActions
+      />
+
+    </div>
   );
 }
 
 export default AllGames;
+
