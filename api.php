@@ -623,6 +623,29 @@ class CreatePlayer extends ApiEntry {
 		return "Success";
 	}
 }
+
+class CrashedGames extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/crashedgames', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		//$params['userID'] = (int)$params['userID'];
+		global $DB;
+		$tabl = $DB->sql_tabl("Select id from wD_Games where processStatus = 'Crashed';");
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+		
+		while ($ret){
+			array_push($return_array, intval($ret[0]));
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+
+		$return_array = json_encode($return_array);
+		
+		return $return_array;
+	}
+}
 class UncrashGame extends ApiEntry
 {
     public function __construct()
@@ -2005,6 +2028,7 @@ try {
 	$api->load(new CreatePlayer());
 	$api->load(new UncrashGame());
 	$api->load(new AbandonCrashedGame());
+	$api->load(new CrashedGames());
 
 
 	$jsonEncodedResponse = $api->run();
