@@ -67,35 +67,36 @@ const PlayerList = (props) => {
 
       <Grid
         container
-        spacing={1}
+        spacing={2}
       >
         {players.map(player => (
           <Grid
             key={player.id}
             sx={{
-              width: isDesktop ? "auto" : "100%"
+              width: isDesktop ? "13rem" : "100%",
             }}
             item>
             <Card>
               <div>
-              {player.tempBan && (
-                <Tooltip title="This user has a temporary ban.">
-                  <EndIcon sx={{position: "absolute", color: "red", top: "0.5rem", right: "0.5rem"}} />
-                </Tooltip>
-              )}
-              <CardHeader
-                avatar={
-                  <Avatar
-                    sx={{
-                      backgroundColor: player.type === "User" ? purpleColor : redColor,
-                    }}
-                  >
-                    {player.id}
-                  </Avatar>
-                }
-                title={player.username}
-                subheader={`Games: ${player.gameCount}`}
-              />
+                {player.tempBan && (
+                  <Tooltip title="This user has a temporary ban.">
+                    <EndIcon sx={{position: "absolute", color: "red", top: "0.5rem", right: "0.5rem"}} />
+                  </Tooltip>
+                )}
+                <CardHeader
+                  avatar={
+                    <Avatar
+                      sx={{
+                        backgroundColor: player.type === "User" ? "rgb(152 138 235)" : redColor,
+                        fontSize: "1rem"
+                      }}
+                    >
+                      {player.gameCount}
+                    </Avatar>
+                  }
+                  title={player.username}
+                  subheader={`ID: ${player.id}`}
+                />
               </div>
             </Card>
           </Grid>

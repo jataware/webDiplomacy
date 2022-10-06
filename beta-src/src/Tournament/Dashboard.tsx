@@ -13,8 +13,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 
 import "../assets/css/AdminDashboard.css";
 
-/* import Tabs from '@mui/material/Tabs';
- * import Tab from '@mui/material/Tab'; */
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 import unsplash1 from "../assets/waiting-room-backgrounds/unsplash1.jpg";
 
@@ -25,14 +25,41 @@ import {
 import { PurpleButton, purpleColor } from ".";
 
 import GameAssignment from "./GameAssignment";
-import GameList from "./GameList";
+import { OngoingGames } from "./GameList";
 import PlayerList from "./PlayerList";
+import AllGames from "./AllGames";
 
+
+const DashboardTab = styled(Tab)`
+  border-radius: 1px;
+  text-transform: uppercase;
+  color: white;
+
+  &:hover {
+    backgroundColor: rgba(250,250,250,0.5);
+  }
+`;
 
 /**
  *
  **/
-const Navigation = (props) => {
+const TabUnderline = () => (
+  <Box sx={{
+    position: "absolute",
+    bottom: 0,
+    zIndex: 2,
+    left: 0,
+    right: 0,
+    top: 0,
+    borderBottom: `2px solid ${purpleColor}` }} />
+);
+
+/**
+ *
+ **/
+const Navigation = ({selectedTab, setSelectedTab}) => {
+
+
   return (
     <nav>
       <Box
@@ -45,34 +72,48 @@ const Navigation = (props) => {
         }}>
         <li>
           <Button
+            onClick={() => setSelectedTab(0)}
             color="secondary"
             sx={{
               borderRadius: 1,
-              textTransform: "uppercase"
+              textTransform: "uppercase",
+              position: "relative"
             }}
           >
+            {selectedTab === 0 && (
+              <TabUnderline />
+            )}
+
             Assign
           </Button>
         </li>
         <li>
           <Button
+            onClick={() => setSelectedTab(1)}
             color="secondary"
             sx={{
               borderRadius: 1,
               textTransform: "uppercase"
             }}
           >
+            {selectedTab === 1 && (
+              <TabUnderline />
+            )}
             Games
           </Button>
         </li>
         <li>
           <Button
+            onClick={() => setSelectedTab(2)}
             color="secondary"
             sx={{
               borderRadius: 1,
               textTransform: "uppercase"
             }}
           >
+            {selectedTab === 2 && (
+              <TabUnderline />
+            )}
             Players
           </Button>
         </li>
@@ -89,6 +130,9 @@ const TournamentDashboard = (props) => {
   const isDesktop = useMediaQuery('(min-width:600px)');
 
   const [creatingGame, setCreatingGame] = React.useState(false);
+
+  const [selectedTab, setSelectedTab] = React.useState(0);
+
   const startCreateGame = () => {setCreatingGame(true)};
 
   const [inputGameName, setInputGameName] = React.useState("");
@@ -121,14 +165,14 @@ const TournamentDashboard = (props) => {
         <Box
           sx={{
             width: "90%",
-            padding: "2rem",
+            padding: "1.5rem 2rem",
             backgroundImage: "linear-gradient(to bottom, rgba(70,73,84, 0.5), rgb(32,35,50), rgb(32,35,50), rgb(32,35,50))",
             height: "92%",
             display: "block"
           }}
         >
 
-          <Box className="header-nav-container" sx={{height: "7.5rem"}}>
+          <Box className="header-nav-container" sx={{height: "6.7rem"}}>
             <Typography
               variant="h3"
               sx={{maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}
@@ -138,10 +182,12 @@ const TournamentDashboard = (props) => {
 
             <Box sx={{
               display: "flex",
-              marginTop: 2.25
+              marginTop: 1.5,
             }}>
-              <Navigation />
-
+              <Navigation
+                selectedTab={selectedTab}
+                setSelectedTab={setSelectedTab}
+              />
               <Button
                 onClick={startCreateGame}
                 sx={{
@@ -176,15 +222,21 @@ const TournamentDashboard = (props) => {
               component="main"
             >
 
-              <GameAssignment />
+              {selectedTab === 0 && (
+                <>
+                  <GameAssignment />
+                  <br />
+                  <OngoingGames />
+                </>
+              )}
 
-              <br />
+              {selectedTab === 1 && (
+                <AllGames />
+              )}
 
-              <GameList />
-
-              <br />
-
-              <PlayerList />
+              {selectedTab === 2 && (
+                <PlayerList />
+              )}
 
             </Box> {/* main */}
 
@@ -204,7 +256,7 @@ const TournamentDashboard = (props) => {
 
       <Dialog
         open={creatingGame}
-        onClose={() => { setCreatingGame(false); }}
+        onClose={() => { setCreatingGame(false); setInputGameName(""); }}
         fullWidth
         sx={{
           "& .MuiDialog-paper": {

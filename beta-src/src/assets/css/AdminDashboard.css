@@ -7,7 +7,12 @@ html, body {
 }
 @media only screen and (min-width: 1400px) {
   html, body {
-    font-size: 120%;
+    font-size: 140%;
+  }
+}
+@media only screen and (min-width: 2100px) {
+  html, body {
+    font-size: 150%;
   }
 }
 

@@ -41,27 +41,13 @@ const gamePropertyMappings = {
 };
 
 /**
- *
+ * TODO wrapper that calls game type, and this one receives as props
  **/
-const GameList = (props) => {
+export const GameList = ({title, games}) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
   const desktopOnlyProperties = ["gameID", "gameOver", "phase"];
-
-  const [ongoingGames, setOngoingGames] = React.useState([]);
-
-  React.useEffect(() => {
-    fetchOngoingGames()
-    .then(ongoingGamesIDs => {
-      // IDs
-      fetchAllGameDataforIDs(ongoingGamesIDs)
-      .then(games => {
-        setOngoingGames(games);
-      });
-    });
-
-  }, []);
 
   const gamePropertiesToDisplay = ["gameID", "name", "turn", "processStatus", "phase", "gameOver"]
     .filter(property => {
@@ -82,7 +68,7 @@ const GameList = (props) => {
         sx={{color: grayColor, textTransform: "uppercase"}}
         variant="h5"
         paragraph>
-        Ongoing Games
+        {title}
       </Typography>
 
       <Box component="article">
@@ -115,17 +101,44 @@ const GameList = (props) => {
             </Typography>
           </li>
         </Box>
-        <div style={{maxHeight: "15rem", overflowY: "auto"}}>
-        {ongoingGames.map(game => (
-          <Game
-            key={game.gameID}
-            game={game}
-            displayProperties={gamePropertiesToDisplay} />
-        ))}
+        <div
+          style={{
+            maxHeight: "15rem",
+            overflowY: "auto",
+          }}
+        >
+          {games.map((game, idx) => (
+            <Game
+              style={{backgroundColor: idx % 2 === 0 ? "#272728" : "#282c3b" }}
+              key={game.gameID}
+              game={game}
+              displayProperties={gamePropertiesToDisplay} />
+          ))}
         </div>
       </Box>
     </section>
   );
 };
 
-export default GameList;
+export const OngoingGames = (props) => {
+    const [ongoingGames, setOngoingGames] = React.useState([]);
+
+    React.useEffect(() => {
+      fetchOngoingGames()
+        .then(ongoingGamesIDs => {
+          // IDs
+          fetchAllGameDataforIDs(ongoingGamesIDs)
+            .then(games => {
+              setOngoingGames(games);
+            });
+        });
+
+    }, []);
+
+  return (
+    <GameList
+      title="Ongoing Games"
+      games={ongoingGames}
+    />
+  );
+}

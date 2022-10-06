@@ -1,31 +1,12 @@
 import * as React from "react";
 import { styled } from "@mui/material/styles";
-import isEmpty from "lodash/isEmpty";
-import random from "lodash/random";
-import sortBy from "lodash/sortBy";
-
-import Avatar from '@mui/material/Avatar';
 
 import Box from "@mui/material/Box";
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Paper from "@mui/material/Paper";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import EyeIcon from "@mui/icons-material/RemoveRedEye";
 import EndIcon from "@mui/icons-material/DoDisturbOn";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 
 import {
   getGameApiRequest
@@ -36,7 +17,7 @@ import { BaseButton, PurpleButton, purpleColor } from ".";
 /**
  *
  **/
-const Game = ({game, displayProperties}) => {
+const Game = ({game, displayProperties, style}) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
@@ -55,15 +36,16 @@ const Game = ({game, displayProperties}) => {
   return (
     <Box
       sx={{
-        border: "1px solid lightgrey",
         pt: 1,
-        marginBottom: 1.5,
+        marginBottom: 2,
         cursor: "default",
         "&:hover": {
-          outline: "auto",
+          filter: "brightness(0.9)",
+          borderColor: "rgba(190,190,190, 1.2)"
         },
         maxWidth: "100%",
         position: "relative",
+        ...style
       }}
     >
 
@@ -147,7 +129,6 @@ const Game = ({game, displayProperties}) => {
 
 
       <div style={{
-        backgroundColor: "rgba(38, 38, 38,0.5)",
         display: "flex",
         alignItems: "center",
         height: "2rem",
