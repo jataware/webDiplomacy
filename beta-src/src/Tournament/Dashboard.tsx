@@ -4,9 +4,9 @@ import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 import AddIcon from "@mui/icons-material/Add";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -19,7 +19,8 @@ import Tab from '@mui/material/Tab';
 import unsplash1 from "../assets/waiting-room-backgrounds/unsplash1.jpg";
 
 import {
-  getGameApiRequest
+  getGameApiRequest,
+  postGameApiRequest
 } from "../utils/api";
 
 import { PurpleButton, purpleColor } from ".";
@@ -28,6 +29,21 @@ import GameAssignment from "./GameAssignment";
 import { OngoingGames } from "./GameList";
 import PlayerList from "./PlayerList";
 import AllGames from "./AllGames";
+
+/* game/sendmessage */
+
+const sendMessage = (message) => {
+  const p = postGameApiRequest(
+    "game/broadcastmessage",
+    {
+      someID: "1234567",
+      message,
+    }
+  );
+
+  return p;
+  // response.data
+}
 
 
 const DashboardTab = styled(Tab)`
@@ -143,6 +159,12 @@ const TournamentDashboard = (props) => {
     setInputGameName("");
   }
 
+  const [ messageContents, setMessageContents ] = React.useState("");
+
+  const handleSendMessage = () => {
+    sendMessage(messageContents);
+  };
+
   return (
     <Box sx={{display: "flex", flexDirection: "column", color: "white"}}>
 
@@ -242,11 +264,40 @@ const TournamentDashboard = (props) => {
 
             <br />
 
-            <footer>
+            <Box component="footer" sx={{color: "white", display: "flex", alignItems: "center"}}>
+
               <Typography variant="caption">
-                Diplomacy Dashboard.
+                Broadcast:
               </Typography>
-            </footer>
+
+              &nbsp; &nbsp;
+
+              <TextField
+                sx={{
+                  "& .MuiInputBase-input": {
+                    color: "white",
+                    borderColor: "white",
+                    "&:hover": {
+                      borderColor: "white",
+                      outline: "none"
+                    },
+                    "&:active": {
+                      color: "white",
+                      borderColor: "white",
+                    }
+                  }
+                }}
+                value={messageContents}
+                onChange={(e) => setMessageContents(e.target.value)}
+              />
+
+              <PurpleButton
+                onClick={handleSendMessage}
+              >
+                Send
+              </PurpleButton>
+
+            </Box>
           </div>
 
         </Box> {/* 90% height gradient container */}
