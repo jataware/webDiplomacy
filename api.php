@@ -1624,9 +1624,11 @@ class AnnotateMessage extends ApiEntry {
 			throw new RequestException("Message is invalid in $Game->pressType");
 		}
 
-		if (!(isset($Game->Members->ByUserID[$userID]) && $countryID == $Game->Members->ByUserID[$userID]->countryID)) {
+		if ($direction == "outgoing" && !(isset($Game->Members->ByUserID[$userID]) && $countryID == $Game->Members->ByUserID[$userID]->countryID)) {
 			throw new ClientForbiddenException('User does not have explicit permission to make this API call.');
 		}
+
+        // TODO Validate that incoming direction is toCountryID
 
 		if ($toCountryID < 0 || $toCountryID > count($Game->Members->ByID) || $toCountryID == $countryID) {
 			throw new RequestException('Invalid toCountryID');
