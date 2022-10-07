@@ -1,11 +1,13 @@
 import * as React from "react";
+import "@aws-amplify/ui-react/styles.css"; // eslint-disable-line
 import "./assets/css/App.css";
+import { Authenticator, ThemeProvider } from "@aws-amplify/ui-react";
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
 import { loadGame } from "./state/game/game-api-slice";
 import { useAppDispatch, useAppSelector } from "./state/hooks";
 import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
-import TournamentDashboard from './Tournament/Dashboard';
+import TournamentDashboard from "./Tournament/Dashboard";
 
 const App: React.FC = function (): React.ReactElement {
 
@@ -14,7 +16,7 @@ const App: React.FC = function (): React.ReactElement {
   const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
 
-  console.log('currentGameID', currentGameID);
+  console.log("currentGameID", currentGameID);
 
   const adminDashboard = urlParams.get("admin");
 
@@ -32,7 +34,7 @@ const App: React.FC = function (): React.ReactElement {
   const [fetchedGames, setFetchedGames] = React.useState(false);
 
   if (!fetchedGames) {
-    console.log('App fetching games.');
+    console.log("App fetching games.");
     dispatch(fetchPlayerActiveGames());
     // TODO continue fetching games ocassionally on interval until we are assigned one
     setFetchedGames(true);
@@ -47,19 +49,17 @@ const App: React.FC = function (): React.ReactElement {
   const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
     .find(g => g.gameID == currentGameID));
 
-  console.log('isUserInCurrentGame', isUserInCurrentGame);
+  console.log("isUserInCurrentGame", isUserInCurrentGame);
 
   if (shouldRedirectToGame) {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
   }
 
-  /* console.log('window.location', window.location); */
-
   if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
     window.location.replace(window.location.origin + window.location.pathname);
   }
 
-  // TODO check user type (admin) to allow admins spectatew
+  // TODO check user type (admin) to allow admins to spectate
   if (userCurrentActiveGames.length === 0) {
     var mainElement = <WDLobby />;
   }
@@ -73,7 +73,9 @@ const App: React.FC = function (): React.ReactElement {
     {/* The following line prevents the UI from being scaled down when the viewport is small.
   That leads to a very bad experience for this UI, with part of the map cut off. */}
       <meta name="viewport" content="width=device-width, user-scalable=no" />
-      {mainElement}
+      <Authenticator>
+        {mainElement}
+      </Authenticator>
     </div>
   )
 };
