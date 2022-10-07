@@ -26,6 +26,10 @@ import unsplash2 from "../../assets/waiting-room-backgrounds/unsplash2.png";
 import unsplash3 from "../../assets/waiting-room-backgrounds/unsplash3.png";
 import unsplash4 from "../../assets/waiting-room-backgrounds/unsplash4.jpg";
 
+import {
+  getGameApiRequest
+} from "../../utils/api";
+
 const LogOutButton = (props) => {
   return (
     <Button
@@ -129,6 +133,33 @@ const WelcomeMessage = (props) => {
   );
 };
 
+const Chat = (props) => {
+
+  const [msgs, setMsgs] = React.useState([]);
+
+  React.useEffect(() => {
+    getGameApiRequest(
+      "game/getbroadcasts",
+      {someID: 1234567}
+    ).then(response => {
+      console.log("response", response);
+
+      setMsgs(response.data.data.messages);
+    })
+  }, []);
+
+  return (
+    <Box>
+      <ul>
+      {msgs.map(({ message, timeSent }) => (
+        <li key={timeSent}>
+        {message}
+        </li>
+      ))}
+      </ul>
+    </Box>
+  );
+};
 
 // https://www.imgacademy.com/sites/default/files/2022-07/img-homepage-meta.jpg
 const Lobby = (props) => {
@@ -211,6 +242,8 @@ const Lobby = (props) => {
               <Instructions />
               <br />
               <WelcomeMessage />
+              <br />
+              <Chat />
             </Box>
           </Box>
         </Box>

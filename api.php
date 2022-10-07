@@ -1526,6 +1526,102 @@ class SendMessage extends ApiEntry {
 	}
 }
 
+
+
+/**
+ * API entry game/broadcastmessage
+ */
+class BroadcastMessage extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/broadcastmessage', 'JSON', '', array('someID', 'message'), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $DB;
+		$args = $this->getArgs();
+		$messages = array();
+
+		if ($args['message'] === null)
+			throw new RequestException('message is required.');
+
+		$gameID = intval($args['someID']);
+		$message = $args['message'];
+
+        error_log("HELLO WORLD JOEL");
+        error_log($gameID);
+
+        $toCountryID = 0;
+        $countryID = 0;
+
+		$timeSent = libGameMessage::broadcast($message, $gameID);
+
+		// now fetch this message back out of the table.
+		// This is the safest way to make sure all the escaping is correct.
+		// Should we fetch messages from previous timeSent as well to make sure everything is in sync?
+
+		$tabl = $DB->sql_tabl("SELECT message, turn
+			FROM wD_GameMessages WHERE
+			gameID = $gameID AND
+			timeSent = $timeSent
+		");
+
+		while ($msg = $DB->tabl_hash($tabl)) {
+			$messages[] = [
+				'message' => $msg['message'],
+				'timeSent' => (int) $timeSent
+			];
+		}
+		$ret = [
+			"messages" => $messages
+		];
+		return json_encode($ret);
+	}
+}
+
+class GetBroadcasts extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/getbroadcasts', 'GET', '', array('someID'), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+
+        // NOTE Sample loggin to docker output:
+        // $json = '{
+        //   "msg": "Invalid username",
+        //   "code": "601",
+        //   "username": "ae2ivz!"
+        // }';
+        // error_log($json);
+
+		global $DB;
+		$args = $this->getArgs();
+		$countryID = 0;
+		$gameID = $args['someID'];
+		$messages = array();
+
+		$tabl = $DB->sql_tabl("SELECT message, timeSent FROM wD_GameMessages WHERE gameID = $gameID");
+
+		while ($message = $DB->tabl_hash($tabl)) {
+			$messages[] = [
+				'message' => $message['message'],
+				'timeSent' => (int) $message['timeSent'],
+			];
+		}
+
+		// Return Messages.
+		$curTime = time();
+		$responseStr = $messages ? 'Successfully retrieved game messages.' : 'No messages available';
+
+		return $this->JSONResponse(
+			$responseStr,
+			'',
+			true,
+			[
+				'messages' => $messages,
+				'time' => $curTime
+			]
+		);
+	}
+}
+
 /**
  * API entry game/sendmessage
  */
@@ -1947,10 +2043,16 @@ try {
 	$api->load(new SetOrders());
 	$api->load(new ToggleVote());
 	$api->load(new SetVote());
+
 	$api->load(new SendMessage());
+	$api->load(new BroadcastMessage());
+
+	$api->load(new GetBroadcasts());
+
 	$api->load(new AnnotateMessage());
 	$api->load(new GetMessages());
 	$api->load(new MessagesSeen());
+
 	$api->load(new MarkBackFromLeft());
 	$api->load(new JoinGame());
 	$api->load(new CreateGame());

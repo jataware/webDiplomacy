@@ -93,6 +93,36 @@ class libGameMessage
 		return $timeSent;
 	}
 
+    static public function broadcast($message, $gameID)
+	{
+		global $DB, $MC;
+
+		$message = $DB->msg_escape($message);
+
+		if( 65000 < strlen($message) )
+		{
+			throw new Exception(l_t("Message too long"));
+		}
+		$timeSent = time();
+
+        $toCountryID = 0;
+        $fromCountryID = 0;
+        $turn = 0;
+        $phase = 0;
+
+		$DB->sql_put("INSERT INTO wD_GameMessages
+					(gameID, toCountryID, fromCountryID, turn, message, phaseMarker, timeSent)
+					VALUES(".$gameID.",
+						".$toCountryID.",
+						".$fromCountryID.",
+						".$turn.",
+						'".$message."',
+						'".$phase."',
+						".$timeSent.")");
+
+		return $timeSent;
+	}
+
     /**
 	 * Annotate a previously-sent game message.
 	 *
