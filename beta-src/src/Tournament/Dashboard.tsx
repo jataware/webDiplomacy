@@ -260,7 +260,7 @@ const TournamentDashboard = (props) => {
         fullWidth
         sx={{
           "& .MuiDialog-paper": {
-            maxWidth: 450,
+            maxWidth: 500,
             border: "2px solid #000",
             p: 1
           },
