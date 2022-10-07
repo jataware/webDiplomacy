@@ -787,7 +787,7 @@ class CreateGame extends ApiEntry
 			1,
 			100,
 			"no",
-			"NoPress",
+			"Regular",
 			"wait",
 			"draw-votes-hidden",
 			0,
