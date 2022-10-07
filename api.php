@@ -556,8 +556,9 @@ class CreatePlayer extends ApiEntry {
 		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$uname."@gmail.com',0,'','','Yes',1154508102,'English',1154508104,0,0x00000000000000000000000000000000,'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,1.0,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
-
-		return "Success";
+		$sql = "select id from wD_Users where username = '".$uname."'";
+		$uID = $DB->sql_row($sql)[0];
+		return "user has been created with username=".$uname." and userID=".$uID;
 	}
 }
 
@@ -775,7 +776,7 @@ class CreateGame extends ApiEntry
 
 		//libGameMaster::updatePhasePerYearCount(true);
 		//libGameMaster::updateReliabilityRating();
-		processGame::create(
+		$gameID = processGame::create(
 			$variantID,
 			$args['gameName'],
 			'',
@@ -787,7 +788,7 @@ class CreateGame extends ApiEntry
 			1,
 			100,
 			"no",
-			"NoPress",
+			"Regular",
 			"wait",
 			"draw-votes-hidden",
 			0,
@@ -796,7 +797,7 @@ class CreateGame extends ApiEntry
 		);
 		$DB->sql_put("COMMIT");
 
-		return "A new game has been created.";
+		return "A new game with id=".$gameID." has been created.";
 	}
 }
 
