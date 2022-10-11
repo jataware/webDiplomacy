@@ -546,14 +546,18 @@ class GetGamesStates extends ApiEntry {
 class CreatePlayer extends ApiEntry {
 	public function __construct()
     {
-        parent::__construct('player/create', 'GET', 'getStateOfAllGames', array('username'), false);
+        parent::__construct('player/create', 'GET', 'getStateOfAllGames', array('username', 'password'), false);
     }
 
 	public function run($userID, $permissionIsExplicit)
     {
 		global $DB;
+		require_once(l_r('lib/auth.php'));
 		$uname = $this->getArgs()['username'];
-		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$uname."@gmail.com',0,'','','Yes',1154508102,'English',1154508104,0,0x00000000000000000000000000000000,'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,1.0,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
+		$newPassword = $this->getArgs()['password'];
+		$hashed_pwd = libAuth::pass_Hash($newPassword);
+		$sql_hashed_pwd = "UNHEX('".$hashed_pwd."')";
+		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$uname."@gmail.com',0,'','','Yes',1154508102,'English',1154508104,0,".$sql_hashed_pwd.",'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,1.0,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
 		$sql = "select id from wD_Users where username = '".$uname."'";
@@ -780,7 +784,7 @@ class CreateGame extends ApiEntry
 			$variantID,
 			$args['gameName'],
 			'',
-			-1,
+			1,
 			"Unranked",
 			1440,
 			10080,
