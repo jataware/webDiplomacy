@@ -848,27 +848,30 @@ class DrawGame extends ApiEntry
 		return "Game Drawn";
 	}
 }
-
 class JoinGame extends ApiEntry
 {
     public function __construct()
     {
-        parent::__construct('game/join', 'GET', 'getStateOfAllGames', array('gameID', 'userID'), false);
+        parent::__construct('game/join', 'GET', 'getStateOfAllGames', array('gameID', 'userID', 'countryID'), false);
     }
     public function run($userID, $permissionIsExplicit)
     {
         //$params['userID'] = (int)$params['userID'];
+		//countryID = 0 for auto assign
+		//countryID 1 - 7 for manual assignment
+		//1:England 2:France 3:Italy 4:Germany 5:Austria 6:Turkey 7:Russia
 		global $DB, $Game;
 		
 		require_once(l_r('objects/game.php'));
 		$args = $this->getArgs();
 		$gameID = (int)$args['gameID'];
+		$countryID = (int)$args['countryID'];
 		$Variant = libVariant::loadFromGameID((int)$gameID);
 		$Game=$Variant->Game($gameID);
 		// It is assumed this is being run within a transaction
 
 		$DB->sql_put("INSERT INTO wD_Members SET
-			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=0, orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
+			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
 
 		$Game->Members->load();
 
