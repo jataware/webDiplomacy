@@ -848,6 +848,27 @@ class DrawGame extends ApiEntry
 		return "Game Drawn";
 	}
 }
+
+
+class LastScore extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('player/lastScore', 'GET', 'getStateOfAllGames', array('userID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		$userID = $this ->getArgs()['userID'];
+		$SQL = "select * from wD_Members where userID = ".$userID." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+		global $DB;
+		$row = $DB->sql_hash($SQL);
+		if (!$row){
+			return "No finished games found for this userID";
+		}
+		return $row['supplyCenterNo'];
+    }
+}
+
 class JoinGame extends ApiEntry
 {
     public function __construct()
@@ -1972,6 +1993,7 @@ try {
 	$api->load(new UncrashGame());
 	$api->load(new AbandonCrashedGame());
 	$api->load(new CrashedGames());
+	$api->load(new LastScore());
 
 
 	$jsonEncodedResponse = $api->run();
