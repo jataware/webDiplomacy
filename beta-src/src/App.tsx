@@ -10,24 +10,10 @@ import TournamentDashboard from './Tournament/Dashboard';
 const App: React.FC = function (): React.ReactElement {
 
   const urlParams = new URLSearchParams(window.location.search);
-
   const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
-
   console.log('currentGameID', currentGameID);
-
   const adminDashboard = urlParams.get("admin");
-
-  if (adminDashboard) {
-    return (
-      <div>
-        {/* The following line prevents the UI from being scaled down when the viewport is small.
-            That leads to a very bad experience for this UI, with part of the map cut off. */}
-        <meta name="viewport" content="width=device-width, user-scalable=no" />
-        <TournamentDashboard />
-      </div>
-    )
-  }
 
   const [fetchedGames, setFetchedGames] = React.useState(false);
   const [fetchedAdmin, setIsAdmin] = React.useState(false);
@@ -47,6 +33,19 @@ const App: React.FC = function (): React.ReactElement {
 
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
   const Admin = useAppSelector(isAdmin);
+  if (Admin)
+  {
+    if (adminDashboard) {
+      return (
+        <div>
+          {/* The following line prevents the UI from being scaled down when the viewport is small.
+              That leads to a very bad experience for this UI, with part of the map cut off. */}
+          <meta name="viewport" content="width=device-width, user-scalable=no" />
+          <TournamentDashboard />
+        </div>
+      )
+    }
+  }
 
   console.log("userCurrentActiveGames", userCurrentActiveGames);
   console.log("isAdmin", Admin);

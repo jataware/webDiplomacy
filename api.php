@@ -713,7 +713,7 @@ class WaitingGames extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Pre-game';");
+		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Pre-game' and processStatus != 'Crashed';");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
