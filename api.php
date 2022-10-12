@@ -829,9 +829,10 @@ class GetGameMessages extends ApiEntry
     public function run($userID, $permissionIsExplicit)
     {
 		global $DB;
-		$SQL = "select * from wD_GameMessages where gameID = ".$this->getArgs()['gameID'].";";
+		$gameID = $this->getArgs()['gameID'];
+		$SQL = "select * from wD_GameMessages where gameID = ".$gameID.";";
 		$tabl = $DB->sql_tabl($SQL);
-		$SQL = "select wD_Members.countryID, wD_Users.username from wD_Members join wD_Users on wD_Users.id = wD_Members.userID where gameID = ".$this->getArgs()['gameID'].";";
+		$SQL = "select wD_Members.countryID, wD_Users.username from wD_Members join wD_Users on wD_Users.id = wD_Members.userID where gameID = ".$gameID.";";
 
 		$gameMembersTabl = $DB->sql_tabl($SQL);
 		$gameMembers = array();
@@ -866,7 +867,10 @@ class GetGameMessages extends ApiEntry
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
 		}
-		$return_array = json_encode($return_array);
+		$return_array = json_encode($return_array, JSON_PRETTY_PRINT);
+		header('Content-Type: application/octet-stream');
+		header("Content-Transfer-Encoding: Binary"); 
+		header("Content-disposition: attachment; filename=\"" . basename($gameID."-messages") . "\"");
 		return $return_array;
     }
 }
