@@ -34,8 +34,6 @@ const Game = ({game, displayProperties, style, hideActions}) => {
   };
 
   const downloadMessages = () => {
-    setLoadingEndGame(true);
-    http://localhost/
     window.open("/api.php?route=game/messages&gameID=" + game.gameID, "_blank")
   };
 
@@ -105,11 +103,12 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                 >
                   Observe
                 </PurpleButton>
+              &nbsp;&nbsp;
                 <PurpleButton
                   onClick={downloadMessages}
                   variant="outlined"
                 >
-                  Messages
+                  Chat
                 </PurpleButton>
               &nbsp;&nbsp;
               <BaseButton
