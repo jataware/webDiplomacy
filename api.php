@@ -1724,14 +1724,6 @@ class GetMessages extends ApiEntry {
 	}
 	public function run($userID, $permissionIsExplicit) {
 
-        // NOTE Sample loggin to docker output:
-        // $json = '{
-        //   "msg": "Invalid username",
-        //   "code": "601",
-        //   "username": "ae2ivz!"
-        // }';
-        // error_log($json);
-
 		global $DB, $MC;
 		$args = $this->getArgs();
 		$countryID = $args['countryID'] ?? 0;
@@ -1800,7 +1792,6 @@ class GetMessages extends ApiEntry {
 		// Return Messages.
 		$curTime = time();
 		$responseStr = $messages ? 'Successfully retrieved game messages.' : 'No messages available';
-		// error_log("$responseStr at time $curTime");
 		$newMessagesFrom = $countryID == 0 ? [] : array_map('intval', $game->Members->ByUserID[$userID]->newMessagesFrom);
 		return $this->JSONResponse(
 			$responseStr,
@@ -2094,28 +2085,21 @@ class Api {
 		if (!isset($this->entries[$this->route]))
 			throw new NotImplementedException('Unknown route.');
 
-        // error_log("=== LOOK HERE =======");
-        // error_log(print_r($_SERVER, true));
-
 		if ( !empty( $User ) && ( $User->type['User'] ?? false ) === true ){
 			/**
 			 * If the request is an API call using the existing user session, process using the ApiSession class.
 			 */
+            error_log("Using ApiSession session server");
 			$this->authClass = 'ApiSession';
 
 		} elseif (isset($_SERVER['HTTP_IDTOKEN'])) {
-
-            error_log("using IdToken header session server");
-
+            error_log("Using IdToken header session server");
             $this->authClass = 'IdToken';
-
         } else {
 			/**
 			 * If the request is an API call using an API key (for bots, system), process using the ApiKey class.
 			 */
-
             error_log("using ApiKey header session server");
-
 			$this->authClass = 'ApiKey';
 		}
 

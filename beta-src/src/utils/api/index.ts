@@ -25,12 +25,7 @@ const api = axios.create({
 
 async function getToken() {
   const user = await Auth.currentAuthenticatedUser();
-
-  console.log("user", user);
-
   const token = user.signInUserSession.idToken.jwtToken;
-
-  console.log("temp log Token:", token);
 
   return token;
 }
