@@ -353,6 +353,21 @@ class ListActiveGamesForUser extends ApiEntry {
 	}
 }
 
+class isAdmin extends ApiEntry {
+	public function __construct() {
+		parent::__construct('players/isAdmin', 'GET', '', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $DB;
+		$SQL = 'SELECT type FROM wD_Users WHERE id = '.$userID;
+		$roles = $DB->sql_row($SQL)[0];
+		if (strpos($roles, "Admin")){
+			return true;
+		}
+		return false;
+	}
+}
+
 /**
  * API entry game/togglevote
  */
@@ -2038,6 +2053,8 @@ try {
 	$api->load(new LastScore());
 	$api->load(new SetPlayerState());
 	$api->load(new GetPlayerState());
+	$api->load(new isAdmin());
+	
 	
 
 	$jsonEncodedResponse = $api->run();

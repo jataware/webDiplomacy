@@ -38,5 +38,6 @@ export interface GameState {
   legalOrders: LegalOrders; // Computed as a function of GameOverviewResponse, GameDataResponse, GameStateMaps
   alert: GameAlert;
   activeGames: PlayerActiveGames;
+  admin: boolean;
   numConsecutiveGetFailures: number; // How many consecutive GET API requests to the server were failures.
 }
