@@ -820,6 +820,57 @@ class CreateGame extends ApiEntry
 	}
 }
 
+class GetGameMessages extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/messages', 'GET', 'getStateOfAllGames', array('gameID'), true);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+		$SQL = "select * from wD_GameMessages where gameID = ".$this->getArgs()['gameID'].";";
+		$tabl = $DB->sql_tabl($SQL);
+		$SQL = "select wD_Members.countryID, wD_Users.username from wD_Members join wD_Users on wD_Users.id = wD_Members.userID where gameID = ".$this->getArgs()['gameID'].";";
+
+		$gameMembersTabl = $DB->sql_tabl($SQL);
+		$gameMembers = array();
+		$gameMembersRow = $DB->tabl_row($gameMembersTabl);
+		
+		while ($gameMembersRow) {
+			$gameMembers[$gameMembersRow[0]] = $gameMembersRow[1];
+			$gameMembersRow = $DB->tabl_row($gameMembersTabl);
+		}
+		$gameMembers[0] = "All";
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+
+		while ($ret){
+      	$toPush = [
+				"id"=> $ret[0],
+				"timeSent"=> $ret[1],
+				"message"=> $ret[2],
+				"turn" => $ret[3],
+				"toCountry" => $ret[4],
+				"toUsername" => $gameMembers[$ret[4]],
+				"fromCountry" => $ret[5],
+				"fromUsername" => $gameMembers[$ret[5]],
+				"gameID" => $ret[6],
+				"phaseType" => $ret[7]
+			];
+				//"receivedAnnotation" => $ret[8]?,
+				//"sentAnnotation" => $ret[9]?
+
+
+			array_push($return_array, $toPush);
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+		$return_array = json_encode($return_array);
+		return $return_array;
+    }
+}
+
 class CancelGame extends ApiEntry
 {
 	public function __construct()
@@ -2050,6 +2101,7 @@ try {
 	$api->load(new SetPlayerState());
 	$api->load(new GetPlayerState());
 	$api->load(new isAdmin());
+	$api->load(new GetGameMessages());
 	
 	
 
