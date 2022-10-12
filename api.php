@@ -1750,7 +1750,6 @@ abstract class ApiAuth {
 			// Otherwise, any user can call this function.
 			if ($apiEntry->requiresGameID() && !$apiEntry->isUserMemberOfGame($this->userID))
 				throw new ClientForbiddenException('Access denied. User '.$this->userID.' is not member of associated game.');
-			
 		} else {
 			// Permission field available.
 			if (!in_array($permissionField, self::$permissionFields))
