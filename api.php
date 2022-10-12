@@ -1813,8 +1813,7 @@ class IdToken extends ApiAuth {
 
 		$this->token = $IdTokenString;
 
-        // TODO re-add this cache key after debugging memcached issues
-		// $this->cacheKey = 'id-' . $this->token . '-' . $route;
+		$this->cacheKey = 'id-' . $this->token . '-' . $route;
 
 		foreach (self::$permissionFields as $permissionField)
 			$this->permissions[$permissionField] = false;
