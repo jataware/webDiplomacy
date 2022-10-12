@@ -636,7 +636,7 @@ class WaitingPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id > 10;");
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id not in (select userID from jW_PlayerStates where state = 'Banned' or state = 'Cut') and id > 10;");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
@@ -867,6 +867,48 @@ class LastScore extends ApiEntry
 		}
 		return $row['supplyCenterNo'];
     }
+}
+
+class SetPlayerState extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('player/setPlayerState', 'GET', 'getStateOfAllGames', array('userID', 'state'), false);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB;
+		$args = $this->getArgs();
+		$state = $args['state'];
+		$userID = (int)$args['userID'];
+
+		$sql = "INSERT INTO Jw_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
+		$DB->sql_put($sql);
+		$DB->sql_put("COMMIT");
+		return "Player ".$userID." state set to ".$state."";
+	}
+}
+
+class GetPlayerState extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('player/getPlayerState', 'GET', 'getStateOfAllGames', array('userID'), false);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB;
+		$userID = $this->getArgs()['userID'];
+		$SQL = "select state from Jw_PlayerStates where userID = ".$userID.";";
+		$row = $DB->sql_row($SQL);
+
+		if (!$row)
+		{
+			return "No state found for this userID";
+		}
+
+		return $row[0];
+	}
 }
 
 class JoinGame extends ApiEntry
@@ -1994,7 +2036,9 @@ try {
 	$api->load(new AbandonCrashedGame());
 	$api->load(new CrashedGames());
 	$api->load(new LastScore());
-
+	$api->load(new SetPlayerState());
+	$api->load(new GetPlayerState());
+	
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
