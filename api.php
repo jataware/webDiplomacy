@@ -950,13 +950,9 @@ class JoinGame extends ApiEntry
 
 		$DB->sql_put("INSERT INTO wD_Members SET
 			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
-
 		$Game->Members->load();
-
 		$DB->sql_put("COMMIT");
-
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
-		
 		return "done";
     }
 }
