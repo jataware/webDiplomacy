@@ -41,6 +41,7 @@ require_once('lib/time.php');
 require_once('lib/gamemessage.php');
 require_once('board/orders/jsonBoardData.php');
 require_once('variants/install.php');
+// require_once('./vendor/aws/aws-autoloader.php');
 $DB = new Database();
 
 /**
@@ -1779,6 +1780,85 @@ abstract class ApiAuth {
 	}
 }
 
+/**
+ * Get IdToken Header Value
+ * */
+function getIdTokenFromHeader() {
+	$headers = null;
+	if (isset($_SERVER['HTTP_IDTOKEN'])) {
+		$headers = trim($_SERVER["HTTP_IDTOKEN"]);
+	}
+	return $headers;
+}
+
+/**
+ * Get IdToken Header Value
+ * */
+function validateAccessAndIdTokens($idToken) {
+    $result = shell_exec("node ./magic-verify/index.mjs -t " . $idToken);
+
+    error_log("Result of validate access token:");
+    error_log(print_r($result, true));
+
+    return $result;
+}
+
+class IdToken extends ApiAuth {
+    /**
+	 * API access key.
+	 * @var string
+	 */
+	private $token;
+
+    public function __construct($route){
+		$IdTokenString = getIdTokenFromHeader();
+
+		if ($IdTokenString == null)
+			throw new ClientUnauthorizedException('No IdToken provided.');
+
+		$this->token = $IdTokenString;
+
+        // TODO re-add this cache key after debugging memcached issues
+		// $this->cacheKey = 'id-' . $this->token . '-' . $route;
+
+		foreach (self::$permissionFields as $permissionField)
+			$this->permissions[$permissionField] = false;
+
+		$this->load();
+	}
+
+	protected function load() {
+		global $DB;
+
+        // TODO validate both ID token and ACCESS token. One to get user info, another for valid "session"
+
+        $result = validateAccessAndIdTokens($this->token);
+
+        error_log("===== Doing var dump of result from validating id/access tokens  =======");
+        error_log(print_r($result, true));
+
+        // var_dump($result);
+
+        $email = ""; // TODO how to get from parsed string/hashmap response
+
+		$rowUserID = $DB->sql_hash("SELECT userID from wD_Users WHERE email = '".$DB->escape($email)."'");
+
+		if (!$rowUserID) {
+            error_log('$$$$$$$$$$$ A token WITHOUT a user exists. ========= THIS IS BAD. FIXME ========== $$$$$$$$$$$$$$$$ ');
+			throw new ClientUnauthorizedException('No user associated to this token.');
+        }
+		$this->userID = intval($rowUserID['userID']);
+		$permissionRow = $DB->sql_hash("SELECT * FROM wD_ApiPermissions WHERE userID = ".$this->userID);
+		if ($permissionRow) {
+			foreach (self::$permissionFields as $permissionField) {
+				if ($permissionRow[$permissionField] == 'Yes')
+					$this->permissions[$permissionField] = true;
+			}
+		}
+	}
+
+}
+
 class ApiKey extends ApiAuth {
 
 	/**
@@ -1825,7 +1905,7 @@ class ApiSession extends ApiAuth {
 	public function __construct($route){
 		foreach (self::$permissionFields as $permissionField)
 			$this->permissions[$permissionField] = false;
-		
+
 		// every session user can get state of all games (i.e. spectate)
 		$this->permissions["getStateOfAllGames"] = true;
 
@@ -1887,15 +1967,28 @@ class Api {
 		if (!isset($this->entries[$this->route]))
 			throw new NotImplementedException('Unknown route.');
 
+        // error_log("=== LOOK HERE =======");
+        // error_log(print_r($_SERVER, true));
+
 		if ( !empty( $User ) && ( $User->type['User'] ?? false ) === true ){
 			/**
-			 * If the request is an API call using the existing user session, process using the ApiSession class. 
+			 * If the request is an API call using the existing user session, process using the ApiSession class.
 			 */
 			$this->authClass = 'ApiSession';
-		}else{
+
+		} elseif (isset($_SERVER['HTTP_IDTOKEN'])) {
+
+            error_log("using IdToken header session server");
+
+            $this->authClass = 'IdToken';
+
+        } else {
 			/**
-			 * If the request is an API call using an API key, process using the ApiKey class. 
+			 * If the request is an API call using an API key (for bots, system), process using the ApiKey class.
 			 */
+
+            error_log("using ApiKey header session server");
+
 			$this->authClass = 'ApiKey';
 		}
 
@@ -1906,8 +1999,8 @@ class Api {
 		$permissionIsExplicit = $apiAuth->assertHasPermissionFor($apiEntry);
 		// Execute request.
 		$userID = $apiAuth->getUserID();
-		$result = $apiEntry->run($userID, $permissionIsExplicit); 
-		
+		$result = $apiEntry->run($userID, $permissionIsExplicit);
+
 		// if( false && $route == 'players/missing_orders' )
 		// {
 		// 	$result = $MC->get($key);

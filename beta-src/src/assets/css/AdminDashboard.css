@@ -5,16 +5,18 @@ html, body {
   font-style: normal;
   overflowX: hidden;
 }
-@media only screen and (min-width: 1400px) {
-  html, body {
-    font-size: 140%;
-  }
-}
-@media only screen and (min-width: 2100px) {
-  html, body {
-    font-size: 150%;
-  }
-}
+
+/* TODO debug and enable this later, maybe. Nice to have but not required. */
+/* @media only screen and (min-width: 1400px) { */
+/*   html, body { */
+/*     font-size: 140%; */
+/*   } */
+/* } */
+/* @media only screen and (min-width: 2100px) { */
+/*   html, body { */
+/*     font-size: 150%; */
+/*   } */
+/* } */
 
 *, *:before, *:after {
   box-sizing: inherit;
