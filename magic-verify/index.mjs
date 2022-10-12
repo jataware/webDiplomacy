@@ -3,7 +3,7 @@
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { program } from "commander";
 
-console.log('process.version', process.version);
+// console.log('process.version', process.version);
 
 // ========= CLI ARGS PARSER
 
@@ -54,7 +54,7 @@ async function verify() {
 verify()
   .then((userInfo) => {
     if(userInfo) {
-      console.log(userInfo);
+      console.log(JSON.stringify(userInfo));
     }
     process.exit(0);
   });

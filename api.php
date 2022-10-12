@@ -1795,10 +1795,6 @@ function getIdTokenFromHeader() {
  * */
 function validateAccessAndIdTokens($idToken) {
     $result = shell_exec("node ./magic-verify/index.mjs -t " . $idToken);
-
-    error_log("Result of validate access token:");
-    error_log(print_r($result, true));
-
     return $result;
 }
 
@@ -1832,21 +1828,15 @@ class IdToken extends ApiAuth {
         // TODO validate both ID token and ACCESS token. One to get user info, another for valid "session"
 
         $result = validateAccessAndIdTokens($this->token);
-
-        error_log("===== Doing var dump of result from validating id/access tokens  =======");
-        error_log(print_r($result, true));
-
-        // var_dump($result);
-
-        $email = ""; // TODO how to get from parsed string/hashmap response
-
-		$rowUserID = $DB->sql_hash("SELECT userID from wD_Users WHERE email = '".$DB->escape($email)."'");
+        $decoded = json_decode($result);
+        $email = $decoded->email;
+		$rowUserID = $DB->sql_hash("SELECT id from wD_Users WHERE email = '".$DB->escape($email)."'");
 
 		if (!$rowUserID) {
             error_log('$$$$$$$$$$$ A token WITHOUT a user exists. ========= THIS IS BAD. FIXME ========== $$$$$$$$$$$$$$$$ ');
 			throw new ClientUnauthorizedException('No user associated to this token.');
         }
-		$this->userID = intval($rowUserID['userID']);
+		$this->userID = intval($rowUserID['id']);
 		$permissionRow = $DB->sql_hash("SELECT * FROM wD_ApiPermissions WHERE userID = ".$this->userID);
 		if ($permissionRow) {
 			foreach (self::$permissionFields as $permissionField) {
