@@ -546,14 +546,18 @@ class GetGamesStates extends ApiEntry {
 class CreatePlayer extends ApiEntry {
 	public function __construct()
     {
-        parent::__construct('player/create', 'GET', 'getStateOfAllGames', array('username'), false);
+        parent::__construct('player/create', 'GET', 'getStateOfAllGames', array('username', 'password'), false);
     }
 
 	public function run($userID, $permissionIsExplicit)
     {
 		global $DB;
+		require_once(l_r('lib/auth.php'));
 		$uname = $this->getArgs()['username'];
-		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$uname."@gmail.com',0,'','','Yes',1154508102,'English',1154508104,0,0x00000000000000000000000000000000,'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,1.0,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
+		$newPassword = $this->getArgs()['password'];
+		$hashed_pwd = libAuth::pass_Hash($newPassword);
+		$sql_hashed_pwd = "UNHEX('".$hashed_pwd."')";
+		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$uname."@gmail.com',0,'','','Yes',1154508102,'English',1154508104,0,".$sql_hashed_pwd.",'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,1.0,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
 		$sql = "select id from wD_Users where username = '".$uname."'";
@@ -780,7 +784,7 @@ class CreateGame extends ApiEntry
 			$variantID,
 			$args['gameName'],
 			'',
-			-1,
+			1,
 			"Unranked",
 			1440,
 			10080,
@@ -844,27 +848,30 @@ class DrawGame extends ApiEntry
 		return "Game Drawn";
 	}
 }
-
 class JoinGame extends ApiEntry
 {
     public function __construct()
     {
-        parent::__construct('game/join', 'GET', 'getStateOfAllGames', array('gameID', 'userID'), false);
+        parent::__construct('game/join', 'GET', 'getStateOfAllGames', array('gameID', 'userID', 'countryID'), false);
     }
     public function run($userID, $permissionIsExplicit)
     {
         //$params['userID'] = (int)$params['userID'];
+		//countryID = 0 for auto assign
+		//countryID 1 - 7 for manual assignment
+		//1:England 2:France 3:Italy 4:Germany 5:Austria 6:Turkey 7:Russia
 		global $DB, $Game;
 		
 		require_once(l_r('objects/game.php'));
 		$args = $this->getArgs();
 		$gameID = (int)$args['gameID'];
+		$countryID = (int)$args['countryID'];
 		$Variant = libVariant::loadFromGameID((int)$gameID);
 		$Game=$Variant->Game($gameID);
 		// It is assumed this is being run within a transaction
 
 		$DB->sql_put("INSERT INTO wD_Members SET
-			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=0, orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
+			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
 
 		$Game->Members->load();
 
