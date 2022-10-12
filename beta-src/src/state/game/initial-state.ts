@@ -172,6 +172,7 @@ const initialState: GameState = {
     visible: false,
   },
   activeGames: [],
+  admin: false,
   numConsecutiveGetFailures: 0,
 };
 

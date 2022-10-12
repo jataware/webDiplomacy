@@ -33,6 +33,12 @@ const Game = ({game, displayProperties, style, hideActions}) => {
     getGameApiRequest("game/draw", {gameID: game.gameID});
   };
 
+  const downloadMessages = () => {
+    setLoadingEndGame(true);
+    http://localhost/
+    window.open("/api.php?route=game/messages&gameID=" + game.gameID, "_blank")
+  };
+
   return (
     <Box
       sx={{
@@ -98,6 +104,12 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                   variant="outlined"
                 >
                   Observe
+                </PurpleButton>
+                <PurpleButton
+                  onClick={downloadMessages}
+                  variant="outlined"
+                >
+                  Messages
                 </PurpleButton>
               &nbsp;&nbsp;
               <BaseButton
