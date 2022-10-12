@@ -5,7 +5,7 @@ import { Authenticator, ThemeProvider } from "@aws-amplify/ui-react";
 import { Auth } from 'aws-amplify';
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
-import { loadGame } from "./state/game/game-api-slice";
+import { fetchPlayerIsAdmin, loadGame, isAdmin} from "./state/game/game-api-slice";
 import { useAppDispatch, useAppSelector } from "./state/hooks";
 import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
 import TournamentDashboard from "./Tournament/Dashboard";
@@ -53,7 +53,6 @@ const services = {
 const App: React.FC = function (): React.ReactElement {
 
   const urlParams = new URLSearchParams(window.location.search);
-
   const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
 
@@ -61,18 +60,8 @@ const App: React.FC = function (): React.ReactElement {
 
   const adminDashboard = urlParams.get("admin");
 
-  if (adminDashboard) {
-    return (
-      <div>
-        {/* The following line prevents the UI from being scaled down when the viewport is small.
-            That leads to a very bad experience for this UI, with part of the map cut off. */}
-        <meta name="viewport" content="width=device-width, user-scalable=no" />
-        <TournamentDashboard />
-      </div>
-    )
-  }
-
   const [fetchedGames, setFetchedGames] = React.useState(false);
+  const [fetchedAdmin, setIsAdmin] = React.useState(false);
 
   if (!fetchedGames) {
     console.log("App fetching games.");
@@ -81,9 +70,30 @@ const App: React.FC = function (): React.ReactElement {
     setFetchedGames(true);
   }
 
+  if (!fetchedAdmin) {
+    console.log('called fetchPlayerIsAdmin');
+    dispatch(fetchPlayerIsAdmin());
+    setIsAdmin(true);
+  }
+
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
+  const Admin = useAppSelector(isAdmin);
+  if (Admin)
+  {
+    if (adminDashboard) {
+      return (
+        <div>
+          {/* The following line prevents the UI from being scaled down when the viewport is small.
+              That leads to a very bad experience for this UI, with part of the map cut off. */}
+          <meta name="viewport" content="width=device-width, user-scalable=no" />
+          <TournamentDashboard />
+        </div>
+      )
+    }
+  }
 
   console.log("userCurrentActiveGames", userCurrentActiveGames);
+  console.log("isAdmin", Admin);
 
   const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
@@ -92,16 +102,18 @@ const App: React.FC = function (): React.ReactElement {
 
   console.log("isUserInCurrentGame", isUserInCurrentGame);
 
-  if (shouldRedirectToGame) {
+  if (shouldRedirectToGame && !Admin) {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
   }
 
-  if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
+  /* console.log('window.location', window.location); */
+
+  if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID && !Admin) {
     window.location.replace(window.location.origin + window.location.pathname);
   }
 
-  // TODO check user type (admin) to allow admins to spectate
-  if (userCurrentActiveGames.length === 0) {
+  // TODO check user type (admin) to allow admins spectatew
+  if (userCurrentActiveGames.length === 0 && !Admin) {
     var mainElement = <WDLobby />;
   }
   else {

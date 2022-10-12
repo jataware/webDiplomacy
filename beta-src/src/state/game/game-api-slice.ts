@@ -104,6 +104,14 @@ export const fetchPlayerActiveGames = createAsyncThunk(
   },
 );
 
+export const fetchPlayerIsAdmin = createAsyncThunk(
+  ApiRoute.PLAYER_IS_ADMIN,
+  async () => {
+    const { data } = await getGameApiRequest(ApiRoute.PLAYER_IS_ADMIN, {});
+    return data as { isAdmin: boolean };
+  },
+);
+
 export const sendMessage = createAsyncThunk(
   ApiRoute.SEND_MESSAGE,
   async (queryParams: {
@@ -337,6 +345,13 @@ const gameApiSlice = createSlice({
           handleGetFailed(state, action);
         }
       })
+      .addCase(fetchPlayerIsAdmin.fulfilled, (state, action) => {
+        if (typeof action.payload) {  
+          state.admin = true;
+        } else {
+          state.admin = false;
+        }
+      })
       // saveOrders
       .addCase(saveOrders.pending, saveOrdersPending)
       .addCase(saveOrders.fulfilled, saveOrdersFulfilled)
@@ -490,4 +505,6 @@ export const gameLegalOrders = ({ game: { legalOrders } }: RootState) =>
 export const gameAlert = ({ game: { alert } }: RootState) => alert;
 export const playerActiveGames = ({ game: { activeGames } }: RootState) =>
   activeGames;
+export const isAdmin = ({ game: { admin } }: RootState) =>
+  admin;
 export default gameApiSlice.reducer;
