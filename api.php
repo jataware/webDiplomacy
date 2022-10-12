@@ -355,6 +355,21 @@ class ListActiveGamesForUser extends ApiEntry {
 	}
 }
 
+class isAdmin extends ApiEntry {
+	public function __construct() {
+		parent::__construct('players/isAdmin', 'GET', '', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $DB;
+		$SQL = 'SELECT type FROM wD_Users WHERE id = '.$userID;
+		$roles = $DB->sql_row($SQL)[0];
+		if (strpos($roles, "Admin")){
+			return true;
+		}
+		return false;
+	}
+}
+
 /**
  * API entry game/togglevote
  */
@@ -699,7 +714,7 @@ class WaitingPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id > 10;");
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id not in (select userID from jW_PlayerStates where state = 'Banned' or state = 'Cut') and id > 10;");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
@@ -761,7 +776,7 @@ class WaitingGames extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Pre-game';");
+		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Pre-game' and processStatus != 'Crashed';");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
@@ -868,6 +883,57 @@ class CreateGame extends ApiEntry
 	}
 }
 
+class GetGameMessages extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/messages', 'GET', 'getStateOfAllGames', array('gameID'), true);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+		$SQL = "select * from wD_GameMessages where gameID = ".$this->getArgs()['gameID'].";";
+		$tabl = $DB->sql_tabl($SQL);
+		$SQL = "select wD_Members.countryID, wD_Users.username from wD_Members join wD_Users on wD_Users.id = wD_Members.userID where gameID = ".$this->getArgs()['gameID'].";";
+
+		$gameMembersTabl = $DB->sql_tabl($SQL);
+		$gameMembers = array();
+		$gameMembersRow = $DB->tabl_row($gameMembersTabl);
+		
+		while ($gameMembersRow) {
+			$gameMembers[$gameMembersRow[0]] = $gameMembersRow[1];
+			$gameMembersRow = $DB->tabl_row($gameMembersTabl);
+		}
+		$gameMembers[0] = "All";
+		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+
+		while ($ret){
+      	$toPush = [
+				"id"=> $ret[0],
+				"timeSent"=> $ret[1],
+				"message"=> $ret[2],
+				"turn" => $ret[3],
+				"toCountry" => $ret[4],
+				"toUsername" => $gameMembers[$ret[4]],
+				"fromCountry" => $ret[5],
+				"fromUsername" => $gameMembers[$ret[5]],
+				"gameID" => $ret[6],
+				"phaseType" => $ret[7]
+			];
+				//"receivedAnnotation" => $ret[8]?,
+				//"sentAnnotation" => $ret[9]?
+
+
+			array_push($return_array, $toPush);
+			$ret = $DB->tabl_row($tabl); //userid
+		}
+		$return_array = json_encode($return_array);
+		return $return_array;
+    }
+}
+
 class CancelGame extends ApiEntry
 {
 	public function __construct()
@@ -911,6 +977,69 @@ class DrawGame extends ApiEntry
 		return "Game Drawn";
 	}
 }
+
+
+class LastScore extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('player/lastScore', 'GET', 'getStateOfAllGames', array('userID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		$userID = $this ->getArgs()['userID'];
+		$SQL = "select * from wD_Members where userID = ".$userID." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+		global $DB;
+		$row = $DB->sql_hash($SQL);
+		if (!$row){
+			return "No finished games found for this userID";
+		}
+		return $row['supplyCenterNo'];
+    }
+}
+
+class SetPlayerState extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('player/setPlayerState', 'GET', 'getStateOfAllGames', array('userID', 'state'), false);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB;
+		$args = $this->getArgs();
+		$state = $args['state'];
+		$userID = (int)$args['userID'];
+
+		$sql = "INSERT INTO Jw_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
+		$DB->sql_put($sql);
+		$DB->sql_put("COMMIT");
+		return "Player ".$userID." state set to ".$state."";
+	}
+}
+
+class GetPlayerState extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('player/getPlayerState', 'GET', 'getStateOfAllGames', array('userID'), false);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB;
+		$userID = $this->getArgs()['userID'];
+		$SQL = "select state from Jw_PlayerStates where userID = ".$userID.";";
+		$row = $DB->sql_row($SQL);
+
+		if (!$row)
+		{
+			return "No state found for this userID";
+		}
+
+		return $row[0];
+	}
+}
+
 class JoinGame extends ApiEntry
 {
     public function __construct()
@@ -935,13 +1064,9 @@ class JoinGame extends ApiEntry
 
 		$DB->sql_put("INSERT INTO wD_Members SET
 			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
-
 		$Game->Members->load();
-
 		$DB->sql_put("COMMIT");
-
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
-		
 		return "done";
     }
 }
@@ -2039,7 +2164,13 @@ try {
 	$api->load(new UncrashGame());
 	$api->load(new AbandonCrashedGame());
 	$api->load(new CrashedGames());
-
+	$api->load(new LastScore());
+	$api->load(new SetPlayerState());
+	$api->load(new GetPlayerState());
+	$api->load(new isAdmin());
+	$api->load(new GetGameMessages());
+	
+	
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.

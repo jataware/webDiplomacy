@@ -365,7 +365,8 @@ class processGame extends Game
 		$gameID = $DB->last_inserted();
 
 		$Variant=libVariant::loadFromVariantID($variantID);
-		return $Variant->processGame($gameID);
+		$Variant->processGame($gameID);
+		return $gameID;
 	}
 
 	/**
