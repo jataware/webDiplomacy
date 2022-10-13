@@ -10,16 +10,17 @@ import { program } from "commander";
 program
   .version('0.1.0', '-v, --version')
   .usage('[OPTIONS]...')
-  .option('-t, --token <value>', 'jwt token to parse and return e-mail from.', '');
+  .option('-t, --token <value>', 'jwt token to parse and return e-mail from.', '')
+  .option('-a, --access', 'Opt-in toggle to validate an access token instead of default id one.');
 
-program.parse(); // process.argv
+program.parse(); // handles process.argv
 
 const options = program.opts();
 
-const idToken = options.token;
+const tokenTarget = options.token;
 
-if (!idToken) {
-  console.error("Please provide a valid string jwt token with -t or --token", idToken);
+if (!tokenTarget) {
+  console.error("Please provide a valid string jwt token with -t or --token", tokenTarget);
   process.exit(-1);
 }
 
@@ -30,21 +31,29 @@ if (!idToken) {
 // TODO dev pool/client values hardcoded. Need to change for prod.
 const verifier = CognitoJwtVerifier.create({
   userPoolId: "us-east-1_eYqVwyTwi",
-  tokenUse: "id",
+  tokenUse: options.access ? "access" : "id",
   clientId: "4eok31qvrn3a9p7sadlqhis6cl",
 });
 
 async function verify() {
   try {
-    const payload = await verifier.verify(idToken);
-    const {email, email_verified} = payload;
+    const payload = await verifier.verify(tokenTarget);
 
-    return {
-      email,
-      verified: email_verified,
-      id: payload.sub,
-      irb: payload['custom:accepted-terms-at']
-    };
+    // TODO access untested but we'll need it, try it out soon
+    if (options.access) {
+      return {
+        result: "valid"
+      };
+    } else {
+      const {email, email_verified} = payload;
+
+      return {
+        email,
+        verified: email_verified,
+        id: payload.sub,
+        irb: payload['custom:accepted-terms-at']
+      };
+    }
 
   } catch (e) {
     console.error("Token not valid!");

@@ -45,7 +45,10 @@ async function createUser(event) {
   // We'll never recall or know this password
   const password=uuid();
 
-  const url = `${apiPath}player/create&username=${username}&password=${password}`;
+
+  const email=""; // TODO get email from cognito event? and has it
+
+  const url = `${apiPath}player/create&username=${username}&password=${password}&email=${email}`;
 
   console.log("url", url);
 

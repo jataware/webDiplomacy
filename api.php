@@ -559,6 +559,7 @@ class GetGamesStates extends ApiEntry {
 		return $gameState->toJson();
 	}
 }
+
 class CreatePlayer extends ApiEntry {
 	public function __construct()
     {
@@ -1954,11 +1955,12 @@ class IdToken extends ApiAuth {
 	protected function load() {
 		global $DB;
 
-        // TODO validate both ID token and ACCESS token. One to get user info, another for valid "session"
-
+        // TODO Validate both ID token and ACCESS token. One to get user info, another for valid "session"
         $result = validateAccessAndIdTokens($this->token);
         $decoded = json_decode($result);
         $email = $decoded->email;
+
+        // TODO match to email hash or so... or any other unique column in DB
 		$rowUserID = $DB->sql_hash("SELECT id from wD_Users WHERE email = '".$DB->escape($email)."'");
 
 		if (!$rowUserID) {
@@ -2089,6 +2091,7 @@ class Api {
 			/**
 			 * If the request is an API call using the existing user session, process using the ApiSession class.
 			 */
+
             error_log("Using ApiSession session server");
 			$this->authClass = 'ApiSession';
 
