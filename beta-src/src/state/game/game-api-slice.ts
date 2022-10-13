@@ -346,8 +346,9 @@ const gameApiSlice = createSlice({
         }
       })
       .addCase(fetchPlayerIsAdmin.fulfilled, (state, action) => {
-        if (typeof action.payload) {  
+        if (action.payload) {  
           state.admin = true;
+          console.log('here',action.payload);
         } else {
           state.admin = false;
         }
