@@ -30,6 +30,8 @@ if (!tokenTarget) {
 // Verifier that expects valid access/id tokens
 // TODO dev pool/client values hardcoded. Need to change for prod.
 const verifier = CognitoJwtVerifier.create({
+  // TODO These two need to come from environment/secrets both for staging and production
+  //      or event token
   userPoolId: "us-east-1_eYqVwyTwi",
   tokenUse: options.access ? "access" : "id",
   clientId: "4eok31qvrn3a9p7sadlqhis6cl",

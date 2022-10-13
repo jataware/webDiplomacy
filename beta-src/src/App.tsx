@@ -1,8 +1,8 @@
 import * as React from "react";
 import "@aws-amplify/ui-react/styles.css"; // eslint-disable-line
 import "./assets/css/App.css";
-import { Authenticator, ThemeProvider } from "@aws-amplify/ui-react";
-import { Auth } from 'aws-amplify';
+import { Authenticator } from "@aws-amplify/ui-react";
+/* import { Auth } from 'aws-amplify'; */
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
 import { fetchPlayerIsAdmin, loadGame, isAdmin} from "./state/game/game-api-slice";
@@ -10,45 +10,47 @@ import { useAppDispatch, useAppSelector } from "./state/hooks";
 import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
 import TournamentDashboard from "./Tournament/Dashboard";
 
+import '@aws-amplify/ui-react/styles.css';
+
 import { uniqueNamesGenerator, colors, animals, names, NumberDictionary } from 'unique-names-generator';
 
-const customDictionary = [
-  'popcorn',
-  'lawn',
-  'virtual',
-  'aqua',
-  'numerous',
-  'berry',
-  'jigsaw',
-  'doughnut',
-  'bear',
-  'caterpie',
-  'poloshirt',
-  'squid',
-  'baseball',
-  'oatmeal',
-  'kind'
-];
-
-const generateUsername = () => {
-  const numberDictionary = NumberDictionary.generate({ min: 0, max: 124 });
-
-  return uniqueNamesGenerator({
-    dictionaries: [colors, animals, numberDictionary],
-    style: 'capital',
-    separator: ''
-  });
-};
-
-const services = {
-  async handleSignUp(formData) {
-    formData.attributes.preferred_username = generateUsername();
-
-    console.log("formData", formData);
-
-    return Auth.signUp(formData);
-  }
-};
+/* const customDictionary = [
+ *   'popcorn',
+ *   'lawn',
+ *   'virtual',
+ *   'aqua',
+ *   'numerous',
+ *   'berry',
+ *   'jigsaw',
+ *   'doughnut',
+ *   'bear',
+ *   'caterpie',
+ *   'poloshirt',
+ *   'squid',
+ *   'baseball',
+ *   'oatmeal',
+ *   'kind'
+ * ];
+ * 
+ * const generateUsername = () => {
+ *   const numberDictionary = NumberDictionary.generate({ min: 0, max: 124 });
+ * 
+ *   return uniqueNamesGenerator({
+ *     dictionaries: [colors, animals, numberDictionary],
+ *     style: 'capital',
+ *     separator: ''
+ *   });
+ * };
+ *  */
+/* const services = {
+ *   async handleSignUp(formData) {
+ *     formData.attributes.preferred_username = generateUsername();
+ * 
+ *     console.log("formData", formData);
+ * 
+ *     return Auth.signUp(formData);
+ *   }
+ * }; */
 
 const App: React.FC = function (): React.ReactElement {
 
@@ -128,7 +130,6 @@ const App: React.FC = function (): React.ReactElement {
       <meta name="viewport" content="width=device-width, user-scalable=no" />
       <Authenticator
         variation="modal"
-        services={services}
         signUpAttributes={['email']}
       >
         {mainElement}

@@ -8,7 +8,9 @@
     "@types/aws-lambda": "^8.10.92"
   },
   "dependencies": {
+    "aws-sdk": "^2.1231.0",
     "axios": "^1.1.2",
+    "lodash": "^4.17.21",
     "unique-names-generator": "^4.7.1",
     "uuid": "^9.0.0"
   }
