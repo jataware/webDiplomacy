@@ -9,50 +9,18 @@ import { fetchPlayerIsAdmin, loadGame, isAdmin} from "./state/game/game-api-slic
 import { useAppDispatch, useAppSelector } from "./state/hooks";
 import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
 import TournamentDashboard from "./Tournament/Dashboard";
-
-import '@aws-amplify/ui-react/styles.css';
-
-import { uniqueNamesGenerator, colors, animals, names, NumberDictionary } from 'unique-names-generator';
-
-/* const customDictionary = [
- *   'popcorn',
- *   'lawn',
- *   'virtual',
- *   'aqua',
- *   'numerous',
- *   'berry',
- *   'jigsaw',
- *   'doughnut',
- *   'bear',
- *   'caterpie',
- *   'poloshirt',
- *   'squid',
- *   'baseball',
- *   'oatmeal',
- *   'kind'
- * ];
- * 
- * const generateUsername = () => {
- *   const numberDictionary = NumberDictionary.generate({ min: 0, max: 124 });
- * 
- *   return uniqueNamesGenerator({
- *     dictionaries: [colors, animals, numberDictionary],
- *     style: 'capital',
- *     separator: ''
- *   });
- * };
- *  */
-/* const services = {
- *   async handleSignUp(formData) {
- *     formData.attributes.preferred_username = generateUsername();
- * 
- *     console.log("formData", formData);
- * 
- *     return Auth.signUp(formData);
- *   }
- * }; */
+import { ConsentPage } from "./Consent";
 
 const App: React.FC = function (): React.ReactElement {
+
+  // TODO Return consent instead as/when required
+  // If user hasn't accepted IRB before.
+  /* return (
+   *     <ConsentPage
+           onAccept={}
+           onDecline={}
+         />
+   * ); */
 
   const urlParams = new URLSearchParams(window.location.search);
   const currentGameID = urlParams.get("gameID");

@@ -14,6 +14,12 @@
     "categories": {
       "auth": {
         "webdiplomacybetabrc2ee57c11": {}
+      },
+      "function": {
+        "webDiplomacyPostConfirmUserEmail": {
+          "deploymentBucketName": "amplify-webdiplomacybetabrc-dev-95733-deployment",
+          "s3Key": "amplify-builds/webDiplomacyPostConfirmUserEmail-72613754345264756c79-build.zip"
+        }
       }
     }
   }
