@@ -18,7 +18,7 @@
       "function": {
         "webDiplomacyPostConfirmUserEmail": {
           "deploymentBucketName": "amplify-webdiplomacybetabrc-dev-95733-deployment",
-          "s3Key": "amplify-builds/webDiplomacyPostConfirmUserEmail-72613754345264756c79-build.zip"
+          "s3Key": "amplify-builds/webDiplomacyPostConfirmUserEmail-77716446653758796d7a-build.zip"
         }
       }
     }

@@ -26,7 +26,7 @@ const DEV_PATH = "http://localhost:80/api.php?route=";
 const apiPath = DEV_PATH;
 
 
-async function createUser(event) {
+async function createUser(event, context, callback) {
 
   console.log(`EVENT: ${JSON.stringify(event)}`);
 
@@ -45,8 +45,22 @@ async function createUser(event) {
   // We'll never recall or know this password
   const password=uuid();
 
-
-  const email=""; // TODO get email from cognito event? and has it
+  let email=""; // TODO get email from cognito event? and has it
+  if (event?.request?.userAttributes?.email) {
+    email = event?.request?.userAttributes?.email;
+  } else {
+    return {
+      statusCode: 401,
+      //  Uncomment below to enable CORS requests
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "*"
+      },
+      body: JSON.stringify({
+        message: "Unauthorized. No email attribute found in event."
+      }),
+    };
+  }
 
   const url = `${apiPath}player/create&username=${username}&password=${password}&email=${email}`;
 
@@ -56,6 +70,8 @@ async function createUser(event) {
     const result = await axios.get(url, {
       headers
     });
+
+    console.log("Axios result:", result);
 
     const { response } = result;
 
@@ -69,7 +85,9 @@ async function createUser(event) {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "*"
       },
-      body: JSON.stringify('Done!'),
+      body: JSON.stringify({
+        message: "Success"
+      }),
     };
 
   } catch(e) {
@@ -86,7 +104,9 @@ async function createUser(event) {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "*"
       },
-      body: JSON.stringify('Failed!'),
+      body: JSON.stringify({
+        message: "Failed to update user. Create User App DB failed."
+      }),
     };
   }
 
@@ -100,7 +120,7 @@ exports.handler = createUser;
 
 
 function test_main() {
-  const mockEvent = {};
+  const mockEvent = {"mocked": true};
 
   createUser(mockEvent)
 
@@ -110,3 +130,4 @@ function test_main() {
 }
 
 // test_main();
+
