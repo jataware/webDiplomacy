@@ -8,7 +8,67 @@ const {
   NumberDictionary
 } = require('unique-names-generator');
 
+// Load the AWS SDK
+const AWS = require('aws-sdk');
+
 const { v4: uuid } = require('uuid');
+
+const region = "us-east-1",
+      secretName = "WebDiplomacy-DEV-API-KEY";
+
+const client = new AWS.SecretsManager({
+  region: region
+});
+
+function getSecret() {
+  return new Promise((resolve, reject) => {
+
+    client.getSecretValue({SecretId: secretName}, function(err, data) {
+      if (err) {
+        reject(err);
+        /*
+          if (err.code === 'DecryptionFailureException')
+          // Secrets Manager can't decrypt the protected secret text using the provided KMS key.
+          // Deal with the exception here, and/or rethrow at your discretion.
+          throw err;
+          else if (err.code === 'InternalServiceErrorException')
+          // An error occurred on the server side.
+          // Deal with the exception here, and/or rethrow at your discretion.
+          throw err;
+          else if (err.code === 'InvalidParameterException')
+          // You provided an invalid value for a parameter.
+          // Deal with the exception here, and/or rethrow at your discretion.
+          throw err;
+          else if (err.code === 'InvalidRequestException')
+          // You provided a parameter value that is not valid for the current state of the resource.
+          // Deal with the exception here, and/or rethrow at your discretion.
+          throw err;
+          else if (err.code === 'ResourceNotFoundException')
+          // We can't find the resource that you asked for.
+          // Deal with the exception here, and/or rethrow at your discretion.
+          throw err;
+        */
+      }
+      else {
+        // Decrypts secret using the associated KMS key.
+        // Depending on whether the secret is a string or binary, one of these fields will be populated.
+        let secret;
+        if ('SecretString' in data) {
+          secret = data.SecretString;
+        } else {
+          let buff = new Buffer(data.SecretBinary, 'base64');
+          secret = buff.toString('ascii');
+        }
+
+        console.log("this is the secret received:", secret);
+        console.log("this is the type of the secret received:", typeof secret);
+
+        resolve(secret);
+      }
+    });
+
+  });
+}
 
 
 const generateUsername = () => {
@@ -30,8 +90,10 @@ async function createUser(event, context, callback) {
 
   console.log(`EVENT: ${JSON.stringify(event)}`);
 
-  // TODO this needs to probably come from AWS secrets
-  const key = process.env.WEB_DIPLOMACY_SYSTEM_API_KEY;
+  // Stage|Prod:
+  const key = await getSecret();
+  // Local DEV key:
+  // process.env.WEB_DIPLOMACY_DEV_SYSTEM_API_KEY;
 
   console.log("key", key);
 
@@ -45,8 +107,9 @@ async function createUser(event, context, callback) {
   // We'll never recall or know this password
   const password=uuid();
 
-  let email=""; // TODO get email from cognito event? and has it
+  let email="";
   if (event?.request?.userAttributes?.email) {
+    console.log("Have email on request attribute");
     email = event?.request?.userAttributes?.email;
   } else {
     return {
