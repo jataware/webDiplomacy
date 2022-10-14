@@ -14,15 +14,11 @@ import { ConsentPage } from "./Consent";
 function userAPIConsent(authUser) {
   const token = authUser.signInUserSession.idToken.jwtToken;
 
-  console.log("token", token);
-
   const requestInfo = {
     headers: {
       Authorization: token
     }
   };
-
-  console.log("Posting to webDiplomacyExtAPI");
 
   return API.post('webDiplomacyExtAPI', '/consent', requestInfo);
 }
@@ -31,7 +27,6 @@ async function handleIRBAccept(user) {
   try {
     const result = await userAPIConsent(user);
     return true;
-
   } catch(e) {
     // TODO Unable to accept consent. What shall we do here.
     console.log('Error updating user consent information:', e);
@@ -44,26 +39,26 @@ async function handleIRBAccept(user) {
  **/
 const AuthIRBHandler = ({user, signOut, children}) => {
 
-  if (!user) {
-    console.log("Error: We've made it so far here but there is not user available.");
-  }
+  const [acceptedConsent, setAcceptedConsent] = React.useState(true);
 
-  const [accepted, setAccepted] = React.useState(false);
+  React.useEffect(() => {
+    const noCacheUser = Auth.currentAuthenticatedUser({ bypassCache: true })
+    .then((nonCachedUser) => {
+      const hasAccepted = Boolean(nonCachedUser.attributes['custom:accepted-terms-at']);
+      setAcceptedConsent(hasAccepted);
+    });
 
-  const hasAcceptedConsent = user.attributes['custom:accepted-terms-at'] || accepted;
+  }, []);
 
-  if (!hasAcceptedConsent) {
-    console.log('Has not accepted consent');
+
+  if (!acceptedConsent) {
+    console.log('Player user has not accepted IRB consent');
 
     return (
       <ConsentPage
         onDecline={signOut}
         onAccept={() => {
-          handleIRBAccept(user)
-            .then(() => {
-              console.log('accepted');
-              setAccepted(true);
-            });
+          handleIRBAccept(user);
         }} />
     );
   }

@@ -1,4 +1,5 @@
 /* Amplify Params - DO NOT EDIT
+	AUTH_WEBDIPLOMACYBETABRC2EE57C11_USERPOOLID
 	ENV
 	REGION
 Amplify Params - DO NOT EDIT */
@@ -20,10 +21,12 @@ const cisProvider = new AWS.CognitoIdentityServiceProvider({
   returns the userPoolId.
  */
 const getUserPoolId = cognitoUrl => {
-    let result = cognitoUrl.split("/");
-    result = result[result.length - 1];
+  console.log('get user pool id, cognitoUrl:', cognitoUrl);
 
-    return result;
+  let result = cognitoUrl.split("/");
+  result = result[result.length - 1];
+
+  return result;
 };
 
 /**
@@ -76,8 +79,9 @@ exports.handler = async (event) => {
   console.log(`EVENT: ${JSON.stringify(event)}`);
   console.log(`ENV: ${process.env}`);
 
-
   if (get(event, 'requestContext.authorizer.claims')) {
+
+    console.log("authorized claims found");
 
     const { claims } = event.requestContext.authorizer;
 
@@ -85,6 +89,9 @@ exports.handler = async (event) => {
       // TODO verify if preferred username is still named cognito:username
       const username = claims['cognito:username'];
       const poolId = getUserPoolId(claims.iss);
+
+      console.log('username', username);
+      console.log('poolId', poolId);
 
       const result = await consentAcceptTerms(username, poolId);
       log('Successfully updated user consent/terms acceptance date:', result);

@@ -26,7 +26,7 @@
         },
         "webDiplomacyIRBConsentProcessor": {
           "deploymentBucketName": "amplify-webdiplomacybetabrc-dev-95733-deployment",
-          "s3Key": "amplify-builds/webDiplomacyIRBConsentProcessor-626c4f6b626265744a72-build.zip"
+          "s3Key": "amplify-builds/webDiplomacyIRBConsentProcessor-314f447a45416a6a3130-build.zip"
         }
       }
     }
