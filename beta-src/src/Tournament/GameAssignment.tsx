@@ -69,7 +69,9 @@ const GameAssignment = (props) => {
   React.useEffect(() => {
     fetchWaitingPlayers()
       .then(response => {
-        setUnassignedPlayers(response);
+        if (response) {
+          setUnassignedPlayers(response);
+        }
       })
   }, []); // TODO on mount only for now
 
@@ -81,7 +83,9 @@ const GameAssignment = (props) => {
 
         fetchAllGameDataforIDs(waitingGameIDs)
           .then(games => {
-            setWaitingGames(games);
+            if (games) {
+              setWaitingGames(games);
+            }
           });
       })
   }, []); // TODO on mount only for now

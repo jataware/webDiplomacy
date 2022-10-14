@@ -46,7 +46,9 @@ const PlayerList = (props) => {
   React.useEffect(() => {
     fetchAllPlayers()
       .then(responsePlayers => {
-        setPlayers(responsePlayers);
+        if (responsePlayers) {
+          setPlayers(responsePlayers);
+        }
       })
   }, []); // TODO only on mount for now
 
