@@ -26,7 +26,7 @@ function userAPIConsent(authUser) {
 async function handleIRBAccept(user) {
   try {
     const result = await userAPIConsent(user);
-    return true;
+    return result;
   } catch(e) {
     // TODO Unable to accept consent. What shall we do here.
     console.log('Error updating user consent information:', e);
@@ -37,19 +37,28 @@ async function handleIRBAccept(user) {
 /**
  *
  **/
-const AuthIRBHandler = ({user, signOut, children}) => {
+const AuthIRBHandler = ({user, signOut, children, acceptedConsent, setAcceptedConsent}) => {
 
-  const [acceptedConsent, setAcceptedConsent] = React.useState(true);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const noCacheUser = Auth.currentAuthenticatedUser({ bypassCache: true })
-    .then((nonCachedUser) => {
-      const hasAccepted = Boolean(nonCachedUser.attributes['custom:accepted-terms-at']);
-      setAcceptedConsent(hasAccepted);
-    });
+    const noCacheUser = Auth
+      .currentAuthenticatedUser({ bypassCache: true })
+      .then((nonCachedUser) => {
+        const hasAccepted = Boolean(nonCachedUser.attributes['custom:accepted-terms-at']);
+        setAcceptedConsent(hasAccepted);
+      }).finally(() => {
+        setLoading(false);
+      })
+  }, [acceptedConsent, loading]);
 
-  }, []);
-
+  if (loading) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   if (!acceptedConsent) {
     console.log('Player user has not accepted IRB consent');
@@ -58,7 +67,9 @@ const AuthIRBHandler = ({user, signOut, children}) => {
       <ConsentPage
         onDecline={signOut}
         onAccept={() => {
-          handleIRBAccept(user);
+          handleIRBAccept(user).then(result => {
+            setAcceptedConsent(true);
+          })
         }} />
     );
   }
@@ -82,6 +93,8 @@ const App: React.FC = function (): React.ReactElement {
   const [fetchedGames, setFetchedGames] = React.useState(false);
   const [fetchedAdmin, setIsAdmin] = React.useState(false);
 
+  const [acceptedConsent, setAcceptedConsent] = React.useState(false);
+
   React.useEffect(() => {
     if (!fetchedGames) {
       console.log("App fetching games.");
@@ -91,7 +104,6 @@ const App: React.FC = function (): React.ReactElement {
     }
 
     if (!fetchedAdmin) {
-      console.log('called fetchPlayerIsAdmin');
       dispatch(fetchPlayerIsAdmin());
       setIsAdmin(true);
     }
@@ -113,15 +125,12 @@ const App: React.FC = function (): React.ReactElement {
     }
   }
 
-  console.log("userCurrentActiveGames", userCurrentActiveGames);
-  console.log("isAdmin", Admin);
-
   const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
   const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
     .find(g => g.gameID == currentGameID));
 
-  console.log("isUserInCurrentGame", isUserInCurrentGame);
+  /* console.log("isUserInCurrentGame", isUserInCurrentGame); */
 
   if (shouldRedirectToGame && !Admin) {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
@@ -153,6 +162,8 @@ const App: React.FC = function (): React.ReactElement {
       >
         {({ signOut, user }) => (
           <AuthIRBHandler
+            acceptedConsent={acceptedConsent}
+            setAcceptedConsent={setAcceptedConsent}
             signOut={signOut}
             user={user}>
             <MainElement
