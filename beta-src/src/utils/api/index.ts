@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import { Auth } from "aws-amplify";
 import ApiRoute from "../../enums/ApiRoute";
 
 export type QueryParams = {
@@ -17,46 +18,91 @@ const buildQueryString = (params: QueryParams): string =>
     .join("&");
 
 const api = axios.create({
-  // why do we need multipart form-data?
   // headers: {
   //   "Content-Type": "multipart/form-data",
   // },
 });
 
+async function getToken() {
+  const user = await Auth.currentAuthenticatedUser();
+  const token = user.signInUserSession.idToken.jwtToken;
+
+  return token;
+}
+
 export const getGameApiRequest = (
   route: ApiRoute,
   queryParams: QueryParams,
   timeout?: number,
-): Promise<AxiosResponse> =>
-  api.get(`../api.php?route=${route}&${buildQueryString(queryParams)}`, {
-    timeout,
-  });
+): Promise<AxiosResponse> => {
+  async function getRequest() {
+
+    const token = await getToken();
+
+    return api.get(`../api.php?route=${route}&${buildQueryString(queryParams)}`, {
+      timeout,
+      headers: {
+        "IdToken": token
+      }
+    });
+  }
+
+  return getRequest();
+}
 
 export const postGameApiRequest = (
   route: ApiRoute,
   json: QueryParams,
   timeout?: number,
 ): Promise<AxiosResponse> =>
-  api.post(`../api.php?route=${route}`, json, {
-    timeout,
-  });
+  {
+  async function postRequest() {
+
+    const token = await getToken();
+
+    return api.post(`../api.php?route=${route}`, json, {
+      timeout,
+      headers: {
+        "IdToken": token
+      }
+    });
+  }
+
+  return postRequest();
+}
 
 const orderSubmission = axios.create({
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
-  },
+  // headers: {
+  //   "Content-Type": "application/x-www-form-urlencoded",
+  // },
 });
 
 export const submitOrders = (
   orders,
   queryParams: QueryParams = {},
 ): Promise<AxiosResponse> => {
-  // console.log({ submittedOrders: orders });
-  if (Object.keys(queryParams).length) {
-    return orderSubmission.post(
-      `../ajax.php?${buildQueryString(queryParams)}`,
-      orders,
-    );
+
+  async function submitRequest() {
+    const token = await getToken();
+
+    const config = {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "IdToken": token
+      }
+    };
+
+    if (Object.keys(queryParams).length) {
+      return orderSubmission.post(
+        `../ajax.php?${buildQueryString(queryParams)}`,
+        orders,
+        config
+      );
+    }
+
+    return orderSubmission.post(`../ajax.php`, orders, config);
   }
-  return orderSubmission.post(`../ajax.php`, orders);
+
+  return submitRequest();
+
 };

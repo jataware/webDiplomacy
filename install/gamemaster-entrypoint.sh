@@ -36,6 +36,10 @@ fi
 
 sleep 2
 
+cd magic-verify
+npm install
+cd ..
+
 echo "Start gamemaster"
 while true; do
   gameMasterSecret='' QUERY_STRING='' php -f $HOME/gamemaster.php > /dev/null 2>&1
