@@ -1,3 +1,6 @@
 {
-  "lambdaLayers": []
+  "lambdaLayers": [],
+  "secretNames": [
+    "WebDiplomacy_DEV_API_KEY"
+  ]
 }
