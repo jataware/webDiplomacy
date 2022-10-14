@@ -659,13 +659,23 @@ class WaitingPlayers extends ApiEntry {
 		
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
+			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+			$row = $DB->sql_hash($SQL);
+			$lastScore = 0;
+			if ($row){
+				$lastScore = $row['supplyCenterNo'];
+			}
+
+			
+
 			
       $toPush = [
 			"id"=> intval($ret[0]), 
 			"username" => $ret[1],
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
-			"gameCount" => intval($gameCount[0])];
+			"gameCount" => intval($gameCount[0]),
+			"lastScore" => intval($lastScore)];
       
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid

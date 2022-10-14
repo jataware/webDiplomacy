@@ -181,7 +181,7 @@ const GameAssignment = (props) => {
                   button
                   sx={{cursor: "default"}}
                 >
-                  {player.id} &nbsp; {player.username}
+                  {player.id} &nbsp; {player.username} ({player.lastScore})
                 </ListItem>
               ))}
             </List>
