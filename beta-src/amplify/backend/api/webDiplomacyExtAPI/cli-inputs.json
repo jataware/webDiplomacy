@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "paths": {
+    "/consent": {
+      "name": "/consent",
+      "lambdaFunction": "webDiplomacyIRBConsentProcessor",
+      "permissions": {
+        "setting": "protected",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ],
+        "guest": [
+          "read"
+        ]
+      }
+    }
+  }
+}

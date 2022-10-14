@@ -26,15 +26,14 @@ import unsplash2 from "../../assets/waiting-room-backgrounds/unsplash2.png";
 import unsplash3 from "../../assets/waiting-room-backgrounds/unsplash3.png";
 import unsplash4 from "../../assets/waiting-room-backgrounds/unsplash4.jpg";
 
-const LogOutButton = (props) => {
+const LogOutButton = ({onClick}) => {
   return (
     <Button
-      component="a"
-    style={{
-      fontSize: "15px",
-      color: "white",
-    }}
-    href="logon.php?logoff=on">Log off</Button>
+      onClick={onClick}
+      style={{
+        fontSize: "15px",
+        color: "white",
+      }}>Log off</Button>
   );
 }
 
@@ -131,7 +130,7 @@ const WelcomeMessage = (props) => {
 
 
 // https://www.imgacademy.com/sites/default/files/2022-07/img-homepage-meta.jpg
-const Lobby = (props) => {
+const Lobby = ({signOut}) => {
 
   var images = [
     chess1,
@@ -185,7 +184,7 @@ const Lobby = (props) => {
                 <MenuIcon />
               </IconButton>
             </Box>
-            <LogOutButton />
+            <LogOutButton onClick={signOut} />
           </Toolbar>
         </AppBar>
 

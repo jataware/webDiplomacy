@@ -2,7 +2,7 @@ import * as React from "react";
 import "@aws-amplify/ui-react/styles.css"; // eslint-disable-line
 import "./assets/css/App.css";
 import { Authenticator } from "@aws-amplify/ui-react";
-/* import { Auth } from 'aws-amplify'; */
+import { API, Auth } from 'aws-amplify';
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
 import { fetchPlayerIsAdmin, loadGame, isAdmin} from "./state/game/game-api-slice";
@@ -11,16 +11,76 @@ import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api
 import TournamentDashboard from "./Tournament/Dashboard";
 import { ConsentPage } from "./Consent";
 
-const App: React.FC = function (): React.ReactElement {
+function userAPIConsent(authUser) {
+  const token = authUser.signInUserSession.idToken.jwtToken;
 
-  // TODO Return consent instead as/when required
-  // If user hasn't accepted IRB before.
-  /* return (
-   *     <ConsentPage
-           onAccept={}
-           onDecline={}
-         />
-   * ); */
+  const requestInfo = {
+    headers: {
+      Authorization: token
+    }
+  };
+
+  return API.post('webDiplomacyExtAPI', '/consent', requestInfo);
+}
+
+async function handleIRBAccept(user) {
+  try {
+    const result = await userAPIConsent(user);
+    return result;
+  } catch(e) {
+    // TODO Unable to accept consent. What shall we do here.
+    console.log('Error updating user consent information:', e);
+    throw e;
+  }
+}
+
+/**
+ *
+ **/
+const AuthIRBHandler = ({user, signOut, children, acceptedConsent, setAcceptedConsent}) => {
+
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const noCacheUser = Auth
+      .currentAuthenticatedUser({ bypassCache: true })
+      .then((nonCachedUser) => {
+        const hasAccepted = Boolean(nonCachedUser.attributes['custom:accepted-terms-at']);
+        setAcceptedConsent(hasAccepted);
+      }).finally(() => {
+        setLoading(false);
+      })
+  }, [acceptedConsent, loading]);
+
+  if (loading) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!acceptedConsent) {
+    console.log('Player user has not accepted IRB consent');
+
+    return (
+      <ConsentPage
+        onDecline={signOut}
+        onAccept={() => {
+          handleIRBAccept(user).then(result => {
+            setAcceptedConsent(true);
+          })
+        }} />
+    );
+  }
+
+  return children;
+};
+
+/**
+ *
+ **/
+const App: React.FC = function (): React.ReactElement {
 
   const urlParams = new URLSearchParams(window.location.search);
   const currentGameID = urlParams.get("gameID");
@@ -33,18 +93,21 @@ const App: React.FC = function (): React.ReactElement {
   const [fetchedGames, setFetchedGames] = React.useState(false);
   const [fetchedAdmin, setIsAdmin] = React.useState(false);
 
-  if (!fetchedGames) {
-    console.log("App fetching games.");
-    dispatch(fetchPlayerActiveGames());
-    // TODO continue fetching games ocassionally on interval until we are assigned one
-    setFetchedGames(true);
-  }
+  const [acceptedConsent, setAcceptedConsent] = React.useState(false);
 
-  if (!fetchedAdmin) {
-    console.log('called fetchPlayerIsAdmin');
-    dispatch(fetchPlayerIsAdmin());
-    setIsAdmin(true);
-  }
+  React.useEffect(() => {
+    if (!fetchedGames) {
+      console.log("App fetching games.");
+      dispatch(fetchPlayerActiveGames());
+      // TODO continue fetching games ocassionally on interval until we are assigned one
+      setFetchedGames(true);
+    }
+
+    if (!fetchedAdmin) {
+      dispatch(fetchPlayerIsAdmin());
+      setIsAdmin(true);
+    }
+  }, [fetchedGames, fetchedAdmin]);
 
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
   const Admin = useAppSelector(isAdmin);
@@ -62,15 +125,12 @@ const App: React.FC = function (): React.ReactElement {
     }
   }
 
-  console.log("userCurrentActiveGames", userCurrentActiveGames);
-  console.log("isAdmin", Admin);
-
   const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
   const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
     .find(g => g.gameID == currentGameID));
 
-  console.log("isUserInCurrentGame", isUserInCurrentGame);
+  /* console.log("isUserInCurrentGame", isUserInCurrentGame); */
 
   if (shouldRedirectToGame && !Admin) {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
@@ -82,13 +142,13 @@ const App: React.FC = function (): React.ReactElement {
     window.location.replace(window.location.origin + window.location.pathname);
   }
 
-  // TODO check user type (admin) to allow admins spectatew
+  let MainElement = WDMain;
+
+  // TODO check user type to allow admins to spectate
   if (userCurrentActiveGames.length === 0 && !Admin) {
-    var mainElement = <WDLobby />;
-  }
-  else {
+     MainElement = WDLobby;
+  } else {
     dispatch(loadGame(String(currentGameID)));
-    var mainElement = <WDMain />;
   }
 
   return (
@@ -100,7 +160,17 @@ const App: React.FC = function (): React.ReactElement {
         variation="modal"
         signUpAttributes={['email']}
       >
-        {mainElement}
+        {({ signOut, user }) => (
+          <AuthIRBHandler
+            acceptedConsent={acceptedConsent}
+            setAcceptedConsent={setAcceptedConsent}
+            signOut={signOut}
+            user={user}>
+            <MainElement
+              signOut={signOut}
+            />
+          </AuthIRBHandler>
+        )}
       </Authenticator>
     </div>
   )

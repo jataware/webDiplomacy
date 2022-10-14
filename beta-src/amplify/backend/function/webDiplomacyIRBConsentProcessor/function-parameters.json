@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "auth": {
+      "webdiplomacybetabrc2ee57c11": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}
