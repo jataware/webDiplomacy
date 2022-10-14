@@ -39,7 +39,9 @@ const generateUsername = () => {
 };
 
 const DEV_PATH = "http://localhost/api.php?route="; // Use as apiPath during local dev
-const apiPath = `http://${process.env.API_HOST}/api.php?route=`;
+const apiPath = `https://${process.env.API_HOST}/api.php?route=`;
+
+const isLocal = !!process.env.WEB_DIPLOMACY_DEV_SYSTEM_API_KEY;
 
 /**
  *
@@ -49,15 +51,26 @@ async function createUser(event, context, callback) {
   console.log(`EVENT: ${JSON.stringify(event)}`);
   console.log("context:", context);
 
-  // Stage|Prod:
-  const parameters = await getAPIKey();
-  const key = parameters[0].Value;
-  // Local DEV key:
-  // process.env.WEB_DIPLOMACY_DEV_SYSTEM_API_KEY;
+  console.log("Lambda updated to version Oct 14, 3:18pm");
 
-  const headers = {
-    "Authorization": `Bearer ${key}`
+  let key="";
+
+  if (isLocal) {
+    key=process.env.WEB_DIPLOMACY_DEV_SYSTEM_API_KEY;
+  } else {
+    // Stage|Prod:
+    const parameters = await getAPIKey();
+    key = parameters[0].Value;
+  }
+
+  const config = {
+    headers: {
+      "Content-type": "application/json",
+      "Authorization": `Bearer ${key}`,
+    },
   };
+
+  console.log('config', config);
 
   // Generate the username for the players to use
   const username=generateUsername();
@@ -72,17 +85,18 @@ async function createUser(event, context, callback) {
     throw new Error("Unauthorized. No email attribute found");
   }
 
-  const url = `${apiPath}player/create&username=${username}&password=${password}&email=${email}`;
+  let url = `${apiPath}player/create&username=${username}&password=${password}&email=${email}`;
+
+  // if (isLocal) {
+  //   url = `${DEV_PATH}player/create&username=${username}&password=${password}&email=${email}`;
+  // }
+
   console.log("url", url);
 
   try {
-    const result = await axios.get(url, {
-      headers
-    });
+    const result = await axios.get(`${url}`, config);
 
-    const { response } = result;
-    console.log("Data", result.data);
-    console.log("Status", result.status);
+    console.log("result", result);
 
     callback(null, event);
 
@@ -110,18 +124,16 @@ function test_main() {
   const mockEvent = {
     "request": {
       "userAttributes": {
-        "email": "testmainemail@localnodedev.com",
+        "email": "lastdestmainemail@localnodedev.com",
         "email_verified": true
       }
     },
     "response": {}
   };
 
-  createUser(mockEvent)
-
-    .then(respose => {
-      console.log("Got response", response);
-    });
+  createUser(mockEvent, {}, () => {console.log('Done calling axios');});
 }
 
-// test_main();
+if (isLocal) {
+  test_main();
+}
