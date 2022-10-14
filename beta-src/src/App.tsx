@@ -1,26 +1,40 @@
 import * as React from "react";
-
+import "@aws-amplify/ui-react/styles.css"; // eslint-disable-line
 import "./assets/css/App.css";
+import { Authenticator } from "@aws-amplify/ui-react";
+/* import { Auth } from 'aws-amplify'; */
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
 import { fetchPlayerIsAdmin, loadGame, isAdmin} from "./state/game/game-api-slice";
 import { useAppDispatch, useAppSelector } from "./state/hooks";
 import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
-import TournamentDashboard from './Tournament/Dashboard';
+import TournamentDashboard from "./Tournament/Dashboard";
+import { ConsentPage } from "./Consent";
 
 const App: React.FC = function (): React.ReactElement {
+
+  // TODO Return consent instead as/when required
+  // If user hasn't accepted IRB before.
+  /* return (
+   *     <ConsentPage
+           onAccept={}
+           onDecline={}
+         />
+   * ); */
 
   const urlParams = new URLSearchParams(window.location.search);
   const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
-  console.log('currentGameID', currentGameID);
+
+  console.log("currentGameID", currentGameID);
+
   const adminDashboard = urlParams.get("admin");
 
   const [fetchedGames, setFetchedGames] = React.useState(false);
   const [fetchedAdmin, setIsAdmin] = React.useState(false);
 
   if (!fetchedGames) {
-    console.log('App fetching games.');
+    console.log("App fetching games.");
     dispatch(fetchPlayerActiveGames());
     // TODO continue fetching games ocassionally on interval until we are assigned one
     setFetchedGames(true);
@@ -56,7 +70,7 @@ const App: React.FC = function (): React.ReactElement {
   const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
     .find(g => g.gameID == currentGameID));
 
-  console.log('isUserInCurrentGame', isUserInCurrentGame);
+  console.log("isUserInCurrentGame", isUserInCurrentGame);
 
   if (shouldRedirectToGame && !Admin) {
     window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
@@ -82,7 +96,12 @@ const App: React.FC = function (): React.ReactElement {
     {/* The following line prevents the UI from being scaled down when the viewport is small.
   That leads to a very bad experience for this UI, with part of the map cut off. */}
       <meta name="viewport" content="width=device-width, user-scalable=no" />
-      {mainElement}
+      <Authenticator
+        variation="modal"
+        signUpAttributes={['email']}
+      >
+        {mainElement}
+      </Authenticator>
     </div>
   )
 };

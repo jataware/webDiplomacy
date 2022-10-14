@@ -51,6 +51,11 @@ else
     echo "DB created"
   fi
 
+
+  cd magic-verify
+  npm install
+  cd ..
+
   sleep 2
 
   echo "Start gamemaster"
@@ -62,3 +67,4 @@ else
   done
 
 fi
+

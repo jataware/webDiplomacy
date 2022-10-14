@@ -43,6 +43,7 @@ require_once('lib/variant.php');
 require_once('board/orders/jsonBoardData.php');
 require_once('variants/install.php');
 require_once('gamemaster/gamemaster.php');
+
 $DB = new Database();
 
 /**
@@ -621,6 +622,7 @@ class GetGamesStates extends ApiEntry {
 		return $gameState->toJson();
 	}
 }
+
 class CreatePlayer extends ApiEntry {
 	public function __construct()
     {
@@ -1789,14 +1791,6 @@ class GetMessages extends ApiEntry {
 	}
 	public function run($userID, $permissionIsExplicit) {
 
-        // NOTE Sample loggin to docker output:
-        // $json = '{
-        //   "msg": "Invalid username",
-        //   "code": "601",
-        //   "username": "ae2ivz!"
-        // }';
-        // error_log($json);
-
 		global $DB, $MC;
 		$args = $this->getArgs();
 		$countryID = $args['countryID'] ?? 0;
@@ -1865,7 +1859,6 @@ class GetMessages extends ApiEntry {
 		// Return Messages.
 		$curTime = time();
 		$responseStr = $messages ? 'Successfully retrieved game messages.' : 'No messages available';
-		// error_log("$responseStr at time $curTime");
 		$newMessagesFrom = $countryID == 0 ? [] : array_map('intval', $game->Members->ByUserID[$userID]->newMessagesFrom);
 		return $this->JSONResponse(
 			$responseStr,
@@ -1954,7 +1947,6 @@ abstract class ApiAuth {
 			// Otherwise, any user can call this function.
 			if ($apiEntry->requiresGameID() && !$apiEntry->isUserMemberOfGame($this->userID))
 				throw new ClientForbiddenException('Access denied. User '.$this->userID.' is not member of associated game.');
-			
 		} else {
 			// Permission field available.
 			if (!in_array($permissionField, self::$permissionFields))
@@ -1982,6 +1974,75 @@ abstract class ApiAuth {
 	public function getUserID() {
 		return $this->userID;
 	}
+}
+
+/**
+ * Get IdToken Header Value
+ * */
+function getIdTokenFromHeader() {
+	$headers = null;
+	if (isset($_SERVER['HTTP_IDTOKEN'])) {
+		$headers = trim($_SERVER["HTTP_IDTOKEN"]);
+	}
+	return $headers;
+}
+
+/**
+ * Get IdToken Header Value
+ * */
+function validateAccessAndIdTokens($idToken) {
+    $result = shell_exec("node ./magic-verify/index.mjs -t " . $idToken);
+    return $result;
+}
+
+class IdToken extends ApiAuth {
+    /**
+	 * API access key.
+	 * @var string
+	 */
+	private $token;
+
+    public function __construct($route){
+		$IdTokenString = getIdTokenFromHeader();
+
+		if ($IdTokenString == null)
+			throw new ClientUnauthorizedException('No IdToken provided.');
+
+		$this->token = $IdTokenString;
+
+		$this->cacheKey = 'id-' . $this->token . '-' . $route;
+
+		foreach (self::$permissionFields as $permissionField)
+			$this->permissions[$permissionField] = false;
+
+		$this->load();
+	}
+
+	protected function load() {
+		global $DB;
+
+        // TODO Validate both ID token and ACCESS token. One to get user info, another for valid "session"
+        $result = validateAccessAndIdTokens($this->token);
+        $decoded = json_decode($result);
+        $email = $decoded->email;
+
+        // TODO match to email hash or so... or any other unique column in DB
+		$rowUserID = $DB->sql_hash("SELECT id from wD_Users WHERE email = '".$DB->escape($email)."'");
+
+		if (!$rowUserID) {
+            error_log('$$$$$$$$$$$ A token WITHOUT a user exists. ========= THIS IS BAD. FIXME ========== $$$$$$$$$$$$$$$$ ');
+			throw new ClientUnauthorizedException('No user associated to this token.');
+        }
+		$this->userID = intval($rowUserID['id']);
+		$permissionRow = $DB->sql_hash("SELECT * FROM wD_ApiPermissions WHERE userID = ".$this->userID);
+		if ($permissionRow) {
+			foreach (self::$permissionFields as $permissionField) {
+				if ($permissionRow[$permissionField] == 'Yes')
+					$this->permissions[$permissionField] = true;
+			}
+		}
+	}
+
 }
 
 class ApiKey extends ApiAuth {
@@ -2030,7 +2091,7 @@ class ApiSession extends ApiAuth {
 	public function __construct($route){
 		foreach (self::$permissionFields as $permissionField)
 			$this->permissions[$permissionField] = false;
-		
+
 		// every session user can get state of all games (i.e. spectate)
 		$this->permissions["getStateOfAllGames"] = true;
 
@@ -2094,13 +2155,20 @@ class Api {
 
 		if ( !empty( $User ) && ( $User->type['User'] ?? false ) === true ){
 			/**
-			 * If the request is an API call using the existing user session, process using the ApiSession class. 
+			 * If the request is an API call using the existing user session, process using the ApiSession class.
 			 */
+
+            error_log("Using ApiSession session server");
 			$this->authClass = 'ApiSession';
-		}else{
+
+		} elseif (isset($_SERVER['HTTP_IDTOKEN'])) {
+            error_log("Using IdToken header session server");
+            $this->authClass = 'IdToken';
+        } else {
 			/**
-			 * If the request is an API call using an API key, process using the ApiKey class. 
+			 * If the request is an API call using an API key (for bots, system), process using the ApiKey class.
 			 */
+            error_log("using ApiKey header session server");
 			$this->authClass = 'ApiKey';
 		}
 
@@ -2111,8 +2179,8 @@ class Api {
 		$permissionIsExplicit = $apiAuth->assertHasPermissionFor($apiEntry);
 		// Execute request.
 		$userID = $apiAuth->getUserID();
-		$result = $apiEntry->run($userID, $permissionIsExplicit); 
-		
+		$result = $apiEntry->run($userID, $permissionIsExplicit);
+
 		// if( false && $route == 'players/missing_orders' )
 		// {
 		// 	$result = $MC->get($key);
