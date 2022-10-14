@@ -2,5 +2,11 @@
   "lambdaLayers": [],
   "secretNames": [
     "WebDiplomacy_DEV_API_KEY"
+  ],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "apiHost",
+      "environmentVariableName": "API_HOST"
+    }
   ]
 }
