@@ -9,18 +9,24 @@
       "UnauthRoleName": "amplify-webdiplomacybetabrc-dev-95733-unauthRole",
       "StackName": "amplify-webdiplomacybetabrc-dev-95733",
       "StackId": "arn:aws:cloudformation:us-east-1:595603857057:stack/amplify-webdiplomacybetabrc-dev-95733/dc41e470-32a2-11ed-b88b-0a73c1316d37",
-      "AmplifyAppId": "d32xmaf7tocqpb"
+      "AmplifyAppId": "d32xmaf7tocqpb",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-webdiplomacybetabrc-dev-95733-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
     },
     "categories": {
       "auth": {
-        "webdiplomacybetabrc2ee57c11": {}
+        "webdiplomacybetabrc2ee57c11": {},
+        "true": {}
       },
       "function": {
         "webDiplomacyPostConfirmUserEmail": {
           "deploymentBucketName": "amplify-webdiplomacybetabrc-dev-95733-deployment",
-          "s3Key": "amplify-builds/webDiplomacyPostConfirmUserEmail-4a396f376e4c46364a59-build.zip",
+          "s3Key": "amplify-builds/webDiplomacyPostConfirmUserEmail-5361593230634a634850-build.zip",
           "secretsPathAmplifyAppId": "d32xmaf7tocqpb",
           "apiHost": "dev.diplomacy.jata.lol"
+        },
+        "webDiplomacyIRBConsentProcessor": {
+          "deploymentBucketName": "amplify-webdiplomacybetabrc-dev-95733-deployment",
+          "s3Key": "amplify-builds/webDiplomacyIRBConsentProcessor-626c4f6b626265744a72-build.zip"
         }
       }
     }

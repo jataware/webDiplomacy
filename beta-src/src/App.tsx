@@ -2,7 +2,7 @@ import * as React from "react";
 import "@aws-amplify/ui-react/styles.css"; // eslint-disable-line
 import "./assets/css/App.css";
 import { Authenticator } from "@aws-amplify/ui-react";
-/* import { Auth } from 'aws-amplify'; */
+import { API, Auth } from 'aws-amplify';
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
 import { fetchPlayerIsAdmin, loadGame, isAdmin} from "./state/game/game-api-slice";
@@ -11,16 +11,70 @@ import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api
 import TournamentDashboard from "./Tournament/Dashboard";
 import { ConsentPage } from "./Consent";
 
-const App: React.FC = function (): React.ReactElement {
+function userAPIConsent(authUser) {
+  const token = authUser.signInUserSession.idToken.jwtToken;
 
-  // TODO Return consent instead as/when required
-  // If user hasn't accepted IRB before.
-  /* return (
-   *     <ConsentPage
-           onAccept={}
-           onDecline={}
-         />
-   * ); */
+  console.log("token", token);
+
+  const requestInfo = {
+    headers: {
+      Authorization: token
+    }
+  };
+
+  console.log("Posting to webDiplomacyExtAPI");
+
+  return API.post('webDiplomacyExtAPI', '/consent', requestInfo);
+}
+
+async function handleIRBAccept(user) {
+  try {
+    const result = await userAPIConsent(user);
+    return true;
+
+  } catch(e) {
+    // TODO Unable to accept consent. What shall we do here.
+    console.log('Error updating user consent information:', e);
+    throw e;
+  }
+}
+
+/**
+ *
+ **/
+const AuthIRBHandler = ({user, signOut, children}) => {
+
+  if (!user) {
+    console.log("Error: We've made it so far here but there is not user available.");
+  }
+
+  const [accepted, setAccepted] = React.useState(false);
+
+  const hasAcceptedConsent = user.attributes['custom:accepted-terms-at'] || accepted;
+
+  if (!hasAcceptedConsent) {
+    console.log('Has not accepted consent');
+
+    return (
+      <ConsentPage
+        onDecline={signOut}
+        onAccept={() => {
+          handleIRBAccept(user)
+            .then(() => {
+              console.log('accepted');
+              setAccepted(true);
+            });
+        }} />
+    );
+  }
+
+  return children;
+};
+
+/**
+ *
+ **/
+const App: React.FC = function (): React.ReactElement {
 
   const urlParams = new URLSearchParams(window.location.search);
   const currentGameID = urlParams.get("gameID");
@@ -33,18 +87,20 @@ const App: React.FC = function (): React.ReactElement {
   const [fetchedGames, setFetchedGames] = React.useState(false);
   const [fetchedAdmin, setIsAdmin] = React.useState(false);
 
-  if (!fetchedGames) {
-    console.log("App fetching games.");
-    dispatch(fetchPlayerActiveGames());
-    // TODO continue fetching games ocassionally on interval until we are assigned one
-    setFetchedGames(true);
-  }
+  React.useEffect(() => {
+    if (!fetchedGames) {
+      console.log("App fetching games.");
+      dispatch(fetchPlayerActiveGames());
+      // TODO continue fetching games ocassionally on interval until we are assigned one
+      setFetchedGames(true);
+    }
 
-  if (!fetchedAdmin) {
-    console.log('called fetchPlayerIsAdmin');
-    dispatch(fetchPlayerIsAdmin());
-    setIsAdmin(true);
-  }
+    if (!fetchedAdmin) {
+      console.log('called fetchPlayerIsAdmin');
+      dispatch(fetchPlayerIsAdmin());
+      setIsAdmin(true);
+    }
+  }, [fetchedGames, fetchedAdmin]);
 
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
   const Admin = useAppSelector(isAdmin);
@@ -82,13 +138,13 @@ const App: React.FC = function (): React.ReactElement {
     window.location.replace(window.location.origin + window.location.pathname);
   }
 
-  // TODO check user type (admin) to allow admins spectatew
+  let MainElement = WDMain;
+
+  // TODO check user type to allow admins to spectate
   if (userCurrentActiveGames.length === 0 && !Admin) {
-    var mainElement = <WDLobby />;
-  }
-  else {
+     MainElement = WDLobby;
+  } else {
     dispatch(loadGame(String(currentGameID)));
-    var mainElement = <WDMain />;
   }
 
   return (
@@ -100,7 +156,15 @@ const App: React.FC = function (): React.ReactElement {
         variation="modal"
         signUpAttributes={['email']}
       >
-        {mainElement}
+        {({ signOut, user }) => (
+          <AuthIRBHandler
+            signOut={signOut}
+            user={user}>
+            <MainElement
+              signOut={signOut}
+            />
+          </AuthIRBHandler>
+        )}
       </Authenticator>
     </div>
   )
