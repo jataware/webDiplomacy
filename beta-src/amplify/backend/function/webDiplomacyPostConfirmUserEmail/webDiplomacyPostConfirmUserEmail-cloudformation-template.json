@@ -18,6 +18,9 @@
     },
     "secretsPathAmplifyAppId": {
       "Type": "String"
+    },
+    "apiHost": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -94,6 +97,9 @@
                   "WebDiplomacy_DEV_API_KEY"
                 ]
               ]
+            },
+            "API_HOST": {
+              "Ref": "apiHost"
             }
           }
         },

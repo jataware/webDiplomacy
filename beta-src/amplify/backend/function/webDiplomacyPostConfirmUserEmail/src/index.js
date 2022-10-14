@@ -38,9 +38,8 @@ const generateUsername = () => {
   });
 };
 
-const DEV_PATH = "http://dev.diplomacy.jata.lol/api.php?route=";
-// TODO modify for dev/prod.
-const apiPath = DEV_PATH;
+const DEV_PATH = "http://localhost/api.php?route="; // Use as apiPath during local dev
+const apiPath = `http://${process.env.API_HOST}/api.php?route=`;
 
 /**
  *
