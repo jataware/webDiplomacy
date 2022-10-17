@@ -21,15 +21,20 @@ const AllGames = (props) => {
   const [crashedGames, setCrashedGames] = React.useState([]);
   const [finishedGames, setFinishedGames] = React.useState([]);
 
+  const [loading, setLoading] = React.useState(false);
+
   React.useEffect(() => {
 
+    setLoading(true);
+
+    Promise.all([
     getGameApiRequest("game/crashedgames", {hello: "word"})
       .then(ids => {
         fetchAllGameDataforIDs(ids.data)
           .then(games => {
             setCrashedGames(games);
           });
-      });
+      }),
 
     getGameApiRequest("game/finishedgames", {hello: "word"})
       .then(ids => {
@@ -37,7 +42,10 @@ const AllGames = (props) => {
           .then(games => {
             setFinishedGames(games);
           });
-      });
+      })
+    ]).finally(() => {
+      setLoading(false);
+    });
 
   }, []); // TODO only on mount for now
 
@@ -45,6 +53,7 @@ const AllGames = (props) => {
     <div>
 
       <GameList
+        loading={loading}
         title="Crashed Games"
         games={crashedGames}
       />
@@ -52,6 +61,7 @@ const AllGames = (props) => {
       <br />
 
       <GameList
+        loading={loading}
         title="Finished Games"
         games={finishedGames}
         hideActions
