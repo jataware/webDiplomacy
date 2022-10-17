@@ -8,6 +8,11 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import EyeIcon from "@mui/icons-material/RemoveRedEye";
 import EndIcon from "@mui/icons-material/DoDisturbOn";
 
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import TextField from "@mui/material/TextField";
+
 import {
   getGameApiRequest
 } from "../utils/api";
@@ -23,14 +28,26 @@ const Game = ({game, displayProperties, style, hideActions}) => {
 
   const [loadingEndGame, setLoadingEndGame] = React.useState(false);
 
+  const [confirmEndGameOpen, setConfirmEndGameOpen] = React.useState(false);
+
+  const [endGameName, setEndGameName] = React.useState("");
+
   const observeGame = () => {
     const gameUrl = `?gameID=${game.gameID}`;
     window.open(gameUrl, '_blank');
   };
 
+  const startEndGame = () => {
+    setConfirmEndGameOpen(true);
+  };
+
   const endGame = () => {
-    setLoadingEndGame(true);
-    getGameApiRequest("game/draw", {gameID: game.gameID});
+    if (endGameName === game.name) {
+      setLoadingEndGame(true); // Remove/reset this state once we refetch data on ~intervals
+      getGameApiRequest("game/draw", {gameID: game.gameID});
+      setConfirmEndGameOpen(false);
+      setEndGameName("");
+    }
   };
 
   const downloadMessages = () => {
@@ -112,7 +129,7 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                 </PurpleButton>
               &nbsp;&nbsp;
               <BaseButton
-                onClick={endGame}
+                onClick={startEndGame}
                 color="warning"
                 variant="outlined"
               >
@@ -129,13 +146,54 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                   <EyeIcon />
                 </IconButton>
                 <IconButton
-                  onClick={endGame}
+                  onClick={startEndGame}
                   color="warning"
                 >
                   <EndIcon />
                 </IconButton>
               </>
             )}
+            <Dialog
+              open={confirmEndGameOpen}
+              onClose={() => { setConfirmEndGameOpen(false); setEndGameName(""); }}
+              fullWidth
+              sx={{
+                "& .MuiDialog-paper": {
+                  maxWidth: 500,
+                  border: "2px solid #000",
+                  p: 1
+                },
+              }}
+            >
+              <DialogTitle>
+                End Game
+              </DialogTitle>
+              <DialogContent>
+                <Typography
+                  variant="body1"
+                  gutterBottom>
+                  Please confirm game name in order to end it.
+                </Typography>
+                <Box
+                  sx={{display: "flex", p: 1, pl: 0, pr: 0}}
+                >
+                  <TextField
+                    sx={{minWidth: "15rem", marginRight: "0.75rem"}}
+                    autoFocus
+                    placeholder="Enter game name"
+                    label="Game Name"
+                    variant="outlined"
+                    value={endGameName}
+                    onChange={e => setEndGameName(e.target.value)}
+                  />
+                  <PurpleButton
+                    onClick={endGame}
+                    variant="outlined">
+                    End
+                  </PurpleButton>
+                </Box>
+              </DialogContent>
+            </Dialog>
           </Box>
         )}
       </ul>
