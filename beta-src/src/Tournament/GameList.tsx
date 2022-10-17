@@ -16,9 +16,9 @@ const gamePropertyMappings = {
 };
 
 /**
- * TODO wrapper that calls game type, and this one receives as props
+ *
  **/
-export const GameList = ({title, games, hideActions=false}) => {
+export const GameList = ({title, games, hideActions=false, loading=false}) => {
 
   const isDesktop = useMediaQuery('(min-width:1000px)');
 
@@ -97,6 +97,8 @@ export const GameList = ({title, games, hideActions=false}) => {
           ))}
         </div>
       </Box>
+      ) : loading ? (
+        <span>Loading content...</span>
       ) : (
         <Typography variant="body1">
           {`There are no ${title}.`}
@@ -106,23 +108,47 @@ export const GameList = ({title, games, hideActions=false}) => {
   );
 };
 
+/**
+ *
+ **/
 export const OngoingGames = (props) => {
-    const [ongoingGames, setOngoingGames] = React.useState([]);
+  const [ongoingGames, setOngoingGames] = React.useState([]);
 
-    React.useEffect(() => {
-      fetchOngoingGames()
-        .then(ongoingGamesIDs => {
-          // IDs
-          fetchAllGameDataforIDs(ongoingGamesIDs)
-            .then(games => {
-              setOngoingGames(games);
-            });
-        });
+  const intervalRef = React.useRef();
 
-    }, []);
+  const [loading, setLoading] = React.useState(false);
+
+  function fetchData() {
+    return fetchOngoingGames()
+      .then(ongoingGamesIDs => {
+        // IDs
+        fetchAllGameDataforIDs(ongoingGamesIDs)
+          .then(games => {
+            setOngoingGames(games);
+          });
+      });
+  }
+
+  React.useEffect(() => {
+    setLoading(true);
+
+    fetchData().finally(() => {
+      setLoading(false);
+    });
+
+    intervalRef.current = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    return function() {
+      clearInterval(intervalRef.current);
+    }
+
+  }, []);
 
   return (
     <GameList
+      loading={loading}
       title="Ongoing Games"
       games={ongoingGames}
     />
