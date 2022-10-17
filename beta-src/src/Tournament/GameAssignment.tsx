@@ -4,6 +4,9 @@ import isEmpty from "lodash/isEmpty";
 import random from "lodash/random";
 import sortBy from "lodash/sortBy";
 
+import { useDrag, useDrop, DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -27,10 +30,23 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
 
   const color = React.useMemo(() => {return randomColors[random(randomColors.length - 1)]}, [gameName]);
 
+  const [{isOver}, drop] = useDrop(() => ({
+    accept: "PLAYER",
+    drop: () => ({ name: gameName, id: gameId }),
+    collect: (monitor) => ({
+      isOver: monitor.isOver()
+    })
+  }));
+
   const playersToDisplay = isEmpty(players) ? [{username: "<Empty>", userID: 0}] : players;
 
   return (
-    <Box>
+    <Box
+      ref={drop}
+      sx={{
+        border: `2px solid ${isOver ? "purple" : "none"}`
+      }}
+    >
       <Typography
         sx={{
           color: color,
@@ -59,6 +75,49 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
   );
 }
 
+
+/**
+ *
+ **/
+const DraggableListItem = ({children, onDrop, player, ...props}) => {
+
+  const [{ opacity, isDragging }, dragRef, dragPreview] = useDrag(
+    () => ({
+      type: "PLAYER",
+      item: { id: player.id,
+              name: player.username },
+      end: (item, monitor) => {
+			  const dropResult = monitor.getDropResult();
+			  if (item && dropResult) {
+
+				  console.log(`Added player #${item.id} ${item.name} into game #${dropResult.id} ${dropResult.name}!`);
+
+          onDrop(item.id, dropResult.id);
+			  }
+		  },
+      collect: (monitor) => ({
+        opacity: monitor.isDragging() ? 0.5 : 1,
+        isDragging: monitor.isDragging()
+      })
+    }),
+    []
+  );
+
+  return isDragging ? (
+    <div ref={dragPreview} />
+  ) : (
+    <ListItem
+      {...props}
+      ref={dragRef}
+      role="listitem"
+      button
+      sx={{cursor: "grab", opacity}}
+    >
+      {children}
+    </ListItem>
+  );
+};
+
 /**
  *
  **/
@@ -66,18 +125,18 @@ const GameAssignment = (props) => {
 
   const [unassignedPlayers, setUnassignedPlayers] = React.useState([]);
 
-  React.useEffect(() => {
+  const [waitingGames, setWaitingGames] = React.useState([]);
+
+  const intervalRef = React.useRef();
+
+  function fetchData() {
     fetchWaitingPlayers()
       .then(response => {
         if (response) {
           setUnassignedPlayers(response);
         }
       })
-  }, []); // TODO on mount only for now
 
-  const [waitingGames, setWaitingGames] = React.useState([]);
-
-  React.useEffect(() => {
     fetchWaitingGames() // IDs
       .then(waitingGameIDs => {
 
@@ -88,7 +147,33 @@ const GameAssignment = (props) => {
             }
           });
       })
-  }, []); // TODO on mount only for now
+  }
+
+  const handleIndividualPlayerAdd = (playerId, gameId) => {
+    getGameApiRequest(
+      "game/join",
+      {
+        gameID: gameId,
+        userID: playerId
+      }
+    ).finally(() => {
+      fetchData();
+    });
+  };
+
+  React.useEffect(() => {
+
+    fetchData();
+
+    intervalRef.current = setInterval(() => {
+      fetchData();
+    }, 10000);
+
+    return function() {
+      clearInterval(intervalRef.current);
+    }
+
+  }, []);
 
   /**
    * Currently assigns players in order.
@@ -131,64 +216,65 @@ const GameAssignment = (props) => {
         currMemberCount++;
       });
 
+    fetchData();
+
   };
 
-
   return (
-    <section
-    style={{
-      padding: "1rem",
-        backgroundColor: "rgb(47,50,67)"
-      }}
-    >
-      <Typography
-        sx={{color: grayColor, textTransform: "uppercase"}}
-        variant="h5">
-        Game Assignment
-      </Typography>
+    <DndProvider backend={HTML5Backend}>
+      <section
+        style={{
+          padding: "1rem",
+          backgroundColor: "rgb(47,50,67)"
+        }}
+      >
+        <Typography
+          sx={{color: grayColor, textTransform: "uppercase"}}
+          variant="h5">
+          Game Assignment
+        </Typography>
 
-      <Box sx={{
-        display: "flex",
-        flexWrap: "wrap"
-      }}>
+        <Box sx={{
+          display: "flex",
+          flexWrap: "wrap"
+        }}>
 
-        <Box>
-          <Typography
-            sx={{
-              color: grayColor,
-              marginTop: 2,
-            }}
-            variant="h6"
-            gutterBottom
-          >
-            Waiting Players
-          </Typography>
-
-          <Paper
-            sx={{
-              width: 200,
-              height: 250,
-              display: "flex",
-              flexDirection: "column"
-            }}>
-            <List
+          <Box>
+            <Typography
               sx={{
-                overflowY: "auto",
-                height: 210
+                color: grayColor,
+                marginTop: 2,
               }}
-              component="div"
-              role="list">
-              {unassignedPlayers.map(player => (
-                <ListItem
-                  key={player.id}
-                  role="listitem"
-                  button
-                  sx={{cursor: "default"}}
-                >
-                  {player.id} &nbsp; {player.username} ({player.lastScore})
-                </ListItem>
-              ))}
-            </List>
+              variant="h6"
+              gutterBottom
+            >
+              Waiting Players
+            </Typography>
+
+            <Paper
+              sx={{
+                width: 200,
+                height: 250,
+                display: "flex",
+                flexDirection: "column"
+              }}>
+              <List
+                sx={{
+                  overflowY: "auto",
+                  height: 210
+                }}
+                component="div"
+                role="list">
+                {unassignedPlayers.map(player => (
+                  <DraggableListItem
+                    onDrop={handleIndividualPlayerAdd}
+                    player={player}
+                    key={player.id}
+                  >
+                    {player.username} ({player.lastScore})
+                  </DraggableListItem>
+                ))}
+              </List>
               <Button
                 onClick={assignAllPlayers}
                 disabled={isEmpty(unassignedPlayers)}
@@ -216,50 +302,50 @@ const GameAssignment = (props) => {
                 </span>
               </Button>
 
-          </Paper>
+            </Paper>
+          </Box>
+
+          <ArrowRightIcon sx={{
+            color: "#514966",
+            alignSelf: "center",
+            marginTop: "3rem",
+            fontSize: "4rem"
+          }} />
+
+          {/* TODO for each new game waiting for players to be filled: */}
+          <Box sx={{
+            marginTop: 2,
+            flex: 1
+          }}>
+            <Typography
+              sx={{color: grayColor}}
+              variant="h6"
+              gutterBottom
+            >
+              Open Games
+            </Typography>
+
+            <Grid
+              container
+              spacing={2}
+            >
+              {waitingGames.map(gameItem => (
+                <Grid
+                  item
+                  key={gameItem.gameID}
+                >
+                  <GamePlayerBox
+                    gameId={gameItem.gameID}
+                    gameName={gameItem.name}
+                    players={gameItem.members}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         </Box>
-
-        <ArrowRightIcon sx={{
-          color: "#514966",
-          alignSelf: "center",
-          marginTop: "3rem",
-          fontSize: "4rem"
-        }} />
-
-        {/* TODO for each new game waiting for players to be filled: */}
-        <Box sx={{
-          marginTop: 2,
-          flex: 1
-        }}>
-          <Typography
-            sx={{color: grayColor}}
-            variant="h6"
-            gutterBottom
-          >
-            Open Games
-          </Typography>
-
-          <Grid
-            container
-            spacing={2}
-          >
-            {waitingGames.map(gameItem => (
-              <Grid
-                item
-                key={gameItem.gameID}
-              >
-                <GamePlayerBox
-                  gameId={gameItem.gameID}
-                  gameName={gameItem.name}
-                  players={gameItem.members}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      </Box>
-
-    </section>
+      </section>
+    </DndProvider>
   );
 }
 
