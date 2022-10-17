@@ -86,8 +86,6 @@ const App: React.FC = function (): React.ReactElement {
   const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
 
-  console.log("currentGameID", currentGameID);
-
   const adminDashboard = urlParams.get("admin");
 
   const [acceptedConsent, setAcceptedConsent] = React.useState(false);
@@ -104,7 +102,6 @@ const App: React.FC = function (): React.ReactElement {
     Promise
       .all(promises)
       .then(([games, playerAdmin]) => {
-        console.log(games, playerAdmin);
         setLoading(false);
       });
 
@@ -112,10 +109,6 @@ const App: React.FC = function (): React.ReactElement {
 
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
   const Admin = useAppSelector(isAdmin);
-
-  console.log("Admin", Admin);
-  console.log("adminDashboard", adminDashboard);
-  console.log("loading", loading);
 
   if (loading) {
     return (
@@ -139,8 +132,6 @@ const App: React.FC = function (): React.ReactElement {
   if(!Admin) {
     const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
-    console.log("shouldRedirectToGame", shouldRedirectToGame);
-
     if (shouldRedirectToGame) {
       window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
       return;
@@ -148,8 +139,6 @@ const App: React.FC = function (): React.ReactElement {
 
     const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
       .find(g => g.gameID == currentGameID));
-
-    console.log("isUserInCurrentGame", isUserInCurrentGame);
 
     if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
       window.location.replace(window.location.origin + window.location.pathname);
