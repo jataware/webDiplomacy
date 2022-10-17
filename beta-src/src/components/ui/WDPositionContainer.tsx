@@ -16,6 +16,7 @@ const WDPositionContainer: React.FC<WDPositionContainerProps> = function ({
   position,
   bottom,
   zIndex,
+  styleOverrides={} // TODO apply these again once we try out the app, to align floating layout
 }): React.ReactElement {
   const placement = useMemo(() => {
     switch (position) {

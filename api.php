@@ -364,7 +364,7 @@ class isAdmin extends ApiEntry {
 		global $DB;
 		$SQL = 'SELECT type FROM wD_Users WHERE id = '.$userID;
 		$roles = $DB->sql_row($SQL)[0];
-		if (strpos($roles, "Admin")){
+		if (strpos($roles, "Admin")) {
 			return true;
 		}
 		return false;
@@ -2032,12 +2032,11 @@ class IdToken extends ApiAuth {
 	protected function load() {
 		global $DB;
 
-        // TODO Validate both ID token and ACCESS token. One to get user info, another for valid "session"
         $result = validateAccessAndIdTokens($this->token);
         $decoded = json_decode($result);
         $email = $decoded->email;
 
-        // TODO match to email hash or so... or any other unique column in DB
+        // TODO match to HASH instead
 		$rowUserID = $DB->sql_hash("SELECT id from wD_Users WHERE email = '".$DB->escape($email)."'");
 
 		if (!$rowUserID) {
@@ -2045,13 +2044,9 @@ class IdToken extends ApiAuth {
 			throw new ClientUnauthorizedException('No user associated to this token.');
         }
 		$this->userID = intval($rowUserID['id']);
-		$permissionRow = $DB->sql_hash("SELECT * FROM wD_ApiPermissions WHERE userID = ".$this->userID);
-		if ($permissionRow) {
-			foreach (self::$permissionFields as $permissionField) {
-				if ($permissionRow[$permissionField] == 'Yes')
-					$this->permissions[$permissionField] = true;
-			}
-		}
+
+        // TODO ONLY ADMIN USERS SHOULD GET THIS PROPERTY:
+		$this->permissions["getStateOfAllGames"] = true;
 	}
 
 }

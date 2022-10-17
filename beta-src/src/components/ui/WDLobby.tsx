@@ -1,12 +1,7 @@
 import * as React from "react";
 
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 import chess1 from "../../assets/waiting-room-backgrounds/chess1.jpg";
@@ -26,16 +21,8 @@ import unsplash2 from "../../assets/waiting-room-backgrounds/unsplash2.png";
 import unsplash3 from "../../assets/waiting-room-backgrounds/unsplash3.png";
 import unsplash4 from "../../assets/waiting-room-backgrounds/unsplash4.jpg";
 
-const LogOutButton = ({onClick}) => {
-  return (
-    <Button
-      onClick={onClick}
-      style={{
-        fontSize: "15px",
-        color: "white",
-      }}>Log off</Button>
-  );
-}
+import { ApplicationBar } from "./AuthCommon"
+
 
 const Instructions = (props) => {
   var message = (
@@ -168,25 +155,7 @@ const Lobby = ({signOut}) => {
         display: "block",
         height: enoughHeight ? "100%" : "unset"
       }}>
-        <AppBar position="static" sx={{boxShadow: "none"}}>
-          <Toolbar sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-          }}>
-            <Box sx={{display: 'flex'}}>
-              <IconButton
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            </Box>
-            <LogOutButton onClick={signOut} />
-          </Toolbar>
-        </AppBar>
+        <ApplicationBar signOut={signOut} />
 
         <Box sx={{
           display: "flex",

@@ -17,11 +17,13 @@ import {
   Unit,
 } from "../../utils/map/getUnits";
 import { StandoffInfo } from "../map/components/WDArrowContainer";
-
 import WDMapController from "../controllers/WDMapController";
 import getPhaseKey from "../../utils/state/getPhaseKey";
+import { ApplicationBar } from "./AuthCommon";
 
 const WDMain: React.FC = function (): React.ReactElement {
+  const { signOut } = props;
+
   // FIXME: it's not ideal for us to be fetching the whole world from store here
   // This is hard to untangle though because the representation of the data in the
   // store is relatively bad. You have to depend on a lot of stuff in order to
@@ -325,23 +327,31 @@ const WDMain: React.FC = function (): React.ReactElement {
     (viewedPhaseState.viewedPhaseIdx === status.phases.length - 1 ||
       status.phases.length === 0);
   return (
-    <WDMainController>
-      <WDMapController
-        units={units}
-        phase={phase}
-        orders={orders}
-        maps={maps}
-        territories={territories}
-        centersByProvince={centersByProvince}
-        standoffs={standoffs}
-        isLivePhase={isLivePhase}
+    <>
+      <ApplicationBar
+        position="relative"
+        signOut={signOut}
       />
-      <WDUI
-        orders={orders}
-        units={units}
-        viewingGameFinishedPhase={viewingGameFinishedPhase}
-      />
-    </WDMainController>
+
+      <WDMainController>
+        <WDMapController
+          units={units}
+          phase={phase}
+          orders={orders}
+          maps={maps}
+          territories={territories}
+          centersByProvince={centersByProvince}
+          standoffs={standoffs}
+          isLivePhase={isLivePhase}
+        />
+        <WDUI
+          orders={orders}
+          units={units}
+          viewingGameFinishedPhase={viewingGameFinishedPhase}
+        />
+      </WDMainController>
+
+    </>
   );
 };
 
