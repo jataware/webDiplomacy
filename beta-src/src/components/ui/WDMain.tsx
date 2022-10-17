@@ -19,12 +19,16 @@ import {
 import { StandoffInfo } from "../map/components/WDArrowContainer";
 import WDGameFinishedOverlay from "./WDGameFinishedOverlay";
 
+import { ApplicationBar } from "./AuthCommon";
+
 const WDMapController = React.lazy(
   () => import("../controllers/WDMapController"),
 );
 
-const WDMain: React.FC = function (): React.ReactElement {
+const WDMain: React.FC = function (props): React.ReactElement {
   // console.log("WDMain rerendered");
+
+  const { signOut } = props;
 
   // FIXME: it's not ideal for us to be fetching the whole world from store here
   // This is hard to untangle though because the representation of the data in the
@@ -324,6 +328,10 @@ const WDMain: React.FC = function (): React.ReactElement {
       status.phases.length === 0);
   return (
     <React.Suspense fallback={<div>Loading...</div>}>
+      <ApplicationBar
+        position="relative"
+        signOut={signOut} />
+
       <WDMainController>
         <WDMapController
           units={units}
@@ -335,6 +343,7 @@ const WDMain: React.FC = function (): React.ReactElement {
           standoffs={standoffs}
           isLivePhase={isLivePhase}
         />
+
         <WDUI
           orders={orders}
           units={units}
