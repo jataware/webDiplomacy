@@ -1150,3 +1150,12 @@ ADD COLUMN `isMobileValidated` BIT NOT NULL DEFAULT 0 AFTER `mobileNumber`;
   
 ALTER TABLE `wD_GameMessages` ADD `intentDeceive` VARCHAR(6);
 ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` BOOLEAN;
+
+CREATE TABLE jW_PlayerStates (
+    userID INTEGER,
+    state varchar(255) NOT NULL
+) ENGINE=InnoDB;;
+
+ALTER TABLE jW_PlayerStates ADD PRIMARY KEY (userID);
+
+
