@@ -1142,3 +1142,9 @@ CREATE TABLE `wD_Group_UserByUserBySourceWeights` (
 	`judgeCount` MEDIUMINT(9) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`fromUserID`, `toUserID`, `source`) USING BTREE
 ) ENGINE=InnoDB;
+
+CREATE TABLE jW_PlayerStates (
+    userID INTEGER,
+    state varchar(255) NOT NULL
+);
+ALTER TABLE jW_PlayerStates ADD PRIMARY KEY (userID);
