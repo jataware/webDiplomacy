@@ -346,12 +346,7 @@ const gameApiSlice = createSlice({
         }
       })
       .addCase(fetchPlayerIsAdmin.fulfilled, (state, action) => {
-        if (action.payload) {  
-          state.admin = true;
-          console.log('here',action.payload);
-        } else {
-          state.admin = false;
-        }
+        state.admin = Boolean(action.payload);
       })
       // saveOrders
       .addCase(saveOrders.pending, saveOrdersPending)
