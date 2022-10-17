@@ -24,6 +24,7 @@ const responsiveDistance = {
 const WDPositionContainer: React.FC<WDPositionContainerProps> = function ({
   children,
   position,
+  styleOverrides={}
 }): React.ReactElement {
   const placement = useMemo(() => {
     switch (position) {
@@ -47,6 +48,7 @@ const WDPositionContainer: React.FC<WDPositionContainerProps> = function ({
         zIndex: Z_INDEX,
         pointerEvents: "none", // this component is for layout alone, it shouldn't mask out clicks behind it
         ...placement,
+        ...styleOverrides
       }}
     >
       {children}

@@ -90,64 +90,78 @@ const App: React.FC = function (): React.ReactElement {
 
   const adminDashboard = urlParams.get("admin");
 
-  const [fetchedGames, setFetchedGames] = React.useState(false);
-  const [fetchedAdmin, setIsAdmin] = React.useState(false);
-
   const [acceptedConsent, setAcceptedConsent] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (!fetchedGames) {
-      console.log("App fetching games.");
-      dispatch(fetchPlayerActiveGames());
-      // TODO continue fetching games ocassionally on interval until we are assigned one
-      setFetchedGames(true);
-    }
 
-    if (!fetchedAdmin) {
-      dispatch(fetchPlayerIsAdmin());
-      setIsAdmin(true);
-    }
-  }, [fetchedGames, fetchedAdmin]);
+    setLoading(true);
+    let promises = [
+      dispatch(fetchPlayerActiveGames()),
+      dispatch(fetchPlayerIsAdmin())
+    ];
+
+    Promise
+      .all(promises)
+      .then(([games, playerAdmin]) => {
+        console.log(games, playerAdmin);
+        setLoading(false);
+      });
+
+  }, []);
 
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
   const Admin = useAppSelector(isAdmin);
-  if (Admin)
-  {
-    if (adminDashboard) {
-      return (
-        <div>
-          {/* The following line prevents the UI from being scaled down when the viewport is small.
-              That leads to a very bad experience for this UI, with part of the map cut off. */}
-          <meta name="viewport" content="width=device-width, user-scalable=no" />
-          <TournamentDashboard />
-        </div>
-      )
+
+  console.log("Admin", Admin);
+  console.log("adminDashboard", adminDashboard);
+  console.log("loading", loading);
+
+  if (loading) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (adminDashboard && Admin) {
+    return (
+      <div>
+        {/* The following line prevents the UI from being scaled down when the viewport is small.
+            That leads to a very bad experience for this UI, with part of the map cut off. */}
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
+        <TournamentDashboard />
+      </div>
+    )
+  }
+
+  if(!Admin) {
+    const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
+
+    console.log("shouldRedirectToGame", shouldRedirectToGame);
+
+    if (shouldRedirectToGame) {
+      window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
+      return;
     }
-  }
 
-  const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
+    const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
+      .find(g => g.gameID == currentGameID));
 
-  const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
-    .find(g => g.gameID == currentGameID));
+    console.log("isUserInCurrentGame", isUserInCurrentGame);
 
-  /* console.log("isUserInCurrentGame", isUserInCurrentGame); */
-
-  if (shouldRedirectToGame && !Admin) {
-    window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
-  }
-
-  /* console.log('window.location', window.location); */
-
-  if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID && !Admin) {
-    window.location.replace(window.location.origin + window.location.pathname);
+    if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
+      window.location.replace(window.location.origin + window.location.pathname);
+      return;
+    }
   }
 
   let MainElement = WDMain;
 
-  // TODO check user type to allow admins to spectate
-  if (userCurrentActiveGames.length === 0 && !Admin) {
+  if ((userCurrentActiveGames.length === 0 && !Admin) || (!currentGameID && Admin)) {
      MainElement = WDLobby;
-  } else {
+  } else if (currentGameID) {
     dispatch(loadGame(String(currentGameID)));
   }
 

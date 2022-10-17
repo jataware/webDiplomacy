@@ -79,8 +79,6 @@ const WDUI: React.FC<WDUIProps> = function ({
 
   const maps = useAppSelector(gameMaps);
 
-  // console.log("WDUI RENDERED");
-
   const messages = useAppSelector(({ game }) => game.messages.messages);
   const numUnread = messages.reduce(
     (acc, m) => acc + Number(m.status === MessageStatus.UNREAD),
@@ -224,7 +222,12 @@ const WDUI: React.FC<WDUIProps> = function ({
 
   return (
     <>
-      <WDPositionContainer position={Position.TOP_RIGHT}>
+      <WDPositionContainer
+        styleOverrides={{
+          marginTop: "50px"
+        }}
+        position={Position.TOP_RIGHT}
+      >
         <Box
           sx={{
             pt: "15px",
@@ -264,11 +267,20 @@ const WDUI: React.FC<WDUIProps> = function ({
         <WDBuildCounts />
         {popover}
       </WDPositionContainer>
-      <WDPositionContainer position={Position.TOP_LEFT}>
+      <WDPositionContainer
+        styleOverrides={{
+          marginTop: "50px"
+        }}
+        position={Position.TOP_LEFT}
+      >
         <WDPhaseUI />
       </WDPositionContainer>
       {user && !gameIsFinished && (
-        <WDPositionContainer position={Position.BOTTOM_RIGHT}>
+        <WDPositionContainer
+          styleOverrides={{
+            marginTop: "50px"
+          }}
+          position={Position.BOTTOM_RIGHT}>
           <WDOrderStatusControls orderStatus={user.member.orderStatus} />
         </WDPositionContainer>
       )}
