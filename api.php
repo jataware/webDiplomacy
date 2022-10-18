@@ -697,7 +697,7 @@ class AllPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where type = 'User';");
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan, jW_PlayerStates.state from wD_Users left join jW_PlayerStates on wD_Users.id = jW_PlayerStates.userID where type = 'User';");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
@@ -709,6 +709,7 @@ class AllPlayers extends ApiEntry {
 			"username" => $ret[1],
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
+			"status" => $ret[4],
 			"gameCount" => intval($gameCount[0])];
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
@@ -966,7 +967,7 @@ class SetPlayerState extends ApiEntry
 		$state = $args['state'];
 		$userID = (int)$args['userID'];
 
-		$sql = "INSERT INTO jW_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
+		$sql = "INSERT INTO Jw_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
 		return "Player ".$userID." state set to ".$state."";
