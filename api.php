@@ -696,7 +696,7 @@ class AllPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id > 10;");
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where type = 'User';");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
