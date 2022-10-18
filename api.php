@@ -1024,6 +1024,23 @@ class JoinGame extends ApiEntry
 		return "done";
     }
 }
+
+class LeaveGame extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/leave', 'GET', 'getStateOfAllGames', array('gameID', 'userID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+		require_once(l_r('objects/game.php'));
+		// It is assumed this is being run within a transaction
+		$DB->sql_put("DELETE FROM wD_Members WHERE userID = ".(int)$args['userID']." and gameID = ".$gameID.";");
+		$DB->sql_put("COMMIT");
+		return "done";
+    }
+}
 /**
  * API entry game/members
  * Retrieves member data related to a game. 
@@ -2180,6 +2197,7 @@ try {
 	$api->load(new GetPlayerState());
 	$api->load(new isAdmin());
 	$api->load(new GetGameMessages());
+	$api->load(new LeaveGame());
 	
 	
 
