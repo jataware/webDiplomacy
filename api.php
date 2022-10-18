@@ -654,7 +654,7 @@ class WaitingPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id not in (select userID from jW_PlayerStates where state = 'Banned' or state = 'Cut') and id > 10;");
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id not in (select userID from jW_PlayerStates where state = 'Banned' or state = 'Cut') and type = 'User';");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
