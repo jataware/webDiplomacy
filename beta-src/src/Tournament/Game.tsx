@@ -7,12 +7,12 @@ import IconButton from "@mui/material/IconButton";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import EyeIcon from "@mui/icons-material/RemoveRedEye";
 import EndIcon from "@mui/icons-material/DoDisturbOn";
-
+import { useAppDispatch, useAppSelector } from "../state/hooks";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
-
+import { fetchChatMessages } from "../state/game/game-api-slice";
 import {
   getGameApiRequest
 } from "../utils/api";
@@ -51,7 +51,16 @@ const Game = ({game, displayProperties, style, hideActions}) => {
   };
 
   const downloadMessages = () => {
-    window.open("/api.php?route=game/messages&gameID=" + game.gameID, "_blank")
+    getGameApiRequest("game/messages", {gameID: game.gameID}).then(results => {
+      console.log('result', results);
+      const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
+        JSON.stringify(results)
+      )}`;
+      const link = document.createElement("a");
+      link.href = jsonString;
+      link.download = game.gameID + ".json";
+      link.click();
+    });
   };
 
   const sortedPlayers = sortBy(game.members, player => {
