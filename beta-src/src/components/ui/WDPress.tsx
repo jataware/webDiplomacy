@@ -82,11 +82,14 @@ const WDPress: FC<WDPressProps> = function ({
       return message.fromCountryID === lastMessageData.fromCountryID &&
              message.toCountryID === lastMessageData.toCountryID &&
              message.message === lastMessageData.message;
-    })
+    });
 
     if (!savedMessage) {
       console.error('There\'s been an error and we couldn\'t find the saved message to annotate.');
-      return;
+
+      // TODO this occurred during demo. Discuss how to find messages (better?)
+      //      and maybe ensure we do capture this one
+      setResearchDialogOpen(false);
     }
 
     const { fromCountryID, toCountryID, timeSent } = savedMessage;

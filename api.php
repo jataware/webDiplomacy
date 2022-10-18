@@ -760,7 +760,7 @@ class AllPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where type = 'User';");
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan, jW_PlayerStates.state from wD_Users left join jW_PlayerStates on wD_Users.id = jW_PlayerStates.userID where type = 'User';");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
@@ -772,6 +772,7 @@ class AllPlayers extends ApiEntry {
 			"username" => $ret[1],
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
+			"status" => $ret[4],
 			"gameCount" => intval($gameCount[0])];
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
