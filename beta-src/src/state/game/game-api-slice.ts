@@ -104,6 +104,14 @@ export const fetchPlayerActiveGames = createAsyncThunk(
   },
 );
 
+export const fetchPlayerState = createAsyncThunk(
+  ApiRoute.PLAYER_STATE,
+  async () => {
+    const { data } = await getGameApiRequest(ApiRoute.PLAYER_STATE, {});
+    return data as {state: string};
+  },
+);
+
 export const fetchPlayerIsAdmin = createAsyncThunk(
   ApiRoute.PLAYER_IS_ADMIN,
   async () => {

@@ -20,8 +20,12 @@ import unsplash1 from "../../assets/waiting-room-backgrounds/unsplash1.jpg";
 import unsplash2 from "../../assets/waiting-room-backgrounds/unsplash2.png";
 import unsplash3 from "../../assets/waiting-room-backgrounds/unsplash3.png";
 import unsplash4 from "../../assets/waiting-room-backgrounds/unsplash4.jpg";
-
+import { fetchPlayerState } from "../../state/game/game-api-slice";
+import { useAppDispatch } from "../../state/hooks";
 import { ApplicationBar } from "./AuthCommon"
+import {
+  getGameApiRequest
+} from "../../utils/api";
 
 
 const Instructions = (props) => {
@@ -71,47 +75,46 @@ const Instructions = (props) => {
     return message
 };
 
-const WelcomeMessage = (props) => {
-    var quotes = [<p> “The friend in my adversity I shall always cherish most. I can better trust those who have helped to relieve the gloom of my dark hours than those who are so ready to enjoy with me the sunshine of my prosperity.”
-        <br/> - Ulysses S. Grant </ p>,
-        <p> “In every battle there comes a time when both sides consider themselves beaten. Then he who continues the attack wins.”
-        <br/> - Ulysses S. Grant </ p>,
-        <p> “There are but few important events in the affairs of men brought about by their own choice.”
-        <br/> - Ulysses S. Grant </ p>,
-        <p> “The art of war is simple enough. Find out where your enemy is. Get at him as soon as you can. Strike him as hard as you can, and keep moving on.”
-        <br/> - Ulysses S. Grant </ p>,
-        <p> "War is an art and as such is not susceptible of explanation by fixed formula"
-        <br/> - George Patton </ p>,
-        <p> "Accept the challenges so that you can feel the exhilaration of victory."
-        <br/> - George Patton </ p>,
-        <p> "Lead me, follow me, or get out of my way."
-        <br/> - George Patton </ p>,
-        <p> "Courage is fear holding on a minute longer."
-        <br/> - George Patton </ p>,
-        <p> "May God have mercy upon my enemies, because I won’t."
-        <br/> - George Patton </ p>,
-        <p> "Wars may be fought with weapons, but they are won by men."
-        <br/> - George Patton </ p>,
-        <p> "I am a soldier, I fight where I am told, and I win where I fight."
-        <br/> - George Patton </ p>,
-        <p> "Take calculated risks."
-        <br/> - George Patton </ p>,
-        <p> "You’re never beaten until you admit it."
-        <br/> - George Patton </ p>,
-        <p> "A good plan executed today is better than a perfect plan executed at some indefinite point in the future."
-        <br/> - George Patton </ p>,
-        <p> "Go forward until the last round is fired and the last drop of gas is expended…then go forward on foot!"
-        <br/> - George Patton </ p>]
+function WelcomeMessage(){
+  const dispatch = useAppDispatch();
 
-    var randomNumber = Math.floor((Math.random() * quotes.length));
+  const [playerStatus, setPlayerStatus] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
+  React.useEffect(() => {
+    setLoading(true);
+    var req = dispatch(fetchPlayerState());
+
+      req.then((response) => {
+        setLoading(false);
+        console.log('response', response);
+        setPlayerStatus(response.payload.state);
+      });
+
+  }, []);
+
+  if (loading){
+    return (<div style={{
+      fontSize: "35px",
+      textAlign: "center",
+      width: "100%",
+      marginBottom: "1rem"
+    }}> loading </div>)
+  }
+  var message = "Waiting for next game to start";
+  if (playerStatus === "Cut") {
+    message = "You have been cut from the tournament";
+  }
+  else if (playerStatus === "Banned") {
+    message = "You have been banned from the tournament";
+  }
   return (
     <div style={{
       fontSize: "35px",
       textAlign: "center",
       width: "100%",
       marginBottom: "1rem"
-    }}> {quotes[randomNumber]} </div>
+    }}> {message} </div>
   );
 };
 
@@ -121,8 +124,7 @@ const Lobby = ({signOut}) => {
 
   var images = [
     chess1,
-    chess2, conference, monument, plane1, plane2, plane3,
-    soldier, vessel, vessel2, veteran,
+    chess2, conference, monument, 
     unsplash1,
     unsplash2,
     unsplash3,
