@@ -23,17 +23,22 @@ import { fetchAllPlayers } from "./endpoints";
 const PlayerList = (props) => {
 
   const [players, setPlayers] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
 
   const isDesktop = useMediaQuery('(min-width:600px)');
 
   React.useEffect(() => {
+
+    setLoading(true);
+
     fetchAllPlayers()
       .then(responsePlayers => {
         if (responsePlayers) {
           setPlayers(responsePlayers);
+          setLoading(false);
         }
       })
-  }, []); // TODO only on mount for now
+  }, []);
 
   return (
     <section
@@ -50,43 +55,64 @@ const PlayerList = (props) => {
         All Players
       </Typography>
 
-      <Grid
-        container
-        spacing={2}
-      >
-        {players.map(player => (
-          <Grid
-            key={player.id}
-            sx={{
-              width: isDesktop ? "13rem" : "100%",
-            }}
-            item>
-            <Card>
-              <div>
-                {player.tempBan && (
-                  <Tooltip title="This user has a temporary ban.">
-                    <EndIcon sx={{position: "absolute", color: "red", top: "0.5rem", right: "0.5rem"}} />
-                  </Tooltip>
-                )}
-                <CardHeader
-                  avatar={
-                    <Avatar
-                      sx={{
-                        backgroundColor: player.type === "User" ? "rgb(152 138 235)" : redColor,
-                        fontSize: "1rem"
-                      }}
-                    >
-                      {player.gameCount}
-                    </Avatar>
-                  }
-                  title={player.username}
-                  subheader={`ID: ${player.id}`}
-                />
-              </div>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      {loading ? (
+        <span>Loading content...</span>
+      ) : (
+        <Grid
+          container
+          spacing={2}
+        >
+          {players.map(player => (
+            <Grid
+              key={player.id}
+              sx={{
+                width: isDesktop ? "13rem" : "100%",
+              }}
+              item>
+              <Card>
+                <div>
+                  {player.tempBan && (
+                    <Tooltip title="This user has a temporary ban.">
+                      <EndIcon sx={{position: "absolute", color: "red", top: "0.5rem", right: "0.5rem"}} />
+                    </Tooltip>
+                  )}
+                  <CardHeader
+                    avatar={
+                      <Avatar
+                        sx={{
+                          backgroundColor: player.type === "User" ? "rgb(152 138 235)" : redColor,
+                          fontSize: "1rem"
+                        }}
+                      >
+                        {player.lastScore}
+                      </Avatar>
+                    }
+                    title={player.username}
+                    subheader={
+                      (
+                        <div>
+                          <p>
+                            ID: {player.id}
+                          </p>
+                          <p>
+                            Games: {player.gameCount}
+                          </p>
+                          <p>
+                            Messages: {player.totalMessagesSent}
+                          </p>
+                          <p>
+                            Annotated: {player.totalMessagesAnnotated}
+                          </p>
+                        </div>
+                      )
+                    }
+                  />
+                </div>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       <br />
 

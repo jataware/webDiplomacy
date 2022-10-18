@@ -9,17 +9,14 @@ import {
   TableRow,
   useTheme,
 } from "@mui/material";
+import Typography from '@mui/material/Typography';
 import { styled } from "@mui/material/styles";
 import * as React from "react";
 import Device from "../../enums/Device";
-import Season from "../../enums/Season";
 import useViewport from "../../hooks/useViewport";
 import { CountryTableData } from "../../interfaces/CountryTableData";
-import { MemberData } from "../../interfaces/state/MemberData";
 import { gameOverview } from "../../state/game/game-api-slice";
 import { useAppSelector } from "../../state/hooks";
-import GameOverviewResponse from "../../state/interfaces/GameOverviewResponse";
-import GameStatusResponse from "../../state/interfaces/GameStatusResponse";
 import { formatPSYForDisplay } from "../../utils/formatPhaseForDisplay";
 import getDevice from "../../utils/getDevice";
 import BetIcon from "./icons/country-table/WDBet";
@@ -61,25 +58,25 @@ const columns: readonly Column[] = [
     id: "supplyCenterNo",
     label: "Centers",
     icon: CentersIcon,
-    align: "center",
+    align: "left",
   },
   {
     id: "status",
     label: "Status",
     icon: WDCheckmarkIcon,
-    align: "center",
+    align: "left",
   },
-  {
-    id: "bet",
-    label: "Bet",
-    icon: BetIcon,
-    align: "center",
-  },
+  /* {
+   *   id: "bet",
+   *   label: "Bet",
+   *   icon: BetIcon,
+   *   align: "center",
+   * }, */
   {
     id: "pointsWon",
     label: "Won",
     icon: BetIcon,
-    align: "center",
+    align: "left",
   },
 ];
 
@@ -101,8 +98,15 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
   const overview = useAppSelector(gameOverview);
 
   const innerElem = (
-    <Stack direction="column" alignItems="center">
-      <Box sx={{ m: "10px" }}>Game is finished.</Box>
+    <Stack
+      direction="column"
+      alignItems="center"
+    >
+      <Box
+        sx={{ m: "10px" }}
+      >
+        Game is finished.
+      </Box>
       <Table aria-label="game finished table" size="small" stickyHeader>
         <TableHead sx={{ height: "55px" }}>
           <TableRow sx={{ verticalAlign: "top" }}>
@@ -133,8 +137,8 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
                   switch (column.id) {
                     case "power":
                       value = isMobile
-                        ? country.abbr.toUpperCase()
-                        : country.power.toUpperCase();
+                            ? country.abbr.toUpperCase()
+                            : country.power.toUpperCase();
                       style.color = country.color;
                       style.fontWeight = 700;
                       break;
@@ -152,11 +156,33 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
                   );
                 })}
               </TableRow>
-              
+
             </React.Fragment>
           ))}
         </TableBody>
       </Table>
+
+      <br />
+
+      <Box sx={{padding: 1}}>
+        <Typography
+          gutterBottom
+        >
+          Return back to Lobby for next Tournament round.
+        </Typography>
+      </Box>
+
+      <Button
+        variant="outlined"
+        color="info"
+        component="a"
+        href="/beta"
+      >
+        Back to Lobby
+      </Button>
+
+      <br />
+
     </Stack>
   );
   return <Box sx={centeredStyle}>{innerElem}</Box>;
