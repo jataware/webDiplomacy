@@ -138,7 +138,9 @@ const TournamentDashboard = (props) => {
   const [inputGameName, setInputGameName] = React.useState("");
 
   const handleCreateGame = () => {
+
     getGameApiRequest("game/create", {gameName: inputGameName, variantID: 1}); // 1 for classic; 15 for  1v1
+
     setCreatingGame(false);
     setInputGameName("");
   }

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { styled } from "@mui/material/styles";
+import sortBy from "lodash/sortBy";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -53,6 +53,10 @@ const Game = ({game, displayProperties, style, hideActions}) => {
   const downloadMessages = () => {
     window.open("/api.php?route=game/messages&gameID=" + game.gameID, "_blank")
   };
+
+  const sortedPlayers = sortBy(game.members, player => {
+    return player.username;
+  });
 
   return (
     <Box
@@ -207,13 +211,22 @@ const Game = ({game, displayProperties, style, hideActions}) => {
         paddingRight: 8,
         overflow: "hidden"
       }}>
-        {game.members.map(memberPlayer => (
+        {sortedPlayers.map((memberPlayer, idx) => (
           <Typography
             key={memberPlayer.userID}
-            variant="caption"
-            style={{marginRight: "1rem", color: "gray"}}
+            variant="body2"
+            sx={{
+              marginRight: "1rem",
+              color: idx % 2 === 0 ? "#7a74db" : "#9f7620",
+              fontWeight: "bold",
+              "&:after": {
+                paddingLeft: "10px",
+                "content": "'|'",
+                color: "#797878"
+              }
+            }}
           >
-          {memberPlayer.username}
+          {memberPlayer.username}({memberPlayer.score})
           </Typography>
       ))}
       </div>

@@ -6,6 +6,10 @@ import CentersIcon from "./icons/country-table/WDCenters";
 import PowerIcon from "./icons/country-table/WDPower";
 import WDCheckmarkIcon from "./icons/WDCheckmarkIcon";
 
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+
 interface Column {
   align?: "right" | "left" | "center";
   icon?: React.FC;
@@ -26,19 +30,7 @@ const columns: readonly Column[] = [
     label: "Status",
     icon: WDCheckmarkIcon,
     align: "center",
-  },
-  {
-    id: "bet",
-    label: "Bet",
-    icon: BetIcon,
-    align: "center",
-  },
-  {
-    id: "pointsWon",
-    label: "Won",
-    icon: BetIcon,
-    align: "center",
-  },
+  }
 ];
 
 interface WDGameFinishedOverlayProps {
@@ -117,6 +109,26 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
           }
         }
       `}</style>
+      <br />
+
+      <Box sx={{padding: 1}}>
+        <Typography
+          gutterBottom
+        >
+          Return back to Lobby for next Tournament round.
+        </Typography>
+      </Box>
+
+      <Button
+        variant="outlined"
+        color="info"
+        component="a"
+        href="/beta"
+      >
+        Back to Lobby
+      </Button>
+
+      <br />
     </div>
   );
   return (

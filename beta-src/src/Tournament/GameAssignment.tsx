@@ -28,6 +28,10 @@ import { fetchWaitingPlayers, fetchWaitingGames, fetchAllGameDataforIDs } from "
  **/
 const GamePlayerBox = ({gameId, gameName, players}) => {
 
+  const sortedPlayers = sortBy(players, player => {
+    return player.username;
+  });
+
   const color = React.useMemo(() => {return randomColors[random(randomColors.length - 1)]}, [gameName]);
 
   const [{isOver}, drop] = useDrop(() => ({
@@ -38,7 +42,7 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
     })
   }));
 
-  const playersToDisplay = isEmpty(players) ? [{username: "<Empty>", userID: 0}] : players;
+  const playersToDisplay = isEmpty(players) ? [{username: "<Empty>", userID: 0}] : sortedPlayers;
 
   return (
     <Box
@@ -127,6 +131,8 @@ const GameAssignment = (props) => {
 
   const [waitingGames, setWaitingGames] = React.useState([]);
 
+  const [loading, setLoading] = React.useState(false);
+
   const intervalRef = React.useRef();
 
   function fetchData() {
@@ -135,9 +141,9 @@ const GameAssignment = (props) => {
         if (response) {
           setUnassignedPlayers(response);
         }
-      })
+      });
 
-    fetchWaitingGames() // IDs
+    return fetchWaitingGames() // IDs
       .then(waitingGameIDs => {
 
         fetchAllGameDataforIDs(waitingGameIDs)
@@ -146,7 +152,7 @@ const GameAssignment = (props) => {
               setWaitingGames(games);
             }
           });
-      })
+      });
   }
 
   const handleIndividualPlayerAdd = (playerId, gameId) => {
@@ -163,11 +169,16 @@ const GameAssignment = (props) => {
 
   React.useEffect(() => {
 
-    fetchData();
+    setLoading(true);
+
+    fetchData()
+      .finally(() => {
+        setLoading(false);
+      });
 
     intervalRef.current = setInterval(() => {
       fetchData();
-    }, 10000);
+    }, 5000);
 
     return function() {
       clearInterval(intervalRef.current);
@@ -233,6 +244,10 @@ const GameAssignment = (props) => {
           variant="h5">
           Game Assignment
         </Typography>
+
+        {loading && (
+          <span>Loading content...</span>
+        )}
 
         <Box sx={{
           display: "flex",
