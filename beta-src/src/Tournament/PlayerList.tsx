@@ -17,6 +17,10 @@ import EndIcon from "@mui/icons-material/DoDisturbOn";
 import { grayColor, redColor } from ".";
 import { fetchAllPlayers } from "./endpoints";
 
+import {
+  getGameApiRequest
+} from "../utils/api";
+
 /**
  *
  **/
@@ -34,8 +38,38 @@ const PlayerList = (props) => {
     fetchAllPlayers()
       .then(responsePlayers => {
         if (responsePlayers) {
+
+          const promises = [];
+          const updatedPlayers = [];
+
+
           setPlayers(responsePlayers);
           setLoading(false);
+
+          responsePlayers.forEach(player => {
+
+            const p = getGameApiRequest(
+              "player/getPlayerState",
+              {userID: player.id}
+            );
+
+            /* .then(r => {
+             * console.log(`${player.id} ${player.username} player state:`, r.data);
+               }); */
+
+            promises.push(p);
+
+            p.then(r => {
+              const np = {...player, state: r.data.state};
+              updatedPlayers.push(np);
+            });
+          });
+
+          Promise
+            .all(promises)
+          .then(() => {
+            setPlayers(updatedPlayers);
+          });
         }
       })
   }, []);
@@ -102,6 +136,9 @@ const PlayerList = (props) => {
                           </p>
                           <p>
                             Annotated: {player.totalMessagesAnnotated}
+                          </p>
+                          <p>
+                            Status: {player.state}
                           </p>
                         </div>
                       )
