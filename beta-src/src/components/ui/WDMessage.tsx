@@ -308,14 +308,23 @@ const WDMessage: React.FC<WDMessageProps> = function ({
 
                   <Button
                     size="small"
-                    color="info"
                     variant={isAnnotatedDeceptive ? "outlined" : ""}
                     onClick={() => annotateMessage(message, DECEPTIVE)}
                     sx={{
                       p: 0.5,
                       mr: "2px",
                       borderRadius: "4px",
-                      color: "#4e8eff"
+                      borderColor: "rgb(33, 150, 243)",
+                      borderWidth: 3,
+                      color: "rgb(244 244 244)",
+                      backgroundColor: "rgb(156, 39, 176)",
+                      "&:hover": {
+                        backgroundColor: "rgb(156, 39, 176)",
+                        filter: "brightness(1.2)",
+                        borderRadius: "4px",
+                        borderColor: "rgb(33, 150, 243)",
+                        borderWidth: 3,
+                      }
                     }}
                   >
                     Deceptive
@@ -331,15 +340,24 @@ const WDMessage: React.FC<WDMessageProps> = function ({
 
                   <Button
                     size="small"
-                    color="info"
                     variant={isAnnotatedTrustworthy ? "outlined" : ""}
                     onClick={() => annotateMessage(message, TRUSTWORTHY)}
                     sx={{
                       ml: "2px",
                       mr: "2px",
                       p: 0.5,
+                      borderColor: "rgb(33, 150, 243)",
+                      borderWidth: 3,
                       borderRadius: "4px",
-                      color: "#4e8eff"
+                      color: "rgb(97 80 29)",
+                      backgroundColor: "rgb(255, 193, 7)",
+                      "&:hover": {
+                        backgroundColor: "rgb(255, 193, 7)",
+                        filter: "brightness(1.1)",
+                        borderColor: "rgb(33, 150, 243)",
+                        borderRadius: "4px",
+                        borderWidth: 3,
+                      }
                     }}
                   >
                     Trustworthy
@@ -359,14 +377,3 @@ const WDMessage: React.FC<WDMessageProps> = function ({
 };
 
 export default WDMessage;
-
-/* onClick={() => annotateMessage(message)} */
-
-/* <ResearchPopover */
-/* isOpen={isPopOverOpen}
- * anchorEl={anchorEl}
- * handleClose={handlePopoverClose} /> */
-
-/* <Icon>
- * <img src={clipboardImg} width="20" height="25" />
- * </Icon> */
