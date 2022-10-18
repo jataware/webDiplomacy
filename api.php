@@ -664,6 +664,7 @@ class WaitingPlayers extends ApiEntry {
 			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
+
 			if ($row){
 				$lastScore = $row['supplyCenterNo'];
 			}
@@ -976,21 +977,24 @@ class GetPlayerState extends ApiEntry
 {
 	public function __construct()
 	{
-		parent::__construct('player/getPlayerState', 'GET', 'getStateOfAllGames', array('userID'), false);
+		parent::__construct('player/getPlayerState', 'GET', 'getStateOfAllGames', array(),false);
 	}
 	public function run($userID, $permissionIsExplicit)
 	{
 		global $DB;
-		$userID = $this->getArgs()['userID'];
-		$SQL = "select state from Jw_PlayerStates where userID = ".$userID.";";
+		error_log(print_r($userID, true));
+		$SQL = "select state from jW_PlayerStates where userID = ".$userID.";";
 		$row = $DB->sql_row($SQL);
 
 		if (!$row)
 		{
-			return "No state found for this userID";
+			$state =  "No state found for this userID";
 		}
-
-		return $row[0];
+		else
+		{
+			$state = $row[0];
+		}
+		return json_encode(["state" => $state]);
 	}
 }
 

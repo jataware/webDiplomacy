@@ -20,8 +20,12 @@ import unsplash1 from "../../assets/waiting-room-backgrounds/unsplash1.jpg";
 import unsplash2 from "../../assets/waiting-room-backgrounds/unsplash2.png";
 import unsplash3 from "../../assets/waiting-room-backgrounds/unsplash3.png";
 import unsplash4 from "../../assets/waiting-room-backgrounds/unsplash4.jpg";
-
+import { fetchPlayerState } from "../../state/game/game-api-slice";
+import { useAppDispatch } from "../../state/hooks";
 import { ApplicationBar } from "./AuthCommon"
+import {
+  getGameApiRequest
+} from "../../utils/api";
 
 
 const Instructions = (props) => {
@@ -71,14 +75,46 @@ const Instructions = (props) => {
     return message
 };
 
-const WelcomeMessage = (props) => {
+function WelcomeMessage(){
+  const dispatch = useAppDispatch();
+
+  const [playerStatus, setPlayerStatus] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    setLoading(true);
+    var req = dispatch(fetchPlayerState());
+
+      req.then((response) => {
+        setLoading(false);
+        console.log('response', response);
+        setPlayerStatus(response.payload.state);
+      });
+
+  }, []);
+
+  if (loading){
+    return (<div style={{
+      fontSize: "35px",
+      textAlign: "center",
+      width: "100%",
+      marginBottom: "1rem"
+    }}> loading </div>)
+  }
+  var message = "Waiting for next game to start";
+  if (playerStatus === "Cut") {
+    message = "You have been cut from the tournament";
+  }
+  else if (playerStatus === "Banned") {
+    message = "You have been banned from the tournament";
+  }
   return (
     <div style={{
       fontSize: "35px",
       textAlign: "center",
       width: "100%",
       marginBottom: "1rem"
-    }}> Welcome your game will begin shortly </div>
+    }}> {message} </div>
   );
 };
 
@@ -88,8 +124,7 @@ const Lobby = ({signOut}) => {
 
   var images = [
     chess1,
-    chess2, conference, monument, plane1, plane2, plane3,
-    soldier, vessel, vessel2, veteran,
+    chess2, conference, monument, 
     unsplash1,
     unsplash2,
     unsplash3,

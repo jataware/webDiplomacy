@@ -5,6 +5,7 @@ enum ApiRoute {
   GAME_STATUS = "game/status",
   GAME_MESSAGES = "game/getmessages",
   PLAYERS_ACTIVE_GAMES = "players/active_games",
+  PLAYER_STATE = "player/getPlayerState",
   PLAYER_IS_ADMIN = "players/isAdmin",
   // post
   SEND_MESSAGE = "game/sendmessage",
