@@ -814,7 +814,7 @@ class CreateGame extends ApiEntry
 			'',
 			1,
 			"Unranked",
-			1440,
+			15,
 			10080,
 			5,
 			1,
