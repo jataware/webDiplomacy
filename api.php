@@ -966,7 +966,7 @@ class SetPlayerState extends ApiEntry
 		$state = $args['state'];
 		$userID = (int)$args['userID'];
 
-		$sql = "INSERT INTO Jw_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
+		$sql = "INSERT INTO jW_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
 		return "Player ".$userID." state set to ".$state."";
