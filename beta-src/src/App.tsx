@@ -112,7 +112,10 @@ const App: React.FC = function (): React.ReactElement {
   const [acceptedConsent, setAcceptedConsent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
+
   React.useEffect(() => {
+
+    console.log("App init.");
 
     let isMounted = true
 
