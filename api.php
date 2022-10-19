@@ -756,6 +756,7 @@ class ScoreGame extends ApiEntry
 		}
 		global $DB;
 		$gameID = $this->getArgs()['gameID'];
+		$DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID.";");
 		$tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
 		$ret = $DB->tabl_row($tabl);
 		$place = 0;
