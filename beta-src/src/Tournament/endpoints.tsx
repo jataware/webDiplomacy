@@ -23,8 +23,6 @@ export function endpointFactory(path, paramKey) {
   }
 }
 
-// TODO Move these fetch definitions to their own files
-
 export async function fetchAllPlayers() {
   try {
     const players = await getGameApiRequest(
@@ -36,6 +34,7 @@ export async function fetchAllPlayers() {
 
   } catch(e) {
     console.log('Request to fetch players failed, e:', e);
+    return [];
   }
 }
 
@@ -53,6 +52,7 @@ export async function fetchOngoingGames() {
 
   } catch(e) {
     console.log('Request to fetch ongoinggames failed, e:', e);
+    return [];
   }
 }
 
@@ -70,6 +70,7 @@ export async function fetchWaitingGames() {
 
   } catch(e) {
     console.log('Request to fetch ongoinggames failed, e:', e);
+    return [];
   }
 }
 
@@ -84,10 +85,11 @@ export async function fetchGameOverview(ID) {
       {gameID: ID}
     );
 
-    return overview.data.data; // Array with IDs for all ongoing games
+    return overview.data.data;
 
   } catch(e) {
     console.log('Request to fetch ongoinggames failed, e:', e);
+    return {};
   }
 
 }
@@ -106,6 +108,7 @@ export async function fetchGameMembers(ID) {
 
   } catch(e) {
     console.log('Request to fetch ongoinggames failed, e:', e);
+    return [];
   }
 }
 
@@ -122,6 +125,7 @@ export async function fetchAllGameDataforIDs(IDs) {
 
   } catch(e) {
     console.log('Request to fetch all game data by IDs failed, e:', e);
+    return [];
   }
 
 }
@@ -137,5 +141,6 @@ export async function fetchWaitingPlayers() {
 
   } catch(e) {
     console.log('Request to fetch players failed, e:', e);
+    return [];
   }
 }

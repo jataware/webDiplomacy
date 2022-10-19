@@ -104,14 +104,13 @@ const AuthIRBHandler = ({user, signOut, children, acceptedConsent, setAcceptedCo
 const App: React.FC = function (): React.ReactElement {
 
   const urlParams = new URLSearchParams(window.location.search);
-  const currentGameID = urlParams.get("gameID");
   const dispatch = useAppDispatch();
 
+  const currentGameID = urlParams.get("gameID");
   const adminDashboard = urlParams.get("admin");
 
   const [acceptedConsent, setAcceptedConsent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-
 
   const intervalRef = React.useRef();
 
@@ -143,11 +142,16 @@ const App: React.FC = function (): React.ReactElement {
       // TODO Snackbar
     });
 
-    intervalRef.current = setInterval(pollGameData, 3000);
+    if (!adminDashboard) {
+      intervalRef.current = setInterval(pollGameData, 8000);
+    }
 
     return () => {
       isMounted = false;
-      clearInterval(intervalRef.current);
+
+      if (!adminDashboard) {
+        clearInterval(intervalRef.current);
+      }
     }
 
   }, []);

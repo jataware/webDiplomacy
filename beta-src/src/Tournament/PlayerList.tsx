@@ -121,7 +121,7 @@ const PlayerList = (props) => {
                 <CardContent sx={{pt: 0, pb: 0}}>
                   <ul>
                     <li>
-                      Last Score: {player.lastScore || "-"}
+                      Last Score: {player.lastScore}
                     </li>
                     <li>
                       Games: {player.gameCount || 0}

@@ -1825,6 +1825,9 @@ class SendMessage extends ApiEntry {
 	}
 }
 
+/**
+ * Ends any game that is after Winter 1907 turn
+ */
 class FinishGames extends ApiEntry {
 	public function __construct() {
 		parent::__construct('games/finish', 'GET', 'getStateOfAllGames', array(), false);
@@ -2133,6 +2136,10 @@ class IdToken extends ApiAuth {
 
         $result = validateAccessAndIdTokens($this->token);
         $decoded = json_decode($result);
+
+        error_log("decoded email from idtoken:");
+        error_log(print_r($decoded, true));
+
         $email = $decoded->email;
 
         // TODO match to HASH instead
