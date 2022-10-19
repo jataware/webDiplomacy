@@ -645,6 +645,21 @@ class AbandonCrashedGame extends ApiEntry
         
     }
 }
+class TotalPlayerScore extends ApiEntry{
+	public function __construct()
+    {
+        parent::__construct('player/totalScore', 'GET', 'getStateOfAllGames', array('userId'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+		$args = $this->getArgs();
+		$userId = $args['userId'];
+		$tabl = $DB->sql_tabl("Select sum(score) from wD_Members where id = ".$userId);
+		$ret = $DB->tabl_row($tabl);
+		return $ret[0];
+	}
+}
 
 class ScoreGame extends ApiEntry
 {
@@ -706,6 +721,9 @@ class ScoreGame extends ApiEntry
 					break;
 				}
 			}
+			if ($ret[1] == 0){
+				break;
+			}
 			if ($place == 2){
 				$playerScore += 7;
 			}
@@ -722,7 +740,10 @@ class ScoreGame extends ApiEntry
 				$points = split_points($points, $tiedIndexes);
 			}
 		}
-		return json_encode($points);
+		for ($i = 0; $i < count($points); $i++){
+			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID);
+			$DB->sql_put("COMMIT");
+		}
     }
 }
 
@@ -741,18 +762,15 @@ class WaitingPlayers extends ApiEntry {
 		
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
-			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$userID.");";
 			
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
 
 			if ($row){
-				$lastScore = $row['supplyCenterNo'];
+				$lastScore = $row['score'];
 			}
 
-			
-
-			
       $toPush = [
 			"id"=> intval($ret[0]), 
 			"username" => $ret[1],
@@ -1025,13 +1043,13 @@ class LastScore extends ApiEntry
     public function run($userID, $permissionIsExplicit)
     {
 		$userID = $this ->getArgs()['userID'];
-		$SQL = "select * from wD_Members where userID = ".$userID." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+		$SQL = "select * from wD_Members where userID = ".$userID." and gameID = (select max(gameID) from wD_Members where userID = ".$userID.");";
 		global $DB;
 		$row = $DB->sql_hash($SQL);
 		if (!$row){
-			return "No finished games found for this userID";
+			return 0;
 		}
-		return $row['supplyCenterNo'];
+		return $row['score'];
     }
 }
 
@@ -1233,6 +1251,13 @@ class GetGameOverview extends ApiEntry {
 	 */
 	public function run($userID, $permissionIsExplicit) {
 		$args = $this->getArgs();
+		global $DB;
+		$SQL = "SELECT userID, score from wD_Members WHERE gameID = ".$args['gameID'].";";
+		$tabl = $DB->sql_tabl($SQL);
+		$members = array();
+		while(list($userID, $score) = $DB->tabl_row($tabl)) {
+			$members[$userID] = $score;
+		}
 		$gameID = $args['gameID'];
 		if ($gameID === null || !ctype_digit($gameID)){
 			throw new RequestException(
@@ -1259,6 +1284,13 @@ class GetGameOverview extends ApiEntry {
 		$split = explode(',', $dateTxt);
 		$season = $split[0];
 		$year = intval($split[1] ?? 1901);
+		$gameMembers = (new GetGameMembers)->getData($userID);
+		$gameMembersRet = array();
+		foreach ($gameMembers['members'] as $gm){
+			$gm['score'] = $members[$gm['userID']];
+			array_push($gameMembersRet, $gm);
+		}
+		$gameMembers['members'] = $gameMembersRet;
 
 		$payload = array_merge([
 			'alternatives' => strip_tags(implode(', ',$game->getAlternatives())),
@@ -1288,7 +1320,7 @@ class GetGameOverview extends ApiEntry {
 			'variant' => $game->Variant,
 			'variantID' => $game->variantID,
 			'year' => $year,
-		], (new GetGameMembers)->getData($userID));
+		], $gameMembers);
 		return $this->JSONResponse('Successfully retrieved game overview.', 'GGO-s-001', true, $payload, true);
 	}
 }
@@ -2285,6 +2317,7 @@ try {
 	$api->load(new GetGameMessages());
 	$api->load(new LeaveGame());
 	$api->load(new ScoreGame());
+	$api->load(new TotalPlayerScore());
 	
 	
 
