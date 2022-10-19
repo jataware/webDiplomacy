@@ -5,6 +5,8 @@
  **/
 
 import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Text from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
@@ -89,6 +91,8 @@ export const ConsentPage = ({onAccept, onDecline}) => {
     const [ofAge, setOfAge] = useState(false);
     const [hasRead, setHasRead] = useState(false);
 
+    const [savingConsent, setSavingConsent] = React.useState(false);
+
     const handleOfAgeChange = createToggle(setOfAge, ofAge);
     const handleHasReadChange = createToggle(setHasRead, hasRead);
 
@@ -120,12 +124,14 @@ export const ConsentPage = ({onAccept, onDecline}) => {
                     <FormControlLabel
                         control={<Checkbox
                                      color="success"
+                                     disabled={savingConsent}
                                      onChange={handleOfAgeChange}
                                      disableRipple />}
                         label="I affirm that I am 18 years of age or older;" />
                     <FormControlLabel
                         control={<Checkbox
                                      color="success"
+                                     disabled={savingConsent}
                                      onChange={handleHasReadChange}
                                      disableRipple />}
                         label="I affirm that I have read this document and understand the conditions and outcomes of participation in this research study." />
@@ -137,16 +143,26 @@ export const ConsentPage = ({onAccept, onDecline}) => {
 
                 <SubmitContainer>
                     <Button
-                        disabled={!ofAge || !hasRead}
+                        disabled={!ofAge || !hasRead || savingConsent}
                         color="success"
                         variant="outlined"
-                        onClick={onAccept}>
+                        sx={{position: "relative"}}
+                        onClick={() => {
+                          setSavingConsent(true);
+                          onAccept();
+                        }}>
+                      {savingConsent && (
+                        <Box sx={{position: "absolute", left: "1rem", display: "flex", alignItems: "center"}}>
+                        <CircularProgress size="1.5rem" />
+                        </Box>
+                      )}
                         I agree to participate
                     </Button>
 
                     <Button
                         variant="outlined"
                         className="btn btn-secondary"
+                        disabled={savingConsent}
                         onClick={onDecline}>
                         I decline to participate
                     </Button>

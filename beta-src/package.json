@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "beta",
   "dependencies": {
+    "@aws-amplify/ui-react": "^3.5.1",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@headlessui/react": "^1.6.5",
@@ -18,29 +19,25 @@
     "@types/node": "^12.20.37",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",
+    "aws-amplify": "^4.3.35",
     "axios": "^0.26.1",
     "d3": "^7.3.0",
     "dompurify": "^2.3.8",
     "env-cmd": "^10.1.0",
+    "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dnd": "15.1.2",
     "react-dnd-html5-backend": "15.1.3",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
     "react-scripts": "5.0.0",
+    "react-scroll": "^1.8.7",
     "react-use": "^17.4.0",
+    "unique-names-generator": "^4.7.1",
     "upgrade": "^1.1.0",
     "use-local-storage-state": "^17.2.0",
     "uuid": "^8.3.2",
-    "web-vitals": "^1.1.2",
-    "pusher-js": "^7.0.6",
-    "react-scroll": "^1.8.7",
-    "lodash": "^4.17.21",
-    "framer-motion": "^6.5.1",
-    "waait": "^1.0.5",
-    "formik": "^2.2.9",
-    "@tailwindcss/forms": "^0.5.2",
-    "keyboardjs": "github:markjaniczak/KeyboardJS"
+    "web-vitals": "^1.1.2"
   },
   "scripts": {
     "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
@@ -52,12 +49,24 @@
     "eject": "react-scripts eject",
     "prepare": "cd .. && husky install beta-src/.husky",
     "start:local": "nodemon server.js",
-    "lint": "eslint --ext .tsx src"
+    "lint": "eslint --ext .tsx src",
+    "storybook": "DISABLE_ESLINT_PLUGIN=true start-storybook -p 6006 -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "**/*.stories.*"
+        ],
+        "rules": {
+          "import/no-anonymous-default-export": "off"
+        }
+      }
     ]
   },
   "browserslist": {
@@ -73,10 +82,21 @@
     ]
   },
   "devDependencies": {
+    "@storybook/addon-actions": "^6.5.12",
+    "@storybook/addon-essentials": "^6.5.12",
+    "@storybook/addon-interactions": "^6.5.12",
+    "@storybook/addon-links": "^6.5.12",
+    "@storybook/builder-webpack5": "^6.5.12",
+    "@storybook/manager-webpack5": "^6.5.12",
+    "@storybook/node-logger": "^6.5.12",
+    "@storybook/preset-create-react-app": "^4.1.2",
+    "@storybook/react": "^6.5.12",
+    "@storybook/testing-library": "^0.0.13",
     "@svgr/cli": "^6.2.0",
     "@typescript-eslint/eslint-plugin": "^5.6.0",
     "@typescript-eslint/parser": "^5.6.0",
     "autoprefixer": "^10.4.7",
+    "babel-plugin-named-exports-order": "^0.0.2",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^19.0.2",
     "eslint-config-prettier": "^8.3.0",
@@ -86,14 +106,16 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.27.1",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "express": "^4.18.1",
     "husky": "^7.0.4",
     "i": "^0.3.7",
     "npm": "^8.2.0",
     "postcss": "^8.4.14",
     "prettier": "^2.5.1",
+    "prop-types": "^15.8.1",
     "tailwindcss": "^3.1.3",
+    "ts-node": "^10.8.2",
     "typescript": ">=4.5.2 <4.6.0",
-    "express": "^4.18.1",
-    "ts-node": "^10.8.2"
+    "webpack": "^5.74.0"
   }
 }

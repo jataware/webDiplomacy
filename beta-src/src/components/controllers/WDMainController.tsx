@@ -98,6 +98,7 @@ const WDMainController: React.FC = function ({ children }): React.ReactElement {
   }, [name, gameID]);
 
   const showOverlay = noPhase || status.status === "Left";
+
   if (displayedPhaseKey === null && overview.phase) {
     setDisplayedPhaseKey(overviewKey);
   }
