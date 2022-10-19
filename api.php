@@ -1834,10 +1834,11 @@ class FinishGames extends ApiEntry {
 	}
 	public function run($userID, $permissionIsExplicit) {
 		global $DB;
-		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 10;";
+		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 12;";
 		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
 		$SQL = "UPDATE wD_Members join wD_Games on wD_Members.gameID = wD_Games.id SET status = 'Survived' where wD_Games.phase='Finished';";
+		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
 		return "Success";
 	}
