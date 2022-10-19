@@ -136,9 +136,7 @@ export const OngoingGames = (props) => {
       setLoading(false);
     });
 
-    intervalRef.current = setInterval(() => {
-      fetchData();
-    }, 5000);
+    intervalRef.current = setInterval(fetchData, 5000);
 
     return function() {
       clearInterval(intervalRef.current);

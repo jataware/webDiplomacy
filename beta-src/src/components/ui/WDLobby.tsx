@@ -4,6 +4,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
+import Progress from '@mui/material/CircularProgress';
+
 import chess1 from "../../assets/waiting-room-backgrounds/chess1.jpg";
 import chess2 from "../../assets/waiting-room-backgrounds/chess2.jpg";
 import conference from "../../assets/waiting-room-backgrounds/conference-hall.jpg";
@@ -78,29 +80,56 @@ const Instructions = (props) => {
 function WelcomeMessage(){
   const dispatch = useAppDispatch();
 
-  const [playerStatus, setPlayerStatus] = React.useState(false);
+  const [playerStatus, setPlayerStatus] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
 
-  React.useEffect(() => {
-    setLoading(true);
+  const intervalRef = React.useRef();
+
+  function fetchData() {
     var req = dispatch(fetchPlayerState());
 
-      req.then((response) => {
-        setLoading(false);
-        console.log('response', response);
+    req.then((response) => {
+
+      /* console.log('Player state response:', response); */
+
+      if (response?.payload) {
         setPlayerStatus(response.payload.state);
-      });
+      } else {
+        console.warn("No player state payload. DEBUG.")
+      }
+      return null;
+    });
+
+    return req;
+  }
+
+  React.useEffect(() => {
+
+    setLoading(true);
+
+    fetchData().finally(() => {
+      setLoading(false);
+    });
+
+    intervalRef.current = setInterval(fetchData, 3000);
+
+    return () => {
+      clearInterval(intervalRef.current);
+    }
 
   }, []);
 
-  if (loading){
-    return (<div style={{
-      fontSize: "35px",
-      textAlign: "center",
-      width: "100%",
-      marginBottom: "1rem"
-    }}> loading </div>)
+  if (loading) {
+    return (
+      <div style={{
+        fontSize: "35px",
+        textAlign: "center",
+        width: "100%",
+        marginBottom: "1rem"
+      }}> loading </div>
+    );
   }
+
   var message = "Waiting for next game to start";
   if (playerStatus === "Cut") {
     message = "You have been cut from the tournament";
@@ -110,11 +139,22 @@ function WelcomeMessage(){
   }
   return (
     <div style={{
-      fontSize: "35px",
       textAlign: "center",
       width: "100%",
-      marginBottom: "1rem"
-    }}> {message} </div>
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+      <Box sx={{color: "blue", height: "1.75rem", pr: 1, mt: -1}}>
+        <Progress size="1.75rem" color="info" />
+      </Box>
+      <Typography
+        sx={{fontSize: "35px"}}
+        gutterBottom
+      >
+        {message}
+      </Typography>
+    </div>
   );
 };
 
@@ -124,7 +164,7 @@ const Lobby = ({signOut}) => {
 
   var images = [
     chess1,
-    chess2, conference, monument, 
+    chess2, conference, monument,
     unsplash1,
     unsplash2,
     unsplash3,

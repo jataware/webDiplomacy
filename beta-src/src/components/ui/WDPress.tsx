@@ -88,6 +88,8 @@ const WDPress: FC<WDPressProps> = function ({
              message.message === lastMessageData.message;
     });
 
+    // TODO Display Snackbar of success/failure of annotation.
+
     if (!savedMessage) {
       console.error('There\'s been an error and we couldn\'t find the saved message to annotate.');
 
