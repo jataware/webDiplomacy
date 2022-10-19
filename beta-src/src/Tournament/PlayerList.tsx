@@ -44,19 +44,25 @@ const PlayerList = (props) => {
     });
   }
 
-  function cutPlayer(id) {
+  function cutPlayer(id, status) {
+
+    const newStatus = status === "Cut" ? "" : "Cut";
+
     getGameApiRequest(
       "player/setPlayerState",
-      {userID: id, state: "Cut"}
+      {userID: id, state: newStatus}
     ).then(() => {
       fetchData();
     })
   }
 
-  function banPlayer(id) {
+  function banPlayer(id, status) {
+
+    const newStatus = status === "Banned" ? "" : "Banned";
+
     getGameApiRequest(
       "player/setPlayerState",
-      {userID: id, state: "Banned"}
+      {userID: id, state: newStatus}
     ).then(() => {
       fetchData();
     })
@@ -121,6 +127,9 @@ const PlayerList = (props) => {
                 <CardContent sx={{pt: 0, pb: 0}}>
                   <ul>
                     <li>
+                      Total Score: {player.totalScore}
+                    </li>
+                    <li>
                       Last Score: {player.lastScore}
                     </li>
                     <li>
@@ -136,10 +145,10 @@ const PlayerList = (props) => {
                 </CardContent>
 
                 <CardActions disableSpacing>
-                  <IconButton onClick={() => cutPlayer(player.id)} color="warning">
+                  <IconButton onClick={() => cutPlayer(player.id, player.status)} color="warning">
                     <CutIcon />
                   </IconButton>
-                  <IconButton onClick={() => banPlayer(player.id)} color="error">
+                  <IconButton onClick={() => banPlayer(player.id, player.status)} color="error">
                     <BanIcon />
                   </IconButton>
                 </CardActions>
