@@ -36,7 +36,7 @@ fi
 
 sleep 2
 
-cd magic-verify
+cd supporting-scripts
 npm install
 cd ..
 

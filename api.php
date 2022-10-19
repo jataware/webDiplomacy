@@ -2105,7 +2105,7 @@ function getIdTokenFromHeader() {
  * Get IdToken Header Value
  * */
 function validateAccessAndIdTokens($idToken) {
-    $result = shell_exec("node ./magic-verify/index.mjs -t " . $idToken);
+    $result = shell_exec("node ./supporting-scripts/verify.mjs -t " . $idToken);
     return $result;
 }
 
