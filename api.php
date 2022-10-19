@@ -1835,6 +1835,7 @@ class FinishGames extends ApiEntry {
 		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
 		$SQL = "UPDATE wD_Members join wD_Games on wD_Members.gameID = wD_Games.id SET status = 'Survived' where wD_Games.phase='Finished';";
+		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
 		return "Success";
 	}
