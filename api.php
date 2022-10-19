@@ -1810,6 +1810,21 @@ class SendMessage extends ApiEntry {
 	}
 }
 
+class FinishGames extends ApiEntry {
+	public function __construct() {
+		parent::__construct('games/finish', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $DB;
+		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 10;";
+		$DB->sql_put($SQL);
+		$DB->sql_put("COMMIT");
+		$SQL = "UPDATE wD_Members join wD_Games on wD_Members.gameID = wD_Games.id SET status = 'Survived' where wD_Games.phase='Finished';";
+		$DB->sql_put("COMMIT");
+		return "Success";
+	}
+}
+
 /**
  * API entry game/sendmessage
  */
@@ -2318,6 +2333,8 @@ try {
 	$api->load(new LeaveGame());
 	$api->load(new ScoreGame());
 	$api->load(new TotalPlayerScore());
+	$api->load(new FinishGames());
+	
 	
 	
 
