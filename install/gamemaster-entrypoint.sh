@@ -6,7 +6,7 @@ cd $HOME
 
 if [ ! -d vendor ]; then
   echo "ERROR: vendor directory not found; please run composer update in the source directory"
-  
+
 else
 
   echo "Make sure all cache folders exist"
@@ -51,8 +51,7 @@ else
     echo "DB created"
   fi
 
-
-  cd magic-verify
+  cd supporting-scripts
   npm install
   cd ..
 
