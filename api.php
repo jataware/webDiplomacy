@@ -761,8 +761,10 @@ class WaitingPlayers extends ApiEntry {
 		$ret = $DB->tabl_row($tabl);
 		
 		while ($ret){
-			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
-			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$userID.");";
+			$stats = $DB->sql_row("select count(*), sum(score) from wD_Members where userID = ".$ret[0]);
+			$gameCount = $stats[0];
+			$totalScore = $stats[1];
+			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
 			
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
@@ -777,7 +779,9 @@ class WaitingPlayers extends ApiEntry {
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
 			"gameCount" => intval($gameCount[0]),
-			"lastScore" => intval($lastScore)];
+			"lastScore" => intval($lastScore),
+			"totalScore" => intval($totalScore)
+			];
       
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
