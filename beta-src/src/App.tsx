@@ -28,7 +28,6 @@ async function handleIRBAccept(user) {
     const result = await userAPIConsent(user);
     return result;
   } catch(e) {
-    // TODO Unable to accept consent. What shall we do here.
     console.log('Error updating user consent information:', e);
     throw e;
   }
@@ -39,37 +38,59 @@ async function handleIRBAccept(user) {
  **/
 const AuthIRBHandler = ({user, signOut, children, acceptedConsent, setAcceptedConsent}) => {
 
-  const [loading, setLoading] = React.useState(true);
+  const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
-    const noCacheUser = Auth
+
+    let isMounted = true;
+
+    console.log("acceptedConsent", acceptedConsent);
+
+    if (acceptedConsent) {
+      setReady(true);
+      return;
+    }
+
+    console.log("Refetching user consent data");
+
+    Auth
       .currentAuthenticatedUser({ bypassCache: true })
       .then((nonCachedUser) => {
         const hasAccepted = Boolean(nonCachedUser.attributes['custom:accepted-terms-at']);
         setAcceptedConsent(hasAccepted);
       }).finally(() => {
-        setLoading(false);
+        if (isMounted) {
+          setReady(true);
+        }
       })
-  }, [acceptedConsent, loading]);
 
-  if (loading) {
+    return () => {
+      isMounted = false
+    }
+  }, [acceptedConsent]);
+
+  if (!ready) {
     return (
       <div>
-        <p>Loading...</p>
+        <p>Loading Form..</p>
       </div>
     );
   }
 
   if (!acceptedConsent) {
-    console.log('Player user has not accepted IRB consent');
+    console.log('Player user has not accepted IRB consent.');
 
     return (
       <ConsentPage
         onDecline={signOut}
         onAccept={() => {
-          handleIRBAccept(user).then(result => {
-            setAcceptedConsent(true);
-          })
+          handleIRBAccept(user)
+            .then(() => {
+              setAcceptedConsent(true);
+            })
+            .catch((e) => {
+              // TODO display a snackbar with failure
+            })
         }} />
     );
   }
@@ -93,6 +114,8 @@ const App: React.FC = function (): React.ReactElement {
 
   React.useEffect(() => {
 
+    let isMounted = true
+
     setLoading(true);
     let promises = [
       dispatch(fetchPlayerActiveGames()),
@@ -102,8 +125,17 @@ const App: React.FC = function (): React.ReactElement {
     Promise
       .all(promises)
       .then(([games, playerAdmin]) => {
-        setLoading(false);
-      });
+        if (isMounted) {
+          setLoading(false);
+        }
+      })
+    .catch((e) => {
+      // TODO Snackbar
+    });
+
+    return () => {
+      isMounted = false
+    }
 
   }, []);
 
@@ -113,7 +145,7 @@ const App: React.FC = function (): React.ReactElement {
   if (loading) {
     return (
       <div>
-        <p>Loading...</p>
+        <p>Loading ..</p>
       </div>
     );
   }
@@ -129,12 +161,14 @@ const App: React.FC = function (): React.ReactElement {
     )
   }
 
-  if(!Admin) {
+  if (!Admin) {
     const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
+    /* console.log("window.location", window.location); */
+
     if (shouldRedirectToGame) {
-      window.location.replace(window.location.href + `?gameID=${userCurrentActiveGames[0].gameID}`);
-      return;
+      window.location.replace(window.location.origin + window.location.pathname + `?gameID=${userCurrentActiveGames[0].gameID}`);
+      return null;
     }
 
     const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
@@ -142,7 +176,7 @@ const App: React.FC = function (): React.ReactElement {
 
     if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
       window.location.replace(window.location.origin + window.location.pathname);
-      return;
+      return null;
     }
   }
 
@@ -180,22 +214,3 @@ const App: React.FC = function (): React.ReactElement {
 };
 
 export default App;
-
-/*
-   User types
-   - User: to distinguish between a registered user and a guest person navigating to app
-   - Player: A type of user. non-admin user that is assigned to and plays games.
-   - Admin: Non-player user that manages game assignment, can expectate, use admin dashboard.
-
-   Rules
-
-   - User not logged in => Redirect to login page (App.tsx)
-   - GameID on URL does not exist => Stay/Redirect to Lobby (WdMain.tsx)
-   - GameID on url exists, player not assigned to game => Redirect to Lobby
-   - Player on Lobby, then assigned to Game => Redirect to Game ID route
-   - Player assigned to Game => Display app
-   - Admin user on any game url => spectate game
-   - Game ends for a Player => Dialog of result is shown to Player. Dialog contains button to go back to Lobby to await for next game.
-   - Game ends while admin is spectating. Display dialog, allow admin to stay on game or leave towards admin dashboard.
-
-*/

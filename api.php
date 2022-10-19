@@ -1964,7 +1964,7 @@ function validateAccessAndIdTokens($idToken) {
 
 class IdToken extends ApiAuth {
     /**
-	 * API access key.
+	 * IdToken access key.
 	 * @var string
 	 */
 	private $token;
@@ -2167,6 +2167,7 @@ try {
         http_response_code(404);
         die('API is not enabled.');
     }
+
 	// Load API object, load API entries, parse API call and print response as a JSON object.
 	$api = new Api();
 	$api->load(new ListGamesWithPlayersInCD());
@@ -2203,8 +2204,7 @@ try {
 	$api->load(new isAdmin());
 	$api->load(new GetGameMessages());
 	$api->load(new LeaveGame());
-	
-	
+
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.

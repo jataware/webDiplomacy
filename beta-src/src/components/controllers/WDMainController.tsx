@@ -77,7 +77,7 @@ const WDMainController: React.FC = function ({ children }): React.ReactElement {
   }, [name, gameID]);
 
   if (!consistentPhase) {
-    return <div>Loading...</div>;
+    return <div>Loading phase...</div>;
   }
   const showOverlay =
     noPhase ||

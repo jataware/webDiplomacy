@@ -87,8 +87,12 @@ function WelcomeMessage(){
 
       req.then((response) => {
         setLoading(false);
-        console.log('response', response);
-        setPlayerStatus(response.payload.state);
+        /* console.log('response', response); */
+        if (response?.payload) {
+          setPlayerStatus(response.payload.state);
+        } else {
+          console.warn("No player state payload. DEBUG.")
+        }
       });
 
   }, []);
@@ -110,11 +114,16 @@ function WelcomeMessage(){
   }
   return (
     <div style={{
-      fontSize: "35px",
       textAlign: "center",
-      width: "100%",
-      marginBottom: "1rem"
-    }}> {message} </div>
+      width: "100%"
+    }}>
+      <Typography
+        sx={{fontSize: "35px"}}
+        gutterBottom
+      >
+        {message}
+      </Typography>
+    </div>
   );
 };
 

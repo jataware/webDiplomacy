@@ -50,7 +50,7 @@
     "prepare": "cd .. && husky install beta-src/.husky",
     "start:local": "nodemon server.js",
     "lint": "eslint --ext .tsx src",
-    "storybook": "start-storybook -p 6006 -s public",
+    "storybook": "DISABLE_ESLINT_PLUGIN=true start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public"
   },
   "eslintConfig": {
