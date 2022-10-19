@@ -745,6 +745,7 @@ class ScoreGame extends ApiEntry
 			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID);
 			$DB->sql_put("COMMIT");
 		}
+		return "Success";
     }
 }
 
