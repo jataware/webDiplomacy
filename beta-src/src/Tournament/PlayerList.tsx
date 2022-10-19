@@ -46,7 +46,7 @@ const PlayerList = (props) => {
 
   function cutPlayer(id, status) {
 
-    const newStatus = status === "Cut" ? "" : "Cut";
+    const newStatus = status === "Cut" ? "Active" : "Cut";
 
     getGameApiRequest(
       "player/setPlayerState",
@@ -58,7 +58,7 @@ const PlayerList = (props) => {
 
   function banPlayer(id, status) {
 
-    const newStatus = status === "Banned" ? "" : "Banned";
+    const newStatus = status === "Banned" ? "Active" : "Banned";
 
     getGameApiRequest(
       "player/setPlayerState",
