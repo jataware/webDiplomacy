@@ -113,6 +113,13 @@ const App: React.FC = function (): React.ReactElement {
   const [loading, setLoading] = React.useState(false);
 
 
+  const intervalRef = React.useRef();
+
+  function pollGameData() {
+    console.log("refreshing user data");
+    dispatch(fetchPlayerActiveGames())
+  }
+
   React.useEffect(() => {
 
     console.log("App init.");
@@ -136,8 +143,11 @@ const App: React.FC = function (): React.ReactElement {
       // TODO Snackbar
     });
 
+    intervalRef.current = setInterval(pollGameData, 3000);
+
     return () => {
-      isMounted = false
+      isMounted = false;
+      clearInterval(intervalRef.current);
     }
 
   }, []);
