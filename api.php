@@ -645,6 +645,107 @@ class AbandonCrashedGame extends ApiEntry
         
     }
 }
+class TotalPlayerScore extends ApiEntry{
+	public function __construct()
+    {
+        parent::__construct('player/totalScore', 'GET', 'getStateOfAllGames', array('userId'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+		$args = $this->getArgs();
+		$userId = $args['userId'];
+		$tabl = $DB->sql_tabl("Select sum(score) from wD_Members where id = ".$userId);
+		$ret = $DB->tabl_row($tabl);
+		return $ret[0];
+	}
+}
+
+class ScoreGame extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/score', 'GET', 'getStateOfAllGames', array('gameID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		function split_points($arr, $indexes)
+		{
+			$totalPoints = 0;
+			foreach($indexes as $index){
+				$totalPoints += $arr[$index][1];
+			}
+			$split_points = $totalPoints / count($indexes);
+			foreach($indexes as $index){
+				$arr[$index][1] = $split_points;
+			}
+			return $arr;
+		}
+		function find_duplicates($arr, $value)
+		{
+			$indexes = array();
+			foreach($arr as $index => $val){
+				if ($val == $value){
+					array_push($indexes, $index);
+				}
+			}
+			return $indexes;
+		}
+		global $DB;
+		$gameID = $this->getArgs()['gameID'];
+		$tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
+		$ret = $DB->tabl_row($tabl);
+		$place = 0;
+		// 38, 14, 7
+		$supplyCenterCounts = array();
+		$points = array();
+		$lastSupplyCenterCount = -1;
+		
+		while ($ret){
+			if ($place >= 3){
+				if ($ret[1] != $lastSupplyCenterCount)
+				{break;}
+			}
+			
+			$playerScore = 1 * $ret[1]; // supplyCenters * 1
+			$supplyCenterCounts[$place] = $ret[1];
+			
+			if ($place == 0){
+				$playerScore += 38;
+			}
+			if ($place == 1){
+				$playerScore += 14;
+				if ($ret[1] == 0){
+					//solo victory
+					$points[0][1] = 73;
+					break;
+				}
+			}
+			if ($ret[1] == 0){
+				break;
+			}
+			if ($place == 2){
+				$playerScore += 7;
+			}
+			$lastSupplyCenterCount = $ret[1];
+			$points[$place] = [$ret[0], $playerScore, $ret[1], $place];
+			$ret = $DB->tabl_row($tabl); //userid
+			$place++;
+		}
+
+		for ($i = 0; $i < count($supplyCenterCounts); $i++){
+			$tiedIndexes = find_duplicates($supplyCenterCounts, $supplyCenterCounts[$i]);
+			
+			if (count($tiedIndexes) > 1){
+				$points = split_points($points, $tiedIndexes);
+			}
+		}
+		for ($i = 0; $i < count($points); $i++){
+			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID);
+			$DB->sql_put("COMMIT");
+		}
+    }
+}
 
 
 class WaitingPlayers extends ApiEntry {
@@ -660,25 +761,27 @@ class WaitingPlayers extends ApiEntry {
 		$ret = $DB->tabl_row($tabl);
 		
 		while ($ret){
-			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
-			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+			$stats = $DB->sql_row("select count(*), sum(score) from wD_Members where userID = ".$ret[0]);
+			$gameCount = $stats[0];
+			$totalScore = $stats[1];
+			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
+			
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
 
 			if ($row){
-				$lastScore = $row['supplyCenterNo'];
+				$lastScore = $row['score'];
 			}
 
-			
-
-			
       $toPush = [
 			"id"=> intval($ret[0]), 
 			"username" => $ret[1],
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
 			"gameCount" => intval($gameCount[0]),
-			"lastScore" => intval($lastScore)];
+			"lastScore" => intval($lastScore),
+			"totalScore" => intval($totalScore)
+			];
       
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
@@ -697,19 +800,29 @@ class AllPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan, jW_PlayerStates.state from wD_Users left join jW_PlayerStates on wD_Users.id = jW_PlayerStates.userID where type = 'User';");
+		$tabl = $DB->sql_tabl("Select wD_Users.id, wD_Users.username, wD_Users.type, wD_Users.tempBan, jW_PlayerStates.state, sum(wD_Members.score) from wD_Users left join jW_PlayerStates on wD_Users.id = jW_PlayerStates.userID left join wD_Members on wD_Members.userID = wD_Users.id where type = 'User' Group By wD_Users.id;");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
 		
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
+			
+			$SQL = "select score from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
+			$row = $DB->sql_hash($SQL);
+			$lastScore = 0;
+			if ($row){
+				$lastScore = $row['score'];
+			}
+
 			$toPush = [
 				"id"=> intval($ret[0]), 
 			"username" => $ret[1],
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
 			"status" => $ret[4],
+			"totalScore" => $ret[5],
+			"lastScore" => $lastScore,
 			"gameCount" => intval($gameCount[0])];
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
@@ -944,13 +1057,13 @@ class LastScore extends ApiEntry
     public function run($userID, $permissionIsExplicit)
     {
 		$userID = $this ->getArgs()['userID'];
-		$SQL = "select * from wD_Members where userID = ".$userID." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+		$SQL = "select * from wD_Members where userID = ".$userID." and gameID = (select max(gameID) from wD_Members where userID = ".$userID.");";
 		global $DB;
 		$row = $DB->sql_hash($SQL);
 		if (!$row){
-			return "No finished games found for this userID";
+			return 0;
 		}
-		return $row['supplyCenterNo'];
+		return $row['score'];
     }
 }
 
@@ -1152,6 +1265,13 @@ class GetGameOverview extends ApiEntry {
 	 */
 	public function run($userID, $permissionIsExplicit) {
 		$args = $this->getArgs();
+		global $DB;
+		$SQL = "SELECT userID, score from wD_Members WHERE gameID = ".$args['gameID'].";";
+		$tabl = $DB->sql_tabl($SQL);
+		$members = array();
+		while(list($userID, $score) = $DB->tabl_row($tabl)) {
+			$members[$userID] = $score;
+		}
 		$gameID = $args['gameID'];
 		if ($gameID === null || !ctype_digit($gameID)){
 			throw new RequestException(
@@ -1178,6 +1298,13 @@ class GetGameOverview extends ApiEntry {
 		$split = explode(',', $dateTxt);
 		$season = $split[0];
 		$year = intval($split[1] ?? 1901);
+		$gameMembers = (new GetGameMembers)->getData($userID);
+		$gameMembersRet = array();
+		foreach ($gameMembers['members'] as $gm){
+			$gm['score'] = $members[$gm['userID']];
+			array_push($gameMembersRet, $gm);
+		}
+		$gameMembers['members'] = $gameMembersRet;
 
 		$payload = array_merge([
 			'alternatives' => strip_tags(implode(', ',$game->getAlternatives())),
@@ -1207,7 +1334,7 @@ class GetGameOverview extends ApiEntry {
 			'variant' => $game->Variant,
 			'variantID' => $game->variantID,
 			'year' => $year,
-		], (new GetGameMembers)->getData($userID));
+		], $gameMembers);
 		return $this->JSONResponse('Successfully retrieved game overview.', 'GGO-s-001', true, $payload, true);
 	}
 }
@@ -1694,6 +1821,21 @@ class SendMessage extends ApiEntry {
 			"messages" => $messages
 		];
 		return json_encode($ret);
+	}
+}
+
+class FinishGames extends ApiEntry {
+	public function __construct() {
+		parent::__construct('games/finish', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $DB;
+		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 10;";
+		$DB->sql_put($SQL);
+		$DB->sql_put("COMMIT");
+		$SQL = "UPDATE wD_Members join wD_Games on wD_Members.gameID = wD_Games.id SET status = 'Survived' where wD_Games.phase='Finished';";
+		$DB->sql_put("COMMIT");
+		return "Success";
 	}
 }
 
@@ -2204,7 +2346,9 @@ try {
 	$api->load(new isAdmin());
 	$api->load(new GetGameMessages());
 	$api->load(new LeaveGame());
-
+	$api->load(new ScoreGame());
+	$api->load(new TotalPlayerScore());
+	$api->load(new FinishGames());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
