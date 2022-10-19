@@ -646,6 +646,86 @@ class AbandonCrashedGame extends ApiEntry
     }
 }
 
+class ScoreGame extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/score', 'GET', 'getStateOfAllGames', array('gameID'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		function split_points($arr, $indexes)
+		{
+			$totalPoints = 0;
+			foreach($indexes as $index){
+				$totalPoints += $arr[$index][1];
+			}
+			$split_points = $totalPoints / count($indexes);
+			foreach($indexes as $index){
+				$arr[$index][1] = $split_points;
+			}
+			return $arr;
+		}
+		function find_duplicates($arr, $value)
+		{
+			$indexes = array();
+			foreach($arr as $index => $val){
+				if ($val == $value){
+					array_push($indexes, $index);
+				}
+			}
+			return $indexes;
+		}
+		global $DB;
+		$gameID = $this->getArgs()['gameID'];
+		$tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
+		$ret = $DB->tabl_row($tabl);
+		$place = 0;
+		// 38, 14, 7
+		$supplyCenterCounts = array();
+		$points = array();
+		$lastSupplyCenterCount = -1;
+		
+		while ($ret){
+			if ($place >= 3){
+				if ($ret[1] != $lastSupplyCenterCount)
+				{break;}
+			}
+			
+			$playerScore = 1 * $ret[1]; // supplyCenters * 1
+			$supplyCenterCounts[$place] = $ret[1];
+			
+			if ($place == 0){
+				$playerScore += 38;
+			}
+			if ($place == 1){
+				$playerScore += 14;
+				if ($ret[1] == 0){
+					//solo victory
+					$points[0][1] = 73;
+					break;
+				}
+			}
+			if ($place == 2){
+				$playerScore += 7;
+			}
+			$lastSupplyCenterCount = $ret[1];
+			$points[$place] = [$ret[0], $playerScore, $ret[1], $place];
+			$ret = $DB->tabl_row($tabl); //userid
+			$place++;
+		}
+
+		for ($i = 0; $i < count($supplyCenterCounts); $i++){
+			$tiedIndexes = find_duplicates($supplyCenterCounts, $supplyCenterCounts[$i]);
+			
+			if (count($tiedIndexes) > 1){
+				$points = split_points($points, $tiedIndexes);
+			}
+		}
+		return json_encode($points);
+    }
+}
+
 
 class WaitingPlayers extends ApiEntry {
 	public function __construct() {
@@ -662,6 +742,7 @@ class WaitingPlayers extends ApiEntry {
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
 			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$userID." and status != 'Playing');";
+			
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
 
@@ -2203,6 +2284,7 @@ try {
 	$api->load(new isAdmin());
 	$api->load(new GetGameMessages());
 	$api->load(new LeaveGame());
+	$api->load(new ScoreGame());
 	
 	
 
