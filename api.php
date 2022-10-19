@@ -796,19 +796,29 @@ class AllPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan, jW_PlayerStates.state from wD_Users left join jW_PlayerStates on wD_Users.id = jW_PlayerStates.userID where type = 'User';");
+		$tabl = $DB->sql_tabl("Select wD_Users.id, wD_Users.username, wD_Users.type, wD_Users.tempBan, jW_PlayerStates.state, sum(wD_Members.score) from wD_Users left join jW_PlayerStates on wD_Users.id = jW_PlayerStates.userID left join wD_Members on wD_Members.userID = wD_Users.id where type = 'User' Group By wD_Users.id;");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
 		
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
+			
+			$SQL = "select score from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
+			$row = $DB->sql_hash($SQL);
+			$lastScore = 0;
+			if ($row){
+				$lastScore = $row['score'];
+			}
+
 			$toPush = [
 				"id"=> intval($ret[0]), 
 			"username" => $ret[1],
 			"type" => $ret[2], 
 			"tempBan" => $ret[3],
 			"status" => $ret[4],
+			"totalScore" => $ret[5],
+			"lastScore" => $lastScore,
 			"gameCount" => intval($gameCount[0])];
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
