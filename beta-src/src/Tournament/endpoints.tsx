@@ -66,7 +66,11 @@ export async function fetchWaitingGames() {
       {hello: "world"}
     );
 
-    return waitingGames.data; // Array with IDs for all ongoing games
+    if (!waitingGames.data) {
+      console.log('waiting games data rsponse empty, debug:', waitingGames);
+    }
+
+    return waitingGames.data ? waitingGames.data : []; // Array with IDs for all ongoing games
 
   } catch(e) {
     console.log('Request to fetch ongoinggames failed, e:', e);
@@ -137,7 +141,11 @@ export async function fetchWaitingPlayers() {
       {hello: "world"}
     );
 
-    return players.data;
+    if (!players.data) {
+      console.log('waiting players data response empty, debug:', players);
+    }
+
+    return players.data ? players.data : [];
 
   } catch(e) {
     console.log('Request to fetch players failed, e:', e);

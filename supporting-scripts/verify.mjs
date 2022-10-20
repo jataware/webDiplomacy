@@ -41,8 +41,8 @@ async function verify() {
   try {
     const payload = await verifier.verify(tokenTarget);
 
-    // TODO access untested but we'll need it, try it out soon
     if (options.access) {
+      // TODO check payload in case we can return anything useful from there
       return {
         result: "valid"
       };

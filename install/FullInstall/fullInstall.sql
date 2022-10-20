@@ -1978,13 +1978,14 @@ ADD COLUMN `mobileNumber` BIGINT UNSIGNED NULL DEFAULT NULL AFTER `mobileCountry
 ADD COLUMN `isMobileValidated` BIT NOT NULL DEFAULT 0 AFTER `mobileNumber`;
 
 ALTER TABLE `wD_GameMessages` ADD `intentDeceive` VARCHAR(6);
-ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` BOOLEAN;
+ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` BOOLEAN; -- TODO varchar and use yes/no etc on UI
 
 CREATE TABLE jW_PlayerStates (
     userID INTEGER,
     state varchar(255) NOT NULL
-) ENGINE=InnoDB;;
+) ENGINE=InnoDB;
 
 ALTER TABLE jW_PlayerStates ADD PRIMARY KEY (userID);
 
-
+ALTER TABLE wD_Members
+  ADD score INT;

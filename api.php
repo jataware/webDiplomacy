@@ -623,6 +623,11 @@ class GetGamesStates extends ApiEntry {
 	}
 }
 
+/**
+ * Internal dev create player, should not be called from APP itself
+ * TODO test Admin and|or System priviledges only
+ *
+ */
 class CreatePlayer extends ApiEntry {
 	public function __construct()
     {
@@ -647,28 +652,35 @@ class CreatePlayer extends ApiEntry {
 	}
 }
 
+// TODO have util script to call and check this maybe from node
 class CrashedGames extends ApiEntry {
 	public function __construct() {
 		parent::__construct('game/crashedgames', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
+
 		//$params['userID'] = (int)$params['userID'];
+
 		global $DB;
 		$tabl = $DB->sql_tabl("Select id from wD_Games where processStatus = 'Crashed';");
+
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
+
 		while ($ret){
 			array_push($return_array, intval($ret[0]));
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
+
+// TODO node script that can call this?
 class UncrashGame extends ApiEntry
 {
     public function __construct()
@@ -688,7 +700,7 @@ class UncrashGame extends ApiEntry
     }
 }
 
-class AbandonCrashedGame extends ApiEntry 
+class AbandonCrashedGame extends ApiEntry
 {
     public function __construct()
     {
@@ -705,10 +717,10 @@ class AbandonCrashedGame extends ApiEntry
 		$Game->setDrawn();
 		$DB->sql_put("COMMIT");
         return "Success";
-        
     }
 }
-class TotalPlayerScore extends ApiEntry{
+
+class TotalPlayerScore extends ApiEntry {
 	public function __construct()
     {
         parent::__construct('player/totalScore', 'GET', 'getStateOfAllGames', array('userId'), false);
@@ -718,7 +730,7 @@ class TotalPlayerScore extends ApiEntry{
 		global $DB;
 		$args = $this->getArgs();
 		$userId = $args['userId'];
-		$tabl = $DB->sql_tabl("Select sum(score) from wD_Members where id = ".$userId);
+		$tabl = $DB->sql_tabl("Select sum(score) from wD_Members where id = ".$userId." and status != 'Left'");
 		$ret = $DB->tabl_row($tabl);
 		return $ret[0];
 	}
@@ -732,8 +744,8 @@ class ScoreGame extends ApiEntry
     }
     public function run($userID, $permissionIsExplicit)
     {
-		function split_points($arr, $indexes)
-		{
+
+		function split_points($arr, $indexes) {
 			$totalPoints = 0;
 			foreach($indexes as $index){
 				$totalPoints += $arr[$index][1];
@@ -744,8 +756,8 @@ class ScoreGame extends ApiEntry
 			}
 			return $arr;
 		}
-		function find_duplicates($arr, $value)
-		{
+
+		function find_duplicates($arr, $value) {
 			$indexes = array();
 			foreach($arr as $index => $val){
 				if ($val == $value){
@@ -754,9 +766,10 @@ class ScoreGame extends ApiEntry
 			}
 			return $indexes;
 		}
+
 		global $DB;
 		$gameID = $this->getArgs()['gameID'];
-		$DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID.";");
+		$DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID." and status != 'Left';");
 		$tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
 		$ret = $DB->tabl_row($tabl);
 		$place = 0;
@@ -764,19 +777,21 @@ class ScoreGame extends ApiEntry
 		$supplyCenterCounts = array();
 		$points = array();
 		$lastSupplyCenterCount = -1;
-		
+
 		while ($ret){
 			if ($place >= 3){
-				if ($ret[1] != $lastSupplyCenterCount)
-				{break;}
+				if ($ret[1] != $lastSupplyCenterCount) {
+                    break;
+                }
 			}
-			
+
 			$playerScore = 1 * $ret[1]; // supplyCenters * 1
 			$supplyCenterCounts[$place] = $ret[1];
-			
+
 			if ($place == 0){
 				$playerScore += 38;
 			}
+
 			if ($place == 1){
 				$playerScore += 14;
 				if ($ret[1] == 0){
@@ -785,32 +800,58 @@ class ScoreGame extends ApiEntry
 					break;
 				}
 			}
+
 			if ($ret[1] == 0){
 				break;
 			}
-			if ($place == 2){
+
+			if ($place == 2) {
 				$playerScore += 7;
 			}
+
 			$lastSupplyCenterCount = $ret[1];
 			$points[$place] = [$ret[0], $playerScore, $ret[1], $place];
 			$ret = $DB->tabl_row($tabl); //userid
 			$place++;
 		}
 
-		for ($i = 0; $i < count($supplyCenterCounts); $i++){
+		for ($i = 0; $i < count($supplyCenterCounts); $i++) {
 			$tiedIndexes = find_duplicates($supplyCenterCounts, $supplyCenterCounts[$i]);
-			
+
 			if (count($tiedIndexes) > 1){
 				$points = split_points($points, $tiedIndexes);
 			}
 		}
-		for ($i = 0; $i < count($points); $i++){
-			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID);
+		for ($i = 0; $i < count($points); $i++) {
+			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID. " AND status != 'Left';");
 			$DB->sql_put("COMMIT");
 		}
     }
 }
 
+/**
+ * Summary
+ * TODO Test
+ *
+ */
+class ResetTournament extends ApiEntry {
+	public function __construct()
+    {
+        parent::__construct('game/resetTournament', 'GET', 'getStateOfAllGames', array(), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+
+        $DB->sql_put("UPDATE wD_Members set score = NULL, status = 'Left' where status = 'Drawn';");
+		$DB->sql_put("DELETE FROM jW_PlayerStates WHERE state != 'Banned';");
+		$DB->sql_put("COMMIT");
+
+        return json_encode([
+            "done" => true
+        ]);
+	}
+}
 
 class WaitingPlayers extends ApiEntry {
 	public function __construct() {
@@ -823,13 +864,13 @@ class WaitingPlayers extends ApiEntry {
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
-		while ($ret){
+
+		while ($ret) {
 			$stats = $DB->sql_row("select count(*), sum(score) from wD_Members where userID = ".$ret[0]);
 			$gameCount = $stats[0];
 			$totalScore = $stats[1];
 			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
-			
+
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
 
@@ -846,13 +887,13 @@ class WaitingPlayers extends ApiEntry {
 			"lastScore" => intval($lastScore),
 			"totalScore" => intval($totalScore)
 			];
-      
+
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
@@ -868,10 +909,10 @@ class AllPlayers extends ApiEntry {
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
+
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
-			
+
 			$SQL = "select score from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
@@ -925,20 +966,20 @@ class OngoingGames extends ApiEntry {
 		parent::__construct('game/ongoinggames', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
-		//$params['userID'] = (int)$params['userID'];
+
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Diplomacy';");
-		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$tabl = $DB->sql_tabl("Select id from wD_Games where phase IN ('Diplomacy', 'Retreats', 'Builds');");
+
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
+
 		while ($ret){
 			array_push($return_array, intval($ret[0]));
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
@@ -1144,7 +1185,20 @@ class SetPlayerState extends ApiEntry
 		$state = $args['state'];
 		$userID = (int)$args['userID'];
 
-		$sql = "INSERT INTO jW_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
+		$existing = $DB->sql_row("SELECT userID, state FROM jW_PlayerStates WHERE userID = ".$userID.";");
+
+
+        try {
+            if (!$existing) {
+                $sql = "INSERT INTO jW_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
+            } else {
+                $sql = "UPDATE jW_PlayerStates SET state = '".$state."' WHERE userID = ".$userID.";";
+            }
+        } catch (Exception $e) {
+            error_log("Failed to insert/update player state");
+            error_log(print_r($e, true));
+        }
+
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
 		return "Player ".$userID." state set to ".$state."";
@@ -1187,9 +1241,11 @@ class JoinGame extends ApiEntry
         //$params['userID'] = (int)$params['userID'];
 		//countryID = 0 for auto assign
 		//countryID 1 - 7 for manual assignment
+        // NOTE the game does start if we do manually assign these:
+        // TODO Check if we can mix and match (set some to 0, others to specific country)
 		//1:England 2:France 3:Italy 4:Germany 5:Austria 6:Turkey 7:Russia
 		global $DB, $Game;
-		
+
 		require_once(l_r('objects/game.php'));
 		$args = $this->getArgs();
 		$gameID = (int)$args['gameID'];
@@ -1207,6 +1263,7 @@ class JoinGame extends ApiEntry
     }
 }
 
+// NOTE This should be called on pre-start, else we need to set country to CD
 class LeaveGame extends ApiEntry
 {
     public function __construct()
@@ -1217,15 +1274,20 @@ class LeaveGame extends ApiEntry
     {
 		global $DB;
 		require_once(l_r('objects/game.php'));
+
+        $args = $this->getArgs();
+        $userIDArg = (int)$args['userID'];
+        $gameID = (int)$args['gameID'];
+
 		// It is assumed this is being run within a transaction
-		$DB->sql_put("DELETE FROM wD_Members WHERE userID = ".(int)$args['userID']." and gameID = ".$gameID.";");
+		$DB->sql_put("DELETE FROM wD_Members WHERE userID = ".$userIDArg." and gameID = ".$gameID.";");
 		$DB->sql_put("COMMIT");
 		return "done";
     }
 }
 /**
  * API entry game/members
- * Retrieves member data related to a game. 
+ * Retrieves member data related to a game.
  */
 class GetGameMembers extends ApiEntry {
 	private $isAnon;
@@ -2218,7 +2280,7 @@ class IdToken extends ApiAuth {
         }
 		$this->userID = intval($rowUserID['id']);
 
-        // TODO ONLY ADMIN USERS SHOULD GET THIS PROPERTY:
+        // TODO ONLY ADMIN USERS SHOULD GET THIS PROPERTY (?)
 		$this->permissions["getStateOfAllGames"] = true;
 	}
 
@@ -2425,6 +2487,7 @@ try {
 	$api->load(new ScoreGame());
 	$api->load(new TotalPlayerScore());
 	$api->load(new FinishGames());
+	$api->load(new ResetTournament());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
