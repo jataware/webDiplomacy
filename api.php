@@ -560,6 +560,11 @@ class GetGamesStates extends ApiEntry {
 	}
 }
 
+/**
+ * Internal dev create player, should not be called from APP itself
+ * TODO test Admin and|or System priviledges only
+ *
+ */
 class CreatePlayer extends ApiEntry {
 	public function __construct()
     {
@@ -584,28 +589,35 @@ class CreatePlayer extends ApiEntry {
 	}
 }
 
+// TODO have util script to call and check this maybe from node
 class CrashedGames extends ApiEntry {
 	public function __construct() {
 		parent::__construct('game/crashedgames', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
+
 		//$params['userID'] = (int)$params['userID'];
+
 		global $DB;
 		$tabl = $DB->sql_tabl("Select id from wD_Games where processStatus = 'Crashed';");
+
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
+
 		while ($ret){
 			array_push($return_array, intval($ret[0]));
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
+
+// TODO node script that can call this?
 class UncrashGame extends ApiEntry
 {
     public function __construct()
@@ -1137,9 +1149,11 @@ class JoinGame extends ApiEntry
         //$params['userID'] = (int)$params['userID'];
 		//countryID = 0 for auto assign
 		//countryID 1 - 7 for manual assignment
+        // NOTE the game does start if we do manually assign these:
+        // TODO Check if we can mix and match (set some to 0, others to specific country)
 		//1:England 2:France 3:Italy 4:Germany 5:Austria 6:Turkey 7:Russia
 		global $DB, $Game;
-		
+
 		require_once(l_r('objects/game.php'));
 		$args = $this->getArgs();
 		$gameID = (int)$args['gameID'];
@@ -1157,6 +1171,7 @@ class JoinGame extends ApiEntry
     }
 }
 
+// NOTE This should be called on pre-start, else we need to set country to CD
 class LeaveGame extends ApiEntry
 {
     public function __construct()
@@ -1167,15 +1182,20 @@ class LeaveGame extends ApiEntry
     {
 		global $DB;
 		require_once(l_r('objects/game.php'));
+
+        $args = $this->getArgs();
+        $userIDArg = (int)$args['userID'];
+        $gameID = (int)$args['gameID'];
+
 		// It is assumed this is being run within a transaction
-		$DB->sql_put("DELETE FROM wD_Members WHERE userID = ".(int)$args['userID']." and gameID = ".$gameID.";");
+		$DB->sql_put("DELETE FROM wD_Members WHERE userID = ".$userIDArg." and gameID = ".$gameID.";");
 		$DB->sql_put("COMMIT");
 		return "done";
     }
 }
 /**
  * API entry game/members
- * Retrieves member data related to a game. 
+ * Retrieves member data related to a game.
  */
 class GetGameMembers extends ApiEntry {
 	private $isAnon;
@@ -2165,7 +2185,7 @@ class IdToken extends ApiAuth {
         }
 		$this->userID = intval($rowUserID['id']);
 
-        // TODO ONLY ADMIN USERS SHOULD GET THIS PROPERTY:
+        // TODO ONLY ADMIN USERS SHOULD GET THIS PROPERTY (?)
 		$this->permissions["getStateOfAllGames"] = true;
 	}
 

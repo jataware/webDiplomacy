@@ -15,6 +15,7 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Paper from "@mui/material/Paper";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import RemoveIcon from '@mui/icons-material/DisabledByDefault';
 
 import {
   getGameApiRequest
@@ -44,6 +45,18 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
 
   const playersToDisplay = isEmpty(players) ? [{username: "<Empty>", userID: 0}] : sortedPlayers;
 
+  const removePlayer = (playerId) => {
+    getGameApiRequest(
+      "game/leave",
+      {
+        gameID: gameId,
+        userID: playerId
+      }
+    )
+    // TODO show snackbar if successful
+    // Also may want callback prop to refresh data?
+  }
+
   return (
     <Box
       ref={drop}
@@ -68,9 +81,11 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
             <ListItem
               key={player.userID}
               sx={{cursor: "default"}}
-              button
             >
               {player.username}
+              {player.username !== "<Empty>" && (
+                <RemoveIcon onClick={() => removePlayer(player.userID)} sx={{cursor: "pointer", color: "#ea9090"}} />
+              )}
             </ListItem>
           ))}
         </List>
