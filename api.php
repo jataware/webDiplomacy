@@ -637,7 +637,7 @@ class UncrashGame extends ApiEntry
     }
 }
 
-class AbandonCrashedGame extends ApiEntry 
+class AbandonCrashedGame extends ApiEntry
 {
     public function __construct()
     {
@@ -654,10 +654,10 @@ class AbandonCrashedGame extends ApiEntry
 		$Game->setDrawn();
 		$DB->sql_put("COMMIT");
         return "Success";
-        
     }
 }
-class TotalPlayerScore extends ApiEntry{
+
+class TotalPlayerScore extends ApiEntry {
 	public function __construct()
     {
         parent::__construct('player/totalScore', 'GET', 'getStateOfAllGames', array('userId'), false);
@@ -667,7 +667,7 @@ class TotalPlayerScore extends ApiEntry{
 		global $DB;
 		$args = $this->getArgs();
 		$userId = $args['userId'];
-		$tabl = $DB->sql_tabl("Select sum(score) from wD_Members where id = ".$userId);
+		$tabl = $DB->sql_tabl("Select sum(score) from wD_Members where id = ".$userId." and status != 'Left'");
 		$ret = $DB->tabl_row($tabl);
 		return $ret[0];
 	}
@@ -681,8 +681,8 @@ class ScoreGame extends ApiEntry
     }
     public function run($userID, $permissionIsExplicit)
     {
-		function split_points($arr, $indexes)
-		{
+
+		function split_points($arr, $indexes) {
 			$totalPoints = 0;
 			foreach($indexes as $index){
 				$totalPoints += $arr[$index][1];
@@ -693,8 +693,8 @@ class ScoreGame extends ApiEntry
 			}
 			return $arr;
 		}
-		function find_duplicates($arr, $value)
-		{
+
+		function find_duplicates($arr, $value) {
 			$indexes = array();
 			foreach($arr as $index => $val){
 				if ($val == $value){
@@ -703,9 +703,10 @@ class ScoreGame extends ApiEntry
 			}
 			return $indexes;
 		}
+
 		global $DB;
 		$gameID = $this->getArgs()['gameID'];
-		$DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID.";");
+		$DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID." and status != 'Left';");
 		$tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
 		$ret = $DB->tabl_row($tabl);
 		$place = 0;
@@ -713,19 +714,21 @@ class ScoreGame extends ApiEntry
 		$supplyCenterCounts = array();
 		$points = array();
 		$lastSupplyCenterCount = -1;
-		
+
 		while ($ret){
 			if ($place >= 3){
-				if ($ret[1] != $lastSupplyCenterCount)
-				{break;}
+				if ($ret[1] != $lastSupplyCenterCount) {
+                    break;
+                }
 			}
-			
+
 			$playerScore = 1 * $ret[1]; // supplyCenters * 1
 			$supplyCenterCounts[$place] = $ret[1];
-			
+
 			if ($place == 0){
 				$playerScore += 38;
 			}
+
 			if ($place == 1){
 				$playerScore += 14;
 				if ($ret[1] == 0){
@@ -734,32 +737,58 @@ class ScoreGame extends ApiEntry
 					break;
 				}
 			}
+
 			if ($ret[1] == 0){
 				break;
 			}
-			if ($place == 2){
+
+			if ($place == 2) {
 				$playerScore += 7;
 			}
+
 			$lastSupplyCenterCount = $ret[1];
 			$points[$place] = [$ret[0], $playerScore, $ret[1], $place];
 			$ret = $DB->tabl_row($tabl); //userid
 			$place++;
 		}
 
-		for ($i = 0; $i < count($supplyCenterCounts); $i++){
+		for ($i = 0; $i < count($supplyCenterCounts); $i++) {
 			$tiedIndexes = find_duplicates($supplyCenterCounts, $supplyCenterCounts[$i]);
-			
+
 			if (count($tiedIndexes) > 1){
 				$points = split_points($points, $tiedIndexes);
 			}
 		}
-		for ($i = 0; $i < count($points); $i++){
-			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID);
+		for ($i = 0; $i < count($points); $i++) {
+			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID. " AND status != 'Left';");
 			$DB->sql_put("COMMIT");
 		}
     }
 }
 
+/**
+ * Summary
+ * TODO Test
+ *
+ */
+class ResetTournament extends ApiEntry {
+	public function __construct()
+    {
+        parent::__construct('game/resetTournament', 'GET', 'getStateOfAllGames', array(), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
+
+        $DB->sql_put("UPDATE wD_Members set score = NULL, status = 'Left' where status = 'Drawn';");
+		$DB->sql_put("DELETE FROM jW_PlayerStates WHERE state != 'Banned';");
+		$DB->sql_put("COMMIT");
+
+        return json_encode([
+            "done" => true
+        ]);
+	}
+}
 
 class WaitingPlayers extends ApiEntry {
 	public function __construct() {
@@ -772,13 +801,13 @@ class WaitingPlayers extends ApiEntry {
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
-		while ($ret){
+
+		while ($ret) {
 			$stats = $DB->sql_row("select count(*), sum(score) from wD_Members where userID = ".$ret[0]);
 			$gameCount = $stats[0];
 			$totalScore = $stats[1];
 			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
-			
+
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
 
@@ -795,13 +824,13 @@ class WaitingPlayers extends ApiEntry {
 			"lastScore" => intval($lastScore),
 			"totalScore" => intval($totalScore)
 			];
-      
+
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
@@ -817,10 +846,10 @@ class AllPlayers extends ApiEntry {
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
+
 		while ($ret){
 			$gameCount = $DB->sql_row("select count(*) from wD_Members where userID = ".$ret[0]);
-			
+
 			$SQL = "select score from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
@@ -874,20 +903,20 @@ class OngoingGames extends ApiEntry {
 		parent::__construct('game/ongoinggames', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
-		//$params['userID'] = (int)$params['userID'];
+
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Diplomacy';");
-		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+		$tabl = $DB->sql_tabl("Select id from wD_Games where phase IN ('Diplomacy', 'Retreats', 'Builds');");
+
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
+
 		while ($ret){
 			array_push($return_array, intval($ret[0]));
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
@@ -2391,6 +2420,7 @@ try {
 	$api->load(new ScoreGame());
 	$api->load(new TotalPlayerScore());
 	$api->load(new FinishGames());
+	$api->load(new ResetTournament());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
