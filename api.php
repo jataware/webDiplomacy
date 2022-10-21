@@ -720,6 +720,11 @@ class AbandonCrashedGame extends ApiEntry
     }
 }
 
+/**
+ * Summary
+ *
+ *
+ */
 class TotalPlayerScore extends ApiEntry {
 	public function __construct()
     {
@@ -736,6 +741,109 @@ class TotalPlayerScore extends ApiEntry {
 	}
 }
 
+function split_points($arr, $indexes) {
+    $totalPoints = 0;
+    foreach($indexes as $index){
+        $totalPoints += $arr[$index][1];
+    }
+    $split_points = $totalPoints / count($indexes);
+    foreach($indexes as $index){
+        $arr[$index][1] = $split_points;
+    }
+    return $arr;
+}
+
+function find_duplicates($arr, $value) {
+    $indexes = array();
+    foreach($arr as $index => $val){
+        if ($val == $value){
+            array_push($indexes, $index);
+        }
+    }
+    return $indexes;
+}
+
+/**
+ * Scoring:
+ * 1 point for playing
+ * 1 point per supply centre owned
+ * 38 points for most supply centres at end
+ * 14 points for second-most supply centres at end
+ * 7 points for third-most supply centres at end
+ * In case of ties, points are split amongst tied parties
+ * If solo victory, winner gets 73 points, other players score nothing
+ *
+ */
+function scoreOneGame($gameID) {
+    global $DB;
+
+    $DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID." and status != 'Left';");
+
+    $tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
+    $ret = $DB->tabl_row($tabl);
+    $place = 0;
+    // 38, 14, 7
+    $supplyCenterCounts = array();
+    $points = array();
+    $lastSupplyCenterCount = -1;
+
+    while ($ret){
+        if ($place >= 3){
+            if ($ret[1] != $lastSupplyCenterCount) {
+                break;
+            }
+        }
+
+        $playerScore = 1 * $ret[1]; // supplyCenters * 1
+        $supplyCenterCounts[$place] = $ret[1];
+
+        if ($place == 0){
+            $playerScore += 38;
+        }
+
+        if ($place == 1){
+            $playerScore += 14;
+            if ($ret[1] == 0){
+                //solo victory
+                $points[0][1] = 73;
+                break;
+            }
+        }
+
+        if ($ret[1] == 0){
+            break;
+        }
+
+        if ($place == 2) {
+            $playerScore += 7;
+        }
+
+        $lastSupplyCenterCount = $ret[1];
+        $points[$place] = [$ret[0], $playerScore, $ret[1], $place];
+        $ret = $DB->tabl_row($tabl); //userid
+        $place++;
+    }
+
+    for ($i = 0; $i < count($supplyCenterCounts); $i++) {
+        $tiedIndexes = find_duplicates($supplyCenterCounts, $supplyCenterCounts[$i]);
+
+        if (count($tiedIndexes) > 1){
+            $points = split_points($points, $tiedIndexes);
+        }
+    }
+    for ($i = 0; $i < count($points); $i++) {
+        $DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID. " AND status != 'Left';");
+        $DB->sql_put("COMMIT");
+    }
+
+    return true;
+}
+
+/**
+ * Summary
+ *
+ *
+ */
 class ScoreGame extends ApiEntry
 {
     public function __construct()
@@ -744,88 +852,38 @@ class ScoreGame extends ApiEntry
     }
     public function run($userID, $permissionIsExplicit)
     {
-
-		function split_points($arr, $indexes) {
-			$totalPoints = 0;
-			foreach($indexes as $index){
-				$totalPoints += $arr[$index][1];
-			}
-			$split_points = $totalPoints / count($indexes);
-			foreach($indexes as $index){
-				$arr[$index][1] = $split_points;
-			}
-			return $arr;
-		}
-
-		function find_duplicates($arr, $value) {
-			$indexes = array();
-			foreach($arr as $index => $val){
-				if ($val == $value){
-					array_push($indexes, $index);
-				}
-			}
-			return $indexes;
-		}
-
-		global $DB;
 		$gameID = $this->getArgs()['gameID'];
-		$DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID." and status != 'Left';");
-		$tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
-		$ret = $DB->tabl_row($tabl);
-		$place = 0;
-		// 38, 14, 7
-		$supplyCenterCounts = array();
-		$points = array();
-		$lastSupplyCenterCount = -1;
 
-		while ($ret){
-			if ($place >= 3){
-				if ($ret[1] != $lastSupplyCenterCount) {
-                    break;
-                }
-			}
+        return scoreOneGame($gameID);
+    }
+}
 
-			$playerScore = 1 * $ret[1]; // supplyCenters * 1
-			$supplyCenterCounts[$place] = $ret[1];
+/**
+ * Summary
+ *
+ *
+ */
+class ScoreAllGames extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/scoreAll', 'GET', 'getStateOfAllGames', array(), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+		global $DB;
 
-			if ($place == 0){
-				$playerScore += 38;
-			}
+        error_log("Score all games now.");
 
-			if ($place == 1){
-				$playerScore += 14;
-				if ($ret[1] == 0){
-					//solo victory
-					$points[0][1] = 73;
-					break;
-				}
-			}
+        $tabl = $DB->sql_tabl("SELECT id FROM wD_Games;");
+        while (list($gameID) = $DB->tabl_row($tabl)) {
+            error_log("Scoring game: ".$gameID);
+            scoreOneGame($gameID);
+        }
 
-			if ($ret[1] == 0){
-				break;
-			}
-
-			if ($place == 2) {
-				$playerScore += 7;
-			}
-
-			$lastSupplyCenterCount = $ret[1];
-			$points[$place] = [$ret[0], $playerScore, $ret[1], $place];
-			$ret = $DB->tabl_row($tabl); //userid
-			$place++;
-		}
-
-		for ($i = 0; $i < count($supplyCenterCounts); $i++) {
-			$tiedIndexes = find_duplicates($supplyCenterCounts, $supplyCenterCounts[$i]);
-
-			if (count($tiedIndexes) > 1){
-				$points = split_points($points, $tiedIndexes);
-			}
-		}
-		for ($i = 0; $i < count($points); $i++) {
-			$DB->sql_put("UPDATE wD_Members SET score = ".$points[$i][1]." WHERE userID = ".$points[$i][0]." AND gameID = ".$gameID. " AND status != 'Left';");
-			$DB->sql_put("COMMIT");
-		}
+        return json_encode([
+            "result" => true
+        ]);
     }
 }
 
@@ -2532,6 +2590,7 @@ try {
 	$api->load(new GetGameMessages());
 	$api->load(new LeaveGame());
 	$api->load(new ScoreGame());
+	$api->load(new ScoreAllGames());
 	$api->load(new TotalPlayerScore());
 	$api->load(new FinishGames());
 	$api->load(new ResetTournament());
