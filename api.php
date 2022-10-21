@@ -1077,35 +1077,32 @@ class CreateGame extends ApiEntry
 		global $DB;
 		$args = $this->getArgs();
 
-		if (array_key_exists('variantID', $args)){
-			$variantID = $args['variantID'];
-		}
-		else{
+        if (!isset($args['variantID'])) {
 			$variantID = 1;
-		}
+        } else {
+            $variantID = $args['variantID'];
+        }
 
 		require_once(l_r('gamemaster/game.php')); //processGame = gamemaster/game.php
 
-		//libGameMaster::updatePhasePerYearCount(true);
-		//libGameMaster::updateReliabilityRating();
 		$gameID = processGame::create(
-			$variantID,
-			$args['gameName'],
-			'',
-			1,
-			"Unranked",
-			1440,
-			10080,
-			5,
-			1,
-			100,
-			"no",
-			"Regular",
-			"wait",
-			"draw-votes-hidden",
-			0,
-			5,
-			"Members"
+			$variantID,           // variantID
+			$args['gameName'],    // name
+			'',                   // password
+			1,                    // bet
+			"Unranked",           // potType
+			15,                   // phaseMinutes
+			5,                    // phaseMinutesRB Retreats | Builds
+			5,                    // nextPhaseMinutes
+			1,                    // phaseSwitchPeriod
+			100,                  // joinPeriod
+			"no",                 // anon -> anonymous users allowed
+			"Regular",            // press
+			"wait",               // missingPlayerPolicy
+			"draw-votes-hidden",  // drawType
+			0,                    // rrLimit
+			5,                    // excusedMissedTurns
+			"Members"             // playerTypes
 		);
 		$DB->sql_put("COMMIT");
 
@@ -1130,7 +1127,7 @@ class GetGameMessages extends ApiEntry
 		$gameMembersTabl = $DB->sql_tabl($SQL);
 		$gameMembers = array();
 		$gameMembersRow = $DB->tabl_row($gameMembersTabl);
-		
+
 		while ($gameMembersRow) {
 			$gameMembers[$gameMembersRow[0]] = $gameMembersRow[1];
 			$gameMembersRow = $DB->tabl_row($gameMembersTabl);
@@ -1238,7 +1235,7 @@ class LastScore extends ApiEntry
  * TODO test
  *
  */
-function tournamentBanUser($userId) {
+function tournamentBanUser($userID) {
 
     global $User, $DB, $Game;
 
@@ -1303,7 +1300,10 @@ class SetPlayerState extends ApiEntry
 
         // This needs to be tested to ensure CD and games progress.
         if ($state == "Banned") {
-            tournamentBanUser($userID);
+            // Removing since this is a bit dangerous.
+            // TODO test when we want to try it out.
+            //      irreversible right now.
+            // tournamentBanUser($userID);
         }
 
 		$DB->sql_put($sql);
