@@ -130,9 +130,9 @@ function WelcomeMessage(){
     );
   }
 
-  var message = "Waiting for next game to start";
+  let message = "Waiting for next game to start";
   if (playerStatus === "Cut") {
-    message = "You have been cut from the tournament";
+    message = "Thanks for participating.";
   }
   else if (playerStatus === "Banned") {
     message = "You have been banned from the tournament";
@@ -141,19 +141,42 @@ function WelcomeMessage(){
     <div style={{
       textAlign: "center",
       width: "100%",
+    }}>
+    <div style={{
       display: "flex",
       alignItems: "center",
       justifyContent: "center"
     }}>
-      <Box sx={{color: "blue", height: "1.75rem", pr: 1, mt: -1}}>
-        <Progress size="1.75rem" color="info" />
-      </Box>
+      {!(["Cut", "Banned"].includes(playerStatus)) && (
+        <Box sx={{color: "blue", height: "1.75rem", pr: 1, mt: -1}}>
+          <Progress size="1.75rem" color="info" />
+        </Box>
+      )}
       <Typography
         sx={{fontSize: "35px"}}
         gutterBottom
       >
         {message}
       </Typography>
+    </div>
+
+    {playerStatus === "Cut" && (
+      <Typography
+        gutterBottom
+        variant="h6"
+        component="div"
+      >
+        <p>
+          Your score did not meet the cutoff to move to the next round.
+        </p>
+        <p>
+          If you have not played a game yet, the tournament filled up.
+        </p>
+        <p>
+          Reach out to Discord if you think this was a mistake or if you have any questions- and stay tuned for the next tournament!
+        </p>
+      </Typography>
+    )}
     </div>
   );
 };
