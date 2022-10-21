@@ -831,7 +831,6 @@ class ScoreGame extends ApiEntry
 
 /**
  * Summary
- * TODO Test
  *
  */
 class ResetTournament extends ApiEntry {
@@ -843,7 +842,7 @@ class ResetTournament extends ApiEntry {
     {
 		global $DB;
 
-        $DB->sql_put("UPDATE wD_Members set score = NULL, status = 'Left' where status = 'Drawn';");
+        $DB->sql_put("UPDATE wD_Members set score = NULL, status = 'Left';");
 		$DB->sql_put("DELETE FROM jW_PlayerStates WHERE state != 'Banned';");
 		$DB->sql_put("COMMIT");
 
@@ -1172,6 +1171,49 @@ class LastScore extends ApiEntry
     }
 }
 
+/**
+ * Bans a user from system. Harder to revert
+ * See webDiplomacy/admin/adminActions.php : banUser for impl inspiration
+ * TODO test
+ *
+ */
+function tournamentBanUser($userId) {
+
+    global $User, $DB, $Game;
+
+    require_once(l_r('gamemaster/game.php'));
+
+    User::banUser($userID, l_t("Banned by a moderator:") . ' ');
+
+    $banUser = new User($userID);
+
+    $tabl = $DB->sql_tabl("SELECT gameID, status FROM wD_Members WHERE userID = " . $userID);
+
+    while (list($gameID, $status) = $DB->tabl_row($tabl)) {
+
+        $Variant = libVariant::loadFromGameID($gameID);
+        $Game = $Variant->processGame($gameID);
+
+        if ($Game->phase == 'Pre-game') {
+            $DB->sql_put("DELETE FROM wD_Members WHERE gameID = " . $Game->id . " AND userID = " . $userID);
+        } else {
+            $Game->Members->sendToPlaying('No', l_t('%s was banned, see in-game for details.', $banUser->username));
+            $Game->Members->ByUserID[$userID]->setLeft(1);
+        }
+    }
+
+    $banMessage = l_t('%s was banned: %s. ', $banUser->username, '');
+    libGameMessage::send('Global', 'GameMaster', $banMessage);
+
+    // CD:
+    $DB->sql_put("UPDATE wD_Orders o INNER JOIN wD_Members m ON ( m.gameID = o.gameID AND m.countryID = o.countryID )
+					SET o.toTerrID = NULL, o.fromTerrID = NULL WHERE m.userID = " . $userID);
+
+    unset($Game);
+
+    return true;
+}
+
 class SetPlayerState extends ApiEntry
 {
 	public function __construct()
@@ -1187,7 +1229,6 @@ class SetPlayerState extends ApiEntry
 
 		$existing = $DB->sql_row("SELECT userID, state FROM jW_PlayerStates WHERE userID = ".$userID.";");
 
-
         try {
             if (!$existing) {
                 $sql = "INSERT INTO jW_PlayerStates (userID, state) VALUES (".$userID.",'".$state."');";
@@ -1199,8 +1240,14 @@ class SetPlayerState extends ApiEntry
             error_log(print_r($e, true));
         }
 
+        // This needs to be tested to ensure CD and games progress.
+        if ($state == "Banned") {
+            tournamentBanUser($userID);
+        }
+
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
+
 		return "Player ".$userID." state set to ".$state."";
 	}
 }
