@@ -11,6 +11,8 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 
+import {ErrorBoundary} from 'react-error-boundary'
+
 import "../assets/css/AdminDashboard.css";
 
 import Tabs from '@mui/material/Tabs';
@@ -29,6 +31,31 @@ import { OngoingGames } from "./GameList";
 import PlayerList from "./PlayerList";
 import AllGames from "./AllGames";
 
+/**
+ * Wraps Admin Dashboard in message in case this dashboard crashes.
+ **/
+function ErrorFallback({error, resetErrorBoundary}) {
+  return (
+    <Box sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center"
+    }}>
+      <div style={{maxWidth: "50rem"}}>
+        <Typography variant="h2">
+          The Tournament Dashboard Crashed
+        </Typography>
+        <Typography variant="h6">
+          This was probably due to an unexpected response from server.
+          Please reload the browser to continue.
+        </Typography>
+        <Typography>
+          If the problem persists, you might not be an Tournament Admin user, and you are not allowed on this page.
+        </Typography>
+      </div>
+    </Box>
+  )
+}
 
 const DashboardTab = styled(Tab)`
   border-radius: 1px;
@@ -223,22 +250,26 @@ const TournamentDashboard = (props) => {
             <Box
               component="main"
             >
+              <ErrorBoundary
+                FallbackComponent={ErrorFallback}
+              >
 
-              {selectedTab === 0 && (
-                <>
-                  <GameAssignment />
-                  <br />
-                  <OngoingGames />
-                </>
-              )}
+                {selectedTab === 0 && (
+                  <>
+                    <GameAssignment />
+                    <br />
+                    <OngoingGames />
+                  </>
+                )}
 
-              {selectedTab === 1 && (
-                <AllGames />
-              )}
+                {selectedTab === 1 && (
+                  <AllGames />
+                )}
 
-              {selectedTab === 2 && (
-                <PlayerList />
-              )}
+                {selectedTab === 2 && (
+                  <PlayerList />
+                )}
+              </ErrorBoundary>
 
             </Box> {/* main */}
 

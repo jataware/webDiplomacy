@@ -48,7 +48,7 @@ export async function fetchOngoingGames() {
       {hello: "world"}
     );
 
-    return ongoingGames.data; // Array with IDs for all ongoing games
+    return ongoingGames.data || []; // Array with IDs for all ongoing games
 
   } catch(e) {
     console.log('Request to fetch ongoinggames failed, e:', e);
@@ -119,7 +119,14 @@ export async function fetchGameMembers(ID) {
 /**
  *
  **/
-export async function fetchAllGameDataforIDs(IDs) {
+export async function fetchAllGameDataforIDs(IDs=[]) {
+
+  if (!Array.isArray(IDs)) {
+    console.error("Previous API call to fetch IDs failed. Fetch Game data receive non-array and will skip for now.");
+
+    return [];
+  }
+
   try {
 
     const result = await Promise

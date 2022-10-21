@@ -777,6 +777,7 @@ function find_duplicates($arr, $value) {
 function scoreOneGame($gameID) {
     global $DB;
 
+    // This first update captures scores for players before game ends OR if they are 4th+ place
     $DB->sql_put("UPDATE wD_Members set score = supplyCenterNo + 1 where gameID = ".$gameID." and status != 'Left';");
 
     $tabl = $DB->sql_tabl("Select userID, supplyCenterNo from wD_Members where gameID = ".$gameID." order by supplyCenterNo DESC;");
@@ -787,6 +788,7 @@ function scoreOneGame($gameID) {
     $points = array();
     $lastSupplyCenterCount = -1;
 
+    // loop only takes into account players who get placement scores (1st - 3rd)
     while ($ret){
         if ($place >= 3){
             if ($ret[1] != $lastSupplyCenterCount) {
