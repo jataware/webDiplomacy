@@ -1048,20 +1048,21 @@ class FinishedGames extends ApiEntry {
 		parent::__construct('game/finishedgames', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
-		//$params['userID'] = (int)$params['userID'];
+
 		global $DB;
+
 		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Finished';");
-		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
-		while ($ret){
+
+		while ($ret) {
 			array_push($return_array, intval($ret[0]));
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
@@ -2069,6 +2070,9 @@ class FinishGames extends ApiEntry {
 	}
 	public function run($userID, $permissionIsExplicit) {
 		global $DB;
+
+        error_log("Called finish games after turn 12 endpoint.");
+
 		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 12;";
 		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
