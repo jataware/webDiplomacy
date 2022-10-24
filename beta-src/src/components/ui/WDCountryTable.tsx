@@ -42,19 +42,7 @@ const columns: readonly Column[] = [
     label: "Centers",
     icon: CentersIcon,
     align: "center",
-  },
-  {
-    id: "bet",
-    label: "Bet",
-    icon: BetIcon,
-    align: "center",
-  },
-  {
-    id: "excusedMissedTurns",
-    label: "Delays",
-    icon: DelaysIcon,
-    align: "center",
-  },
+  }
 ];
 
 const WDCountryTable: React.FC<WDCountryTableProps> = function ({
