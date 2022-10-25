@@ -1066,6 +1066,7 @@ class FinishedGames extends ApiEntry {
 		return $return_array;
 	}
 }
+
 class CreateGame extends ApiEntry
 {
 	public function __construct()
@@ -1088,25 +1089,77 @@ class CreateGame extends ApiEntry
 		$gameID = processGame::create(
 			$variantID,           // variantID
 			$args['gameName'],    // name
-			'',                   // password
+			"",                   // password
 			1,                    // bet
 			"Unranked",           // potType
 			15,                   // phaseMinutes
 			5,                    // phaseMinutesRB Retreats | Builds
-			5,                    // nextPhaseMinutes
+			3,                    // nextPhaseMinutes. DEBUG
 			1,                    // phaseSwitchPeriod
-			100,                  // joinPeriod
+			5,                    // joinPeriod . minimum is 5.
 			"no",                 // anon -> anonymous users allowed
 			"Regular",            // press
 			"wait",               // missingPlayerPolicy
 			"draw-votes-hidden",  // drawType
 			0,                    // rrLimit
-			5,                    // excusedMissedTurns
+			1,                    // excusedMissedTurns
 			"Members"             // playerTypes
 		);
 		$DB->sql_put("COMMIT");
 
 		return "A new game with id=".$gameID." has been created.";
+	}
+}
+
+class ProcessGameNow extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('game/process', 'GET', 'getStateOfAllGames', array('gameID'), true);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB;
+		$args = $this->getArgs();
+		$gameID = (int)$args['gameID'];
+
+        $DB->sql_put("BEGIN");
+		require_once(l_r('gamemaster/game.php'));
+        $Variant=libVariant::loadFromGameID($gameID);
+        $Game = $Variant->processGame($gameID);
+        $Game->process();
+        $DB->sql_put("COMMIT");
+
+        return json_encode([
+            "success" => true
+        ]);
+    }
+}
+
+
+class ScheduleProcess extends ApiEntry
+{
+	public function __construct()
+	{
+		parent::__construct('game/scheduleProcess', 'GET', 'getStateOfAllGames', array('gameID'), true);
+	}
+	public function run($userID, $permissionIsExplicit)
+	{
+		global $DB;
+		$args = $this->getArgs();
+		$gameID = (int)$args['gameID'];
+
+        $Variant=libVariant::loadFromGameID($gameID);
+		$Game = $Variant->Game($gameID);
+
+        if( $Game->processStatus != 'Not-processing' || $Game->phase == 'Finished' )
+			return 'This game is paused/crashed/finished.';
+
+		$DB->sql_put("UPDATE wD_Games SET processTime = ".time()." WHERE id = ".$Game->id);
+
+		return json_encode([
+            "result" => "Process time scheduled to now successfully"
+        ]);
 	}
 }
 
@@ -1346,10 +1399,8 @@ class JoinGame extends ApiEntry
     }
     public function run($userID, $permissionIsExplicit)
     {
-        //$params['userID'] = (int)$params['userID'];
 		//countryID = 0 for auto assign
 		//countryID 1 - 7 for manual assignment
-        // NOTE the game does start if we do manually assign these:
         // TODO Check if we can mix and match (set some to 0, others to specific country)
 		//1:England 2:France 3:Italy 4:Germany 5:Austria 6:Turkey 7:Russia
 		global $DB, $Game;
@@ -1363,15 +1414,15 @@ class JoinGame extends ApiEntry
 		// It is assumed this is being run within a transaction
 
 		$DB->sql_put("INSERT INTO wD_Members SET
-			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 2");
+			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 1");
 		$Game->Members->load();
 		$DB->sql_put("COMMIT");
-		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+
 		return "done";
     }
 }
 
-// NOTE This should be called on pre-start, else we need to set country to CD
+// NOTE This should only be called on pre-start, else we need to set country to CD (and not done I think). Should not be a problem- we'll use ban when required.
 class LeaveGame extends ApiEntry
 {
     public function __construct()
@@ -2377,8 +2428,8 @@ class IdToken extends ApiAuth {
         $result = validateAccessAndIdTokens($this->token);
         $decoded = json_decode($result);
 
-        error_log("decoded email from idtoken:");
-        error_log(print_r($decoded, true));
+        // error_log("decoded email from idtoken:");
+        // error_log(print_r($decoded, true));
 
         $email = $decoded->email;
 
@@ -2600,6 +2651,10 @@ try {
 	$api->load(new TotalPlayerScore());
 	$api->load(new FinishGames());
 	$api->load(new ResetTournament());
+
+
+	$api->load(new ProcessGameNow());
+	$api->load(new ScheduleProcess());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.
