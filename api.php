@@ -1486,8 +1486,8 @@ class GetGameMembers extends ApiEntry {
 
 /**
  * API entry game/overview
- * 
- * This should be cleaned up. 
+ *
+ * This should be cleaned up.
  */
 class GetGameOverview extends ApiEntry {
 	public function __construct() {
@@ -1503,15 +1503,15 @@ class GetGameOverview extends ApiEntry {
 		$SQL = "SELECT userID, score from wD_Members WHERE gameID = ".$args['gameID'].";";
 		$tabl = $DB->sql_tabl($SQL);
 		$members = array();
-		while(list($userID, $score) = $DB->tabl_row($tabl)) {
-			$members[$userID] = $score;
+		while(list($memberID, $score) = $DB->tabl_row($tabl)) {
+			$members[$memberID] = $score;
 		}
 		$gameID = $args['gameID'];
 		if ($gameID === null || !ctype_digit($gameID)){
 			throw new RequestException(
 				$this->JSONResponse(
-					'Invalid game ID.', 
-					'GGO-err-001', 
+					'Invalid game ID.',
+					'GGO-err-001',
 					false,
 					['gameID' => $gameID]
 				)
@@ -1520,13 +1520,13 @@ class GetGameOverview extends ApiEntry {
 		if (!empty(Config::$apiConfig['restrictToGameIDs']) && !in_array($gameID, Config::$apiConfig['restrictToGameIDs'])){
 			throw new ClientForbiddenException(
 				$this->JSONResponse(
-					'Game ID is not in list of gameIDs where API usage is permitted.', 
-					'GGO-err-002', 
-					false, 
+					'Game ID is not in list of gameIDs where API usage is permitted.',
+					'GGO-err-002',
+					false,
 					['gameID' => $gameID]
 				)
 			);
-		}   
+		}
 		$game = $this->getAssociatedGame();
 		$dateTxt = $game->datetxt($game->turn);
 		$split = explode(',', $dateTxt);
