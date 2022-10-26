@@ -30,6 +30,10 @@ import {
 
 /**
  *
+   TODO backend does not populate this user detail values. Removed for now:
+   <li>
+   Messages/Annotated: {player.totalMessagesSent || 0} / {player.totalMessagesAnnotated || 0}
+   </li>
  **/
 const PlayerList = (props) => {
 
@@ -134,9 +138,6 @@ const PlayerList = (props) => {
                     </li>
                     <li>
                       Games: {player.gameCount || 0}
-                    </li>
-                    <li>
-                      Messages/Annotated: {player.totalMessagesSent || 0} / {player.totalMessagesAnnotated || 0}
                     </li>
                     <li>
                       Status: {player.status || "Active"}
