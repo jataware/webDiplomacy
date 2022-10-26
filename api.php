@@ -602,7 +602,7 @@ class MarkBackFromLeft extends ApiEntry {
  */
 class GetGamesStates extends ApiEntry {
 	public function __construct() {
-		parent::__construct('game/status', 'GET', 'getStateOfAllGames', array('gameID', 'countryID'), false);
+		parent::__construct('game/status', 'GET', '', array('gameID', 'countryID'), false);
 	}
 	/**
 	 * @throws RequestException
@@ -652,6 +652,7 @@ class CreatePlayer extends ApiEntry {
 	}
 }
 
+// TODO test
 // TODO have util script to call and check this maybe from node
 class CrashedGames extends ApiEntry {
 	public function __construct() {
@@ -681,6 +682,7 @@ class CrashedGames extends ApiEntry {
 }
 
 // TODO node script that can call this?
+// TODO test
 class UncrashGame extends ApiEntry
 {
     public function __construct()
@@ -914,6 +916,7 @@ class ResetTournament extends ApiEntry {
 
 class WaitingPlayers extends ApiEntry {
 	public function __construct() {
+        // TODO allow others to request waiting players count?
 		parent::__construct('players/waiting', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
@@ -993,30 +996,30 @@ class AllPlayers extends ApiEntry {
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
-}	
+}
 
 class WaitingGames extends ApiEntry {
 	public function __construct() {
 		parent::__construct('game/waitinggames', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
-		//$params['userID'] = (int)$params['userID'];
+
 		global $DB;
 		$tabl = $DB->sql_tabl("Select id from wD_Games where phase = 'Pre-game' and processStatus != 'Crashed';");
-		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
-		
+
 		while ($ret){
 			array_push($return_array, intval($ret[0]));
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 
 		$return_array = json_encode($return_array);
-		
+
 		return $return_array;
 	}
 }
@@ -1203,16 +1206,13 @@ class GetGameMessages extends ApiEntry
 				"gameID" => $ret[6],
 				"phaseType" => $ret[7]
 			];
-				//"receivedAnnotation" => $ret[8]?,
-				//"sentAnnotation" => $ret[9]?
-
 
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
 		}
 		$return_array = json_encode($return_array, JSON_PRETTY_PRINT);
 		header('Content-Type: application/octet-stream');
-		header("Content-Transfer-Encoding: Binary"); 
+		header("Content-Transfer-Encoding: Binary");
 		header("Content-disposition: attachment; filename=\"" . basename($gameID."-messages") . "\"");
 		return $return_array;
     }
@@ -1454,7 +1454,7 @@ class GetGameMembers extends ApiEntry {
 	private $showDrawVotes;
 
 	public function __construct() {
-		parent::__construct('game/members', 'GET', 'getStateOfAllGames', array('gameID'), false);
+		parent::__construct('game/members', 'GET', '', array('gameID'), false);
 	}
 
 	private function getMembers( $members ){
@@ -1633,7 +1633,7 @@ class GetGameData extends ApiEntry {
 	private $contextVars;
 
 	public function __construct() {
-		parent::__construct('game/data', 'GET', 'getStateOfAllGames', array('gameID', 'countryID'), true);
+		parent::__construct('game/data', 'GET', '', array('gameID', 'countryID'), true);
 	}
 
 	private function setContextVars( $game, $gameID, $userID, $countryID, $member ){
@@ -1765,7 +1765,7 @@ class SetOrders extends ApiEntry {
 		parent::__construct(
 			'game/orders',
 			'JSON',
-			'submitOrdersForUserInCD',
+			'',
 			array('gameID', 'turn', 'phase', 'countryID', 'orders', 'ready'),
 			false); // This should only require the member record for the country being updated get locked for update, this is how the ajax.php
 			// order interface locking works. Locking on this is creating 95+% of deadlocks, which is causing 80+% of errors as of 2022-10-12
@@ -2150,7 +2150,7 @@ class AnnotateMessage extends ApiEntry {
 			throw new RequestException('toCountryID is required.');
 
 		$gameID = intval($args['gameID']);
-		$countryID = intval($args['fromCountryID']);
+		$countryID = intval($args['fromCountryID']); // from country ID
 		$toCountryID = intval($args['toCountryID']);
 		$timeSent = intval($args['timeSent']);
 		$answer = $args['answer'];
@@ -2166,13 +2166,18 @@ class AnnotateMessage extends ApiEntry {
 			throw new RequestException("Message is invalid in $Game->pressType");
 		}
 
-		if ($direction == "outgoing" && !(isset($Game->Members->ByUserID[$userID]) && $countryID == $Game->Members->ByUserID[$userID]->countryID)) {
+
+        $currentUserCountryID = $Game->Members->ByUserID[$userID]->countryID;
+
+        // outgoing can only be annotated by fromCountryID
+		if ($direction == "outgoing" && !(isset($Game->Members->ByUserID[$userID]) && $countryID == $currentUserCountryID)) {
 			throw new ClientForbiddenException('User does not have explicit permission to make this API call.');
 		}
 
-        // TODO Validate that incoming direction is toCountryID
+        // Validate that incoming direction is toCountryID. Id we're not recipient we can't annotate incoming
+        $isUserNotRecipient = ((direction == "incoming") && $currentUserCountryID != $toCountryID);
 
-		if ($toCountryID < 0 || $toCountryID > count($Game->Members->ByID) || $toCountryID == $countryID) {
+		if ($toCountryID < 0 || $toCountryID > count($Game->Members->ByID) || $toCountryID == $countryID || $isUserNotRecipient) {
 			throw new RequestException('Invalid toCountryID');
 		}
 
@@ -2191,7 +2196,7 @@ class AnnotateMessage extends ApiEntry {
  */
 class GetMessages extends ApiEntry {
 	public function __construct() {
-		parent::__construct('game/getmessages', 'GET', 'getStateOfAllGames', array('gameID','countryID','sinceTime'), false);
+		parent::__construct('game/getmessages', 'GET', '', array('gameID','countryID','sinceTime'), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
 
@@ -2246,6 +2251,13 @@ class GetMessages extends ApiEntry {
 		$tabl = $DB->sql_tabl("SELECT message, toCountryID, fromCountryID, turn, timeSent, phaseMarker, intentDeceive, suspectedIncomingDeception
 		FROM wD_GameMessages WHERE gameID = $gameID AND ($where)");
 		while ($message = $DB->tabl_hash($tabl)) {
+
+            // Only expose/fill suspectedIncomingDeception annotation if user countryId matches toCountryId (user received this message)
+            $supectedIncomingExposed = $message['suspectedIncomingDeception'];
+            if($countryID !== $message['toCountryID']) {
+                $supectedIncomingExposed = null;
+            }
+
 			$messages[] = [
 				'fromCountryID' => (int) $message['fromCountryID'],
 				'message' => $message['message'],
@@ -2253,12 +2265,8 @@ class GetMessages extends ApiEntry {
 				'toCountryID' => (int) $message['toCountryID'],
 				'turn' => (int) $message['turn'],
 				'phaseMarker' => $message['phaseMarker'],
-
-                // TODO Add if we wish to expose this, conditionally, to UI;
-                //      as in only expose if user that annotated is the one viewing the message
                 // 'intentDeceive' => $message['intentDeceive'],
-
-                'suspectedIncomingDeception' => $message['suspectedIncomingDeception']
+                'suspectedIncomingDeception' => $supectedIncomingExposed
 			];
 		}
 		// Return Messages.
@@ -2435,16 +2443,20 @@ class IdToken extends ApiAuth {
         $email = $decoded->email;
 
         // TODO match to HASH instead
-		$rowUserID = $DB->sql_hash("SELECT id from wD_Users WHERE email = '".$DB->escape($email)."'");
+		$rowUserID = $DB->sql_hash("SELECT id, type from wD_Users WHERE email = '".$DB->escape($email)."'");
 
 		if (!$rowUserID) {
-            error_log('$$$$$$$$$$$ A token WITHOUT a user exists. ========= THIS IS BAD. FIXME ========== $$$$$$$$$$$$$$$$ ');
+            error_log('$$$$$$$$$$$ A token WITHOUT a user exists. ========= THIS IS BAD. ========== $$$$$$$$$$$$$$$$ ');
 			throw new ClientUnauthorizedException('No user associated to this token.');
         }
 		$this->userID = intval($rowUserID['id']);
 
-        // TODO ONLY ADMIN USERS SHOULD GET THIS PROPERTY (?)
-		$this->permissions["getStateOfAllGames"] = true;
+        $isAdmin = strpos($rowUserID['type'], "Admin");
+
+        // ONLY ADMIN USERS SHOULD GET THIS PROPERTY in order to use the admin dashboard
+        if ($isAdmin) {
+            $this->permissions["getStateOfAllGames"] = true;
+        }
 	}
 
 }
@@ -2652,8 +2664,6 @@ try {
 	$api->load(new TotalPlayerScore());
 	$api->load(new FinishGames());
 	$api->load(new ResetTournament());
-
-
 	$api->load(new ProcessGameNow());
 	$api->load(new ScheduleProcess());
 
