@@ -2175,7 +2175,7 @@ class AnnotateMessage extends ApiEntry {
 		}
 
         // Validate that incoming direction is toCountryID. Id we're not recipient we can't annotate incoming
-        $isUserNotRecipient = ((direction == "incoming") && $currentUserCountryID != $toCountryID);
+        $isUserNotRecipient = (($direction == "incoming") && $currentUserCountryID != $toCountryID);
 
 		if ($toCountryID < 0 || $toCountryID > count($Game->Members->ByID) || $toCountryID == $countryID || $isUserNotRecipient) {
 			throw new RequestException('Invalid toCountryID');
