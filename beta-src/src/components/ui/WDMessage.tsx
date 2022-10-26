@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import identity from "lodash/identity";
 import { useAppSelector } from "../../state/hooks";
 import {
   gameOverview,
@@ -36,9 +37,9 @@ interface WDMessageProps {
   viewedPhaseIdx: number;
 }
 
-const DECEPTIVE = "0";
-const TRUSTWORTHY = "1";
-const NULL = "2";
+const DECEPTIVE = "yes";
+const TRUSTWORTHY = "no";
+const NULL = "clear";
 
 // NOTE Maybe use app actions to have changes flow through app instead of manual sync.
 // With more time, investigate. No big deal for our purposes.
@@ -257,6 +258,14 @@ const WDMessage: React.FC<WDMessageProps> = function ({
               }}
             />
           </div>
+
+          <div className="text-xs mt-1 text-gray-500 italic" style={{textAlign: "right"}}>
+            {msgTime.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+
           <div className="flex text-xs mt-1 text-gray-500 italic">
             <div className="flex-1">
               {message.turn < viewedPhaseIdx && (
@@ -270,7 +279,7 @@ const WDMessage: React.FC<WDMessageProps> = function ({
               display="flex"
               alignItems="center"
               justifyContent="space-between">
-              {(isUserRecipient && isMessageCurrentTurn) && (
+              {isUserRecipient && (
                 <Box
                   className="research-actions"
                   sx={{
@@ -297,11 +306,14 @@ const WDMessage: React.FC<WDMessageProps> = function ({
                         <Typography variant="caption">
                           Answer not shared with opponents.
                         </Typography>
+                        <Typography variant="caption" component="p">
+                          Can only annotate on turn received.
+                        </Typography>
                       </React.Fragment>
                     }
                     placement="left"
                   >
-                    <AssignmentIcon sx={{color: "#6887fd"}} />
+                    <AssignmentIcon sx={{color: "#6887fd", cursor: "help"}} />
                   </HtmlTooltip>
 
                   &nbsp;
@@ -309,8 +321,9 @@ const WDMessage: React.FC<WDMessageProps> = function ({
                   <Button
                     size="small"
                     variant={isAnnotatedDeceptive ? "outlined" : ""}
-                    onClick={() => annotateMessage(message, DECEPTIVE)}
+                    onClick={ isMessageCurrentTurn ? () => annotateMessage(message, DECEPTIVE) : identity }
                     sx={{
+                      cursor: !isMessageCurrentTurn ? "default" : "pointer",
                       p: 0.5,
                       mr: "2px",
                       borderRadius: "4px",
@@ -341,8 +354,9 @@ const WDMessage: React.FC<WDMessageProps> = function ({
                   <Button
                     size="small"
                     variant={isAnnotatedTrustworthy ? "outlined" : ""}
-                    onClick={() => annotateMessage(message, TRUSTWORTHY)}
+                    onClick={isMessageCurrentTurn ? () => annotateMessage(message, TRUSTWORTHY) : identity}
                     sx={{
+                      cursor: !isMessageCurrentTurn ? "default" : "pointer",
                       ml: "2px",
                       mr: "2px",
                       p: 0.5,
@@ -364,10 +378,6 @@ const WDMessage: React.FC<WDMessageProps> = function ({
                   </Button>
                 </Box>
               )}
-              {msgTime.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
             </Box>
           </div>
         </div>

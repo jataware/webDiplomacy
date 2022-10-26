@@ -2256,7 +2256,8 @@ class GetMessages extends ApiEntry {
 
                 // TODO Add if we wish to expose this, conditionally, to UI;
                 //      as in only expose if user that annotated is the one viewing the message
-                'intentDeceive' => $message['intentDeceive'],
+                // 'intentDeceive' => $message['intentDeceive'],
+
                 'suspectedIncomingDeception' => $message['suspectedIncomingDeception']
 			];
 		}

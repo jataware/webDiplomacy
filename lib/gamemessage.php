@@ -146,10 +146,9 @@ class libGameMessage
                       AND
                         gameID = ?", [$answer, $toCountryID, $fromCountryID, $timeSent, $gameID], "siiii");
         } elseif ($direction === "incoming") {
-            $intAnswer = intval($answer);
 
-            if ($intAnswer === 2) {
-                $intAnswer = null;
+            if ($answer === "clear") {
+                $answer = null;
             }
 
             $result = $DB->sql_put_safe("UPDATE wD_GameMessages
@@ -161,7 +160,7 @@ class libGameMessage
                       AND
                         timeSent = ?
                       AND
-                        gameID = ?", [$intAnswer, $toCountryID, $fromCountryID, $timeSent, $gameID], "iiiii");
+                        gameID = ?", [$answer, $toCountryID, $fromCountryID, $timeSent, $gameID], "siiii");
         }
 
 		return $result;

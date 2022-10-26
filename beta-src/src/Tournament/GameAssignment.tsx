@@ -27,7 +27,7 @@ import { fetchWaitingPlayers, fetchWaitingGames, fetchAllGameDataforIDs } from "
 /**
  *
  **/
-const GamePlayerBox = ({gameId, gameName, players}) => {
+const GamePlayerBox = ({gameId, gameName, players, timeRemaining}) => {
 
   const sortedPlayers = sortBy(players, player => {
     return player.username;
@@ -73,7 +73,7 @@ const GamePlayerBox = ({gameId, gameName, players}) => {
         gutterBottom
         variant="h6"
       >
-        {gameName}
+    {gameName} {formatWaitTime(timeRemaining)}
       </Typography>
       <Paper sx={{minWidth: "9rem"}}>
         <List>
@@ -137,6 +137,22 @@ const DraggableListItem = ({children, onDrop, player, ...props}) => {
   );
 };
 
+function formatWaitTime(secondsInput) {
+
+  if (secondsInput < 0) {
+    return "Now"
+  }
+
+  var sec_num = parseInt(secondsInput, 10);
+  var hours   = Math.floor(sec_num / 3600);
+  var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+  var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+  if (minutes < 10) {minutes = "0"+minutes;}
+  if (seconds < 10) {seconds = "0"+seconds;}
+  return "(" + minutes + ":" + seconds + ")";
+}
+
 /**
  *
  **/
@@ -169,6 +185,10 @@ const GameAssignment = (props) => {
           });
       });
   }
+
+  const getTimeRemaining = (gameObj) => {
+    return (new Date(gameObj.processTime) - (new Date())/1000);
+  };
 
   const handleIndividualPlayerAdd = (playerId, gameId) => {
     getGameApiRequest(
@@ -368,6 +388,7 @@ const GameAssignment = (props) => {
                     gameId={gameItem.gameID}
                     gameName={gameItem.name}
                     players={gameItem.members}
+                    timeRemaining={getTimeRemaining(gameItem)}
                   />
                 </Grid>
               ))}
