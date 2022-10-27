@@ -267,12 +267,6 @@ const WDMessage: React.FC<WDMessageProps> = function ({
           </div>
 
           <div className="flex text-xs mt-1 text-gray-500 italic">
-            <div className="flex-1">
-              {message.turn < viewedPhaseIdx && (
-                <>{turnAsDate(message.turn, "Classic")}</>
-              )}
-            </div>
-
             <Box
               ml="0"
               className="ml-4"
