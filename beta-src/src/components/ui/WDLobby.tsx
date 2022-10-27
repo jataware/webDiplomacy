@@ -5,6 +5,12 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 import Progress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import Grid from '@mui/material/Grid';
+
+import Icon from '@mui/material/Icon';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
 
 import chess1 from "../../assets/waiting-room-backgrounds/chess1.jpg";
 import chess2 from "../../assets/waiting-room-backgrounds/chess2.jpg";
@@ -30,55 +36,35 @@ import {
 } from "../../utils/api";
 
 
-const Instructions = (props) => {
-  var message = (
-    <div>
-      <Typography gutterBottom variant="h3" style={{maxWidth: 600}}>
-        Welcome to Diplomacy. Glad to have you onboard.
-      </Typography>
+import clipboardImg from "../../assets/png/clipboard-3.png";
+/* import discordLogoSvg from "../../assets/svg/discord.svg"; */
+import ph1 from "../../assets/png/ph1.png";
+import ph2 from "../../assets/png/ph2.png";
+import discordLogoSvgFull from "../../assets/svg/discord-logo-blue.svg";
 
-      <Typography
-        component="div"
-        variant="body1" >
-
-        <div style={{fontSize: "1rem"}}>
-          A game admin will assign you to a new game soon. <br />
-          This usually doesn’t take long, you will receive an e-mail once the game is ready.
-        </div>
-
-        <br />
-
-        <Typography variant="h6">
-          In the meantime, a couple of reminders:
-        </Typography>
-
-        <ul style={{
-          margin: "1rem",
-          listStyle: "square",
-          fontSize: "1rem"
-        }}>
-          <li style={{marginBottom: "0.25rem"}}>
-            Users must remain anonymous. Do not divulge your identity.
-          </li>
-
-          <li>
-            Annotate as many incoming/outgoing messages that you believe are meant to deceive a player.
-          </li>
-        </ul>
-
-        <Typography variant="h6">
-          Have fun!
-        </Typography>
-
-      </Typography>
-
-    </div>
+const RedHeading = ({sx={}, ...props}) => {
+  return (
+    <Typography
+      sx={{color: "rgb(190,66,100)", fontWeight: "bold", ...sx}}
+      variant="h5"
+      {...props}
+    />
   );
-    return message
-};
+}
 
-function WelcomeMessage(){
-  const dispatch = useAppDispatch();
+const BodyText = ({sx={}, ...props}) => {
+  return (
+    <Typography
+      sx={{fontSize:"1rem" , ...sx}}
+      variant="body1"
+      {...props}
+    />
+  );
+}
+
+const Instructions = (props) => {
+
+const dispatch = useAppDispatch();
 
   const [playerStatus, setPlayerStatus] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
@@ -89,8 +75,6 @@ function WelcomeMessage(){
     var req = dispatch(fetchPlayerState());
 
     req.then((response) => {
-
-      /* console.log('Player state response:', response); */
 
       if (response?.payload) {
         setPlayerStatus(response.payload.state);
@@ -130,74 +114,283 @@ function WelcomeMessage(){
     );
   }
 
-  let message = "Waiting for next game to start";
-  if (playerStatus === "Cut") {
-    message = "Thanks for participating.";
-  }
-  else if (playerStatus === "Banned") {
-    message = "You have been banned from the tournament";
-  }
-  return (
-    <div style={{
-      textAlign: "center",
-      width: "100%",
-    }}>
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}>
-      {!(["Cut", "Banned"].includes(playerStatus)) && (
-        <Box sx={{color: "blue", height: "1.75rem", pr: 1, mt: -1}}>
-          <Progress size="1.75rem" color="info" />
-        </Box>
-      )}
-      <Typography
-        sx={{fontSize: "35px"}}
-        gutterBottom
-      >
-        {message}
-      </Typography>
-    </div>
+  // TODO test
+  console.log("player status", playerStatus);
 
-    {playerStatus === "Cut" && (
+  const displayablePlayerStatus = ["Cut", "Banned"].includes(playerStatus) ? playerStatus : "Queued";
+
+  return (
+    <div>
       <Typography
-        gutterBottom
-        variant="h6"
-        component="div"
+        paragraph
+        variant="h4"
+        sx={{fontWeight: "bold"}}
       >
-        <p>
-          Your score did not meet the cutoff to move to the next round.
-        </p>
-        <p>
-          If you have not played a game yet, the tournament filled up.
-        </p>
-        <p>
-          Reach out to Discord if you think this was a mistake or if you have any questions- and stay tuned for the next tournament!
-        </p>
+        DIPLOMACY ONLINE TOURNAMENT
       </Typography>
-    )}
+
+      <Box
+        className="top-permanent-box"
+        sx={{
+          backgroundColor: "rgba(241, 236, 205, 0.2)",
+          borderRadius: 2,
+          p: 2
+        }}>
+
+        <RedHeading sx={{marginBottom: 1}}>
+          PLAYER STATUS: <span style={{textTransform: "uppercase"}}>{displayablePlayerStatus}</span>
+        </RedHeading>
+
+        <BodyText
+          component="div"
+          sx={{
+            paddingLeft: 3, paddingRight: 1
+          }}
+          >
+          <p>
+            You have been added to the tournament queue!
+          </p>
+          <br />
+          <p>
+            Games will begin once all players have been assigned.
+          </p>
+          <p>
+            In the event that we don’t have a multiple of 7 signed up, we will prioritize players who signed up first.
+          </p>
+        </BodyText>
+      </Box>
+
     </div>
   );
 };
 
+const ScreenshotCaptionBox = ({image, text}) => {
+  return (
+    <Box sx={{
+      display: "flex",
+      flexDirection: "column",
+      mt: 2,
+      alignItems: "center"
+    }}>
 
-// https://www.imgacademy.com/sites/default/files/2022-07/img-homepage-meta.jpg
+      <img
+        src={image}
+        style={{maxWidth: "70%"}}
+      />
+
+      <br />
+
+      <div>
+        <BodyText>
+          {text}
+        </BodyText>
+      </div>
+    </Box>
+  );
+};
+
+const ResearchInterfaceOverview = (props) => {
+  return (
+    <Box>
+      <RedHeading gutterBottom>
+        Diplomacy Research Game Interface
+      </RedHeading>
+      <Box sx={{
+        maxHeight: "520px",
+        overflowY: "auto",
+        p: 1,
+        borderRadius: 1
+      }}>
+        <Box
+          sx={{
+            backgroundColor: "rgba(241, 236, 205, 0.3)",
+            display: "flex",
+            p: 2,
+            borderRadius: 3,
+            alignItems: "center"
+          }}>
+          <img
+            src={clipboardImg}
+            style={{width: "6rem", height: "6rem", marginRight: "1rem"}}
+          />
+          <BodyText
+            sx={{
+              flex: 1,
+              maxWidth: "35rem",
+            }}>
+            Your participation in this Diplomacy tournament can help us understand how some Diplomacy players use deception as part of their strategy.
+          </BodyText>
+        </Box>
+
+        <Grid
+          container
+          spacing={1}
+          direction="row"
+        >
+          <Grid
+            item
+            xs={6}
+            sx={{maxWidth: "50%"}}
+            lg={6}>
+            <ScreenshotCaptionBox
+              image={ph1}
+              text="We have customized your message interface so that it is easy to share your strategies with out research team! Just annotate your outgoing messages and click 'send!'"
+            />
+          </Grid>
+          <Grid
+            item
+            sx={{maxWidth: "50%"}}
+            xs={6}
+            lg={6}>
+            <ScreenshotCaptionBox
+              image={ph2}
+              text="Use our custom interface to keep track of your oponent's deceit! You can easily mark incoming messages as 'Deceptive' or 'Trustworthy'. Use this feature to keep track of who can be trusted!"
+            />
+          </Grid>
+        </Grid>
+
+      </Box>
+    </Box>
+  );
+}
+
+const TournamentDetails = (props) => {
+  return (
+    <Box>
+      <Box>
+        <RedHeading gutterBottom>
+          Scoring
+        </RedHeading>
+        <BodyText
+          paragraph
+          component="div"
+        >
+          <ul>
+            <li> 1 point for playing </li>
+            <li> 1 point per supply centre owned </li>
+            <li> 38 points for most supply centres at end </li>
+            <li> 14 points for second-most supply centres at end </li>
+            <li> 7 points for third-most supply centres at end </li>
+            <li> In case of ties, points are split amongst tied parties </li>
+            <li> If solo victory, winner gets 73 points, other players score nothing </li>
+          </ul>
+        </BodyText>
+      </Box>
+
+      <Box>
+        <RedHeading gutterBottom>
+          Game Length
+        </RedHeading>
+
+        <BodyText
+          paragraph
+          component="div"
+        >
+          <ul>
+            <li> 7 years (14 seasons) </li>
+            <li> 15 minute turns </li>
+          </ul>
+        </BodyText>
+      </Box>
+
+      <Box>
+        <RedHeading gutterBottom>
+          Tournament Structure
+        </RedHeading>
+        <BodyText paragraph component="div">
+          <p>
+            Opening round of 2 games with random table and country assignment per game.
+          </p>
+          <p>
+            After opening round, tally up scores and eliminate half of players, rounded to the nearest 7, based on scores.
+          </p>
+          <p>
+            Second round is a single game, after which eliminate all but the top 7 scoring players.
+          </p>
+          <p>
+            Final round is a single game.
+          </p>
+        </BodyText>
+      </Box>
+
+      <Box>
+        <RedHeading gutterBottom>
+          Payment Structure
+        </RedHeading>
+        <BodyText component="ul">
+          <li>
+            $100 per game completed
+          </li>
+          <li>
+            $100 bonus for making it to the second round
+          </li>
+          <li>
+            $100 bonus for making it to the final round
+          </li>
+          <li>
+            $100 bonus for having the highest overall score across all rounds
+          </li>
+          <li>
+            $50 bonus for having the second highest overall score across all rounds
+          </li>
+          <li>
+            $100 bonus for winning the final game
+          </li>
+        </BodyText>
+      </Box>
+
+    </Box>
+  );
+};
+
+/**
+ *
+ **/
 const Lobby = ({signOut}) => {
 
   var images = [
-    chess1,
-    chess2, conference, monument,
+    conference, monument,
     unsplash1,
     unsplash2,
     unsplash3,
-    unsplash4
+    /* unsplash4 */
   ];
   var randomNumber = Math.floor((Math.random() * images.length));
 
   const [image] = React.useState(images[randomNumber]);
 
-  const enoughHeight = useMediaQuery('(min-height:800px)');
+  /* const enoughHeight = useMediaQuery('(min-height:800px)'); */
+
+  // toggles between research and tournament details
+  const [panelNumber, setPanelNumber] = React.useState(true);
+  const [forcedPanel, setForcedPanel] = React.useState(false);
+  const [seconds, setSeconds] = React.useState(0);
+
+  const intervalRef2 = React.useRef();
+
+  const forceNextPanel = () => {
+    setForcedPanel(true);
+    setPanelNumber(!panelNumber);
+  };
+
+  if (forcedPanel) {
+    setSeconds(0);
+    setForcedPanel(false);
+  } else if (seconds >= 100) {
+    setSeconds(0);
+    setPanelNumber(!panelNumber);
+  }
+
+  React.useEffect(() => {
+
+    intervalRef2.current = setInterval(() => {
+      setSeconds(seconds => seconds + 10);
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalRef2.current);
+    };
+  }, []);
 
   return (
     <div style={{height: "100vh"}}>
@@ -217,33 +410,94 @@ const Lobby = ({signOut}) => {
 
       <Box sx={{
         width: "100vw",
-        display: "block",
-        height: enoughHeight ? "100%" : "unset"
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center"
       }}>
-        <ApplicationBar signOut={signOut} />
+        <ApplicationBar
+          signOut={signOut}
+          sx={{backgroundColor: "transparent"}}
+          position="fixed"
+        />
 
         <Box sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
-          height: "80%",
-          pb: 6
+          pb: 1,
+          flexDirection: "column"
         }}>
           <Box sx={{
+            maxHeight: "100vh",
+            overflowY: "auto",
             margin: "1rem",
-            width: "65%",
+            maxWidth: "800px",
             backgroundColor: "#FFFFFFE3",
             borderRadius: 2,
             position: "relative"
           }}>
-
             <Box sx={{
               p: 5,
+              pb: 3
             }}>
               <Instructions />
-              <br />
-              <WelcomeMessage />
+
+              <Box
+                className="container-and-animation"
+                sx={{
+                  m: 1,
+                  mb: 0.5
+                }}
+              >
+                {panelNumber ? (
+                  <ResearchInterfaceOverview />
+                ) : (
+                  <TournamentDetails />
+                )}
+              </Box>
+              <Box
+                component="footer"
+                sx={{
+                  width: "100%",
+                  margin: "auto",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}
+              >
+                <Box sx={{
+                  mt: 1,
+                  width: "50%"
+                }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={seconds}
+                  />
+                  <br />
+                  <div style={{margin: "auto", textAlign: "center"}}>
+                    {panelNumber ? 1 : 2} / 2
+                    &nbsp;
+                    <span
+                      onClick={forceNextPanel}
+                      style={{
+                        cursor: "pointer",
+                        fontWeight: "bold"
+                      }}>
+                       &gt;
+                    </span>
+                  </div>
+                </Box>
+
+                <Button
+                  sx={{marginTop: 1}}
+                  component="a"
+                  target="_blank"
+                  href="https://www.discord.gg/gAVWYx7Cr9">
+                  <img src={discordLogoSvgFull} style={{height: "2rem"}} />
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Box>

@@ -936,14 +936,14 @@ class WaitingPlayers extends ApiEntry {
 			$row = $DB->sql_hash($SQL);
 			$lastScore = 0;
 
-			if ($row){
+			if ($row) {
 				$lastScore = $row['score'];
 			}
 
       $toPush = [
-			"id"=> intval($ret[0]), 
+			"id"=> intval($ret[0]),
 			"username" => $ret[1],
-			"type" => $ret[2], 
+			"type" => $ret[2],
 			"tempBan" => $ret[3],
 			"gameCount" => intval($gameCount[0]),
 			"lastScore" => intval($lastScore),
@@ -1097,15 +1097,16 @@ class CreateGame extends ApiEntry
 			"Unranked",           // potType
 			15,                   // phaseMinutes
 			5,                    // phaseMinutesRB Retreats | Builds
-			3,                    // nextPhaseMinutes. DEBUG
-			1,                    // phaseSwitchPeriod
-			5,                    // joinPeriod . minimum is 5.
-			"no",                 // anon -> anonymous users allowed
+            // TODO dont ever use nextPhase minutes. Unsubmitted orders turned into holds instead. next round auto-advances.
+			15,                    // nextPhaseMinutes. DEBUG. What does this mean? fall. maybe for fall? // TODO maybe check if there's a (unset)
+			1,                    // phaseSwitchPeriod // TODO (check if there is an unset feature here.)
+			3,                    // joinPeriod . minimum is 5?
+			"no",                 // anon -> are anonymous users allowed?
 			"Regular",            // press
 			"wait",               // missingPlayerPolicy
 			"draw-votes-hidden",  // drawType
-			0,                    // rrLimit
-			1,                    // excusedMissedTurns
+			0,                    // rrLimit, reliability rating. 0 is no limit?
+			1,                    // excusedMissedTurns // what we want
 			"Members"             // playerTypes
 		);
 		$DB->sql_put("COMMIT");

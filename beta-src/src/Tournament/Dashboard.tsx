@@ -31,6 +31,8 @@ import { OngoingGames } from "./GameList";
 import PlayerList from "./PlayerList";
 import AllGames from "./AllGames";
 
+import { ApplicationBar } from "../components/ui/AuthCommon";
+
 /**
  * Wraps Admin Dashboard in message in case this dashboard crashes.
  **/
@@ -85,7 +87,6 @@ const TabUnderline = () => (
  *
  **/
 const Navigation = ({selectedTab, setSelectedTab}) => {
-
 
   return (
     <nav>
@@ -152,7 +153,7 @@ const Navigation = ({selectedTab, setSelectedTab}) => {
 /**
  *
  **/
-const TournamentDashboard = (props) => {
+const TournamentDashboard = ({signOut}) => {
 
   const isDesktop = useMediaQuery('(min-width:600px)');
 
@@ -164,16 +165,32 @@ const TournamentDashboard = (props) => {
 
   const [inputGameName, setInputGameName] = React.useState("");
 
-  const handleCreateGame = () => {
-
-    getGameApiRequest("game/create", {gameName: inputGameName, variantID: 1}); // 1 for classic; 15 for  1v1
-
+  const handleCreateGame = (variantID=1) => {
+    const name = variantID === 15 ? "1v1" : inputGameName;
+    getGameApiRequest("game/create", {gameName: name, variantID}); // 1 for classic; 15 for  1v1
     setCreatingGame(false);
     setInputGameName("");
   }
 
   return (
     <Box sx={{display: "flex", flexDirection: "column", color: "white"}}>
+
+      <ApplicationBar
+        menuItems={[
+          {
+            text: "Create 1v1 Game",
+            action: () => handleCreateGame(15)
+          },
+          { text: "Log off",
+            action: signOut
+          },
+        ]}
+        signOut={signOut}
+        sx={{
+          zIndex: 1,
+          backgroundColor: "transparent"
+        }}
+      />
 
       <div
         className="sticky-background"

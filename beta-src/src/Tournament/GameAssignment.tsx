@@ -140,7 +140,7 @@ const DraggableListItem = ({children, onDrop, player, ...props}) => {
 function formatWaitTime(secondsInput) {
 
   if (secondsInput < 0) {
-    return "Now"
+    return "(Now)"
   }
 
   var sec_num = parseInt(secondsInput, 10);

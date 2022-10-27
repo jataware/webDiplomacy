@@ -167,17 +167,6 @@ const App: React.FC = function (): React.ReactElement {
     );
   }
 
-  if (adminDashboard && Admin) {
-    return (
-      <div>
-        {/* The following line prevents the UI from being scaled down when the viewport is small.
-            That leads to a very bad experience for this UI, with part of the map cut off. */}
-        <meta name="viewport" content="width=device-width, user-scalable=no" />
-        <TournamentDashboard />
-      </div>
-    )
-  }
-
   if (!Admin) {
     const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
@@ -191,6 +180,7 @@ const App: React.FC = function (): React.ReactElement {
     const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
       .find(g => g.gameID == currentGameID));
 
+    // TODO debug this next redirect. It might be redirecting non-admin users out of the Game is finished screen.
     if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
       window.location.replace(window.location.origin + window.location.pathname);
       return null;
@@ -199,7 +189,9 @@ const App: React.FC = function (): React.ReactElement {
 
   let MainElement = WDMain;
 
-  if ((userCurrentActiveGames.length === 0 && !Admin) || (!currentGameID && Admin)) {
+  if (adminDashboard && Admin) {
+    MainElement = TournamentDashboard;
+  } else if ((userCurrentActiveGames.length === 0 && !Admin) || (!currentGameID && Admin)) {
      MainElement = WDLobby;
   } else if (currentGameID) {
     dispatch(loadGame(String(currentGameID)));
