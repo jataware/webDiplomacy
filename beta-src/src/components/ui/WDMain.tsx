@@ -312,12 +312,14 @@ const WDMain: React.FC = function (): React.ReactElement {
       );
       standoffs = standoffs.filter(
         (standoff) =>
-          standoff.attemptedMoves.length >= 2 &&
-          territoryStatusesByProvID[standoff.provID].standoff,
+          {
+            return (standoff?.attemptedMoves?.length || 0) >= 2 && standoff.provID &&
+                   territoryStatusesByProvID[standoff.provID].standoff;
+          },
       );
     } else {
       standoffs = standoffs.filter(
-        (standoff) => standoff.attemptedMoves.length >= 2,
+        (standoff) => (standoff?.attemptedMoves?.length || 0) >= 2,
       );
     }
   }
