@@ -332,7 +332,7 @@ const TournamentDashboard = ({signOut}) => {
               onChange={e => setInputGameName(e.target.value)}
             />
             <PurpleButton
-              onClick={handleCreateGame}
+              onClick={() => handleCreateGame()}
               variant="outlined">
               Create
             </PurpleButton>
