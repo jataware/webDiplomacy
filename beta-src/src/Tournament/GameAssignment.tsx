@@ -2,7 +2,7 @@ import * as React from "react";
 import { styled } from "@mui/material/styles";
 import isEmpty from "lodash/isEmpty";
 import random from "lodash/random";
-import sortBy from "lodash/sortBy";
+import orderBy from "lodash/orderBy";
 
 import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -32,7 +32,7 @@ import { fetchWaitingPlayers, fetchWaitingGames, fetchAllGameDataforIDs } from "
  **/
 const GamePlayerBox = ({gameId, gameName, players, timeRemaining}) => {
 
-  const sortedPlayers = sortBy(players, player => {
+  const sortedPlayers = orderBy(players, player => {
     return player.username;
   });
 
@@ -214,7 +214,10 @@ const GameAssignment = (props) => {
     fetchWaitingPlayers()
       .then(response => {
         if (response) {
-          setUnassignedPlayers(response);
+          const sortedPlayers = orderBy(response,
+                                        ["totalScore", "lastScore", "username"],
+                                        ["desc", "desc", "asc"])
+          setUnassignedPlayers(sortedPlayers);
         }
       });
 
@@ -269,7 +272,7 @@ const GameAssignment = (props) => {
    * Currently assigns players in order.
    **/
   const assignAllPlayers = () => {
-    const sortedGames = sortBy(waitingGames, (i) => i.members.length ? -i.members.length : 0);
+    const sortedGames = orderBy(waitingGames, (i) => i.members.length ? -i.members.length : 0);
 
     let gameIndex = 0;
     let currGame = sortedGames[gameIndex];
