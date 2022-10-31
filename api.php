@@ -617,7 +617,7 @@ class MarkBackFromLeft extends ApiEntry {
  */
 class GetGamesStates extends ApiEntry {
 	public function __construct() {
-		parent::__construct('game/status', 'GET', '', array('gameID', 'countryID'), false);
+		parent::__construct('game/status', 'GET', 'getStateOfAllGames', array('gameID', 'countryID'), false);
 	}
 	/**
 	 * @throws RequestException
@@ -658,7 +658,7 @@ class CreatePlayer extends ApiEntry {
 		$newPassword = $this->getArgs()['password'];
 		$hashed_pwd = libAuth::pass_Hash($newPassword);
 		$sql_hashed_pwd = "UNHEX('".$hashed_pwd."')";
-		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$email."',0,'','','Yes',1154508102,'English',1154508104,0,".$sql_hashed_pwd.",'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,1.0,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
+		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$email."',50,'','','Yes',".time().",'English',".time().",0,".$sql_hashed_pwd.",'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,10,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
 		$sql = "select id from wD_Users where username = '".$uname."'";
@@ -1385,12 +1385,12 @@ class GetPlayerState extends ApiEntry
 {
 	public function __construct()
 	{
-		parent::__construct('player/getPlayerState', 'GET', 'getStateOfAllGames', array(),false);
+		parent::__construct('player/getPlayerState', 'GET', '', array(),false);
 	}
 	public function run($userID, $permissionIsExplicit)
 	{
 		global $DB;
-		error_log(print_r($userID, true));
+		// error_log(print_r($userID, true));
 		$SQL = "select state from jW_PlayerStates where userID = ".$userID.";";
 		$row = $DB->sql_row($SQL);
 
@@ -1635,20 +1635,21 @@ class GetGameOverview extends ApiEntry {
 			'variantID' => $game->variantID,
 			'year' => $year,
 		], $gameMembers);
+
 		return $this->JSONResponse('Successfully retrieved game overview.', 'GGO-s-001', true, $payload, true);
 	}
 }
 
 /**
  * API entry game/data
- * Retrieves API data needed for order generation code and game functionality. 
+ * Retrieves API data needed for order generation code and game functionality.
  */
 class GetGameData extends ApiEntry {
 
 	private $contextVars;
 
 	public function __construct() {
-		parent::__construct('game/data', 'GET', '', array('gameID', 'countryID'), true);
+		parent::__construct('game/data', 'GET', 'getStateOfAllGames', array('gameID', 'countryID'), true);
 	}
 
 	private function setContextVars( $game, $gameID, $userID, $countryID, $member ){

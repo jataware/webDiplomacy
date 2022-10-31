@@ -196,6 +196,7 @@ const App: React.FC = function (): React.ReactElement {
 
   if (adminDashboard && Admin) {
     MainElement = TournamentDashboard;
+    // This works because users should only have 1 active game at a time during tournament:
   } else if ((userCurrentActiveGames.length === 0 && !Admin) || (!currentGameID && Admin)) {
      MainElement = WDLobby;
   } else if (currentGameID) {

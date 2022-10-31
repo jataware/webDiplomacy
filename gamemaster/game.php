@@ -460,6 +460,8 @@ class processGame extends Game
 	{
 		global $DB;
 
+        return; // Does nothing for now since we don't want to auto ban users on tournaments.
+
 		// Don't record NMRs for bot games
 		if( $this->playerTypes == 'MemberVsBots' ) return;
 	
@@ -520,7 +522,8 @@ class processGame extends Game
 	/**
 	 * Resets the phase timer to one phase time.
 	 */
-	protected function resetProcessTime() 
+	protected function resetProcessTime()
+        // TODO set to appropriate phase 15/5 for tournament if this isn't right
 	{
 		global $DB;
 		$this->processTime = time() + $this->getCurPhaseMinutes()*60;
@@ -561,8 +564,8 @@ class processGame extends Game
 		// If the live game has already been changed nothing to do.
 		if ($this->phaseMinutes == $this->nextPhaseMinutes) return;
 
-		// If the start time isn't filled out then return.
-		if ($this->startTime == 0) return; 
+		// If the start time isn't filled out then return. (game hasn't started)
+		if ($this->startTime == 0) return;
 
 		// If the current time minus the start time is less than the time till phase switch then it isn't time to alter the phase yet.
 		if ((time() - $this->startTime) < $this->phaseSwitchPeriod * 60) return;
