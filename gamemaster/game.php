@@ -154,7 +154,7 @@ class processGame extends Game
 	 * @var array
 	 */
 	private static $gameTableColumns=array(
-			'Games'=>'variantID;id;turn;phase;processTime;pot;name;gameOver;processStatus;password;potType;pauseTimeRemaining;minimumBet;phaseMinutes;phaseMinutesRB;nextPhaseMinutes;phaseSwitchPeriod;anon;pressType;attempts;missingPlayerPolicy;directorUserID;minimumReliabilityRating;minimumNMRScore;drawType;excusedMissedTurns;finishTime;playerTypes;startTime;grCalculated',
+			'Games'=>'variantID;id;turn;phase;processTime;pot;name;gameOver;processStatus;password;potType;pauseTimeRemaining;minimumBet;phaseMinutes;phaseMinutesRB;nextPhaseMinutes;phaseSwitchPeriod;anon;pressType;attempts;missingPlayerPolicy;directorUserID;minimumReliabilityRating;drawType;excusedMissedTurns;finishTime;playerTypes;startTime;grCalculated',
 			'Members'=>'id;userID;gameID;countryID;status;timeLoggedIn;bet;missedPhases;newMessagesFrom;supplyCenterNo;unitNo;votes;pointsWon;gameMessagesSent;orderStatus;hideNotifications;excusedMissedTurns;groupTag',
 			'Orders'=>'id;gameID;countryID;type;unitID;toTerrID;fromTerrID;viaConvoy',
 			'TerrStatus'=>'id;terrID;occupiedFromTerrID;standoff;gameID;occupyingUnitID;retreatingUnitID;countryID',

@@ -11,11 +11,14 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Paper from "@mui/material/Paper";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import RemoveIcon from '@mui/icons-material/DisabledByDefault';
+import CancelIcon from '@mui/icons-material/DoDisturb';
+import PlayIcon from '@mui/icons-material/PlayCircleFilled';
 
 import {
   getGameApiRequest
@@ -57,6 +60,28 @@ const GamePlayerBox = ({gameId, gameName, players, timeRemaining}) => {
     // Also may want callback prop to refresh data?
   }
 
+  const scheduleNow = (gameID) => {
+    getGameApiRequest(
+      "game/scheduleProcess",
+      {
+        gameID: gameId
+      }
+    )
+    // TODO show snackbar if successful
+    // Also may want callback prop to refresh data?
+  };
+
+  const cancelGame = (gameID) => {
+    getGameApiRequest(
+      "game/cancel",
+      {
+        gameID: gameId
+      }
+    )
+    // TODO show snackbar if successful
+    // Also may want callback prop to refresh data?
+  };
+
   return (
     <Box
       ref={drop}
@@ -68,13 +93,32 @@ const GamePlayerBox = ({gameId, gameName, players, timeRemaining}) => {
         sx={{
           color: color,
           fontSize: "1rem",
-          fontWeight: "bold"
+          fontWeight: "bold",
+          marginBottom: 0,
+          paddingBottom: 0
         }}
-        gutterBottom
         variant="h6"
       >
-    {gameName} {formatWaitTime(timeRemaining)}
+        {gameName}
       </Typography>
+      <Box sx={{display: "flex", alignItems: "center"}}>
+        <IconButton
+          color="success"
+          onClick={scheduleNow}
+          size="small"
+        >
+          <PlayIcon />
+        </IconButton>
+        <IconButton
+          color="error"
+          onClick={cancelGame}
+        >
+          <CancelIcon />
+        </IconButton>
+        <Typography>
+          {formatWaitTime(timeRemaining)}
+        </Typography>
+      </Box>
       <Paper sx={{minWidth: "9rem"}}>
         <List>
           {playersToDisplay.map(player => (
@@ -379,7 +423,7 @@ const GameAssignment = (props) => {
               container
               spacing={2}
             >
-              {waitingGames.map(gameItem => (
+              {waitingGames.length ? waitingGames.map(gameItem => (
                 <Grid
                   item
                   key={gameItem.gameID}
@@ -391,7 +435,13 @@ const GameAssignment = (props) => {
                     timeRemaining={getTimeRemaining(gameItem)}
                   />
                 </Grid>
-              ))}
+              )) : (
+                <div style={{lineHeight: "2rem", marginTop: "1rem"}}>
+                  <Typography>
+                    No open games. CREATE GAME to start.
+                  </Typography>
+                </div>
+              )}
             </Grid>
           </Box>
         </Box>

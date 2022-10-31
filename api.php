@@ -1100,10 +1100,10 @@ class CreateGame extends ApiEntry
             // TODO dont ever use nextPhase minutes. Unsubmitted orders turned into holds instead. next round auto-advances.
 			15,                    // nextPhaseMinutes. DEBUG. What does this mean? fall. maybe for fall? // TODO maybe check if there's a (unset)
 			-1,                    // phaseSwitchPeriod // TODO (check if there is an unset feature here.)
-			3,                    // joinPeriod . minimum is 5?
+			10,                    // joinPeriod . minimum is 5?
 			"no",                 // anon -> are anonymous users allowed?
 			"Regular",            // press
-			"wait",               // missingPlayerPolicy
+			"Normal",             // missingPlayerPolicy
 			"draw-votes-hidden",  // drawType
 			0,                    // rrLimit, reliability rating. 0 is no limit?
 			1,                    // excusedMissedTurns // what we want
@@ -1153,15 +1153,12 @@ class ScheduleProcess extends ApiEntry
 		$args = $this->getArgs();
 		$gameID = (int)$args['gameID'];
 
-        $Variant=libVariant::loadFromGameID($gameID);
-		$Game = $Variant->Game($gameID);
+        error_log("======> Setting gameid= ".$gameID." to process time to now: ".time()." ============ ");
 
-        if( $Game->processStatus != 'Not-processing' || $Game->phase == 'Finished' )
-			return 'This game is paused/crashed/finished.';
+        $query = "UPDATE wD_Games SET processTime=\"".time()."\" WHERE id = ".$gameID;
 
-        error_log("Setting curr game process time to now: ".time());
-
-		$DB->sql_put("UPDATE wD_Games SET processTime = ".time()." WHERE id = ".$gameID);
+		$DB->sql_put($query);
+        $DB->sql_put("COMMIT");
 
 		return json_encode([
             "result" => "Process time scheduled to now successfully"
