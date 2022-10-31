@@ -62,7 +62,6 @@ const WDPress: FC<WDPressProps> = function ({
     message: ""
   });
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // scroll to the bottom of the message list
     messagesEndRef.current?.scrollIntoView();
