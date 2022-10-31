@@ -27,7 +27,10 @@ const TopLeft: FunctionComponent<TopLeftProps> = function ({
   phaseSelectorOpen,
 }: TopLeftProps): ReactElement {
   return (
-    <WDPositionContainer position={Position.TOP_LEFT}>
+    <WDPositionContainer
+      styleOverrides={{marginTop: "56px"}}
+      position={Position.TOP_LEFT}
+    >
       <WDPhaseUI
         gamePhase={gamePhase}
         gameSeason={gameSeason}

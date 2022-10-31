@@ -532,7 +532,7 @@ class WebSocketsAuthentication extends ApiEntry {
 			}
 		}
 		
-		$appKey				= Config::$pusherAppKey;
+		$appKey			= Config::$pusherAppKey;
 		$appSecret		= Config::$pusherAppSecret;
 		$stringToSign = $socketID.":".$channelName;
 		$hash       	= hash_hmac('sha256', $stringToSign, $appSecret);
@@ -1099,7 +1099,7 @@ class CreateGame extends ApiEntry
 			5,                    // phaseMinutesRB Retreats | Builds
             // TODO dont ever use nextPhase minutes. Unsubmitted orders turned into holds instead. next round auto-advances.
 			15,                    // nextPhaseMinutes. DEBUG. What does this mean? fall. maybe for fall? // TODO maybe check if there's a (unset)
-			1,                    // phaseSwitchPeriod // TODO (check if there is an unset feature here.)
+			-1,                    // phaseSwitchPeriod // TODO (check if there is an unset feature here.)
 			3,                    // joinPeriod . minimum is 5?
 			"no",                 // anon -> are anonymous users allowed?
 			"Regular",            // press
@@ -1159,7 +1159,9 @@ class ScheduleProcess extends ApiEntry
         if( $Game->processStatus != 'Not-processing' || $Game->phase == 'Finished' )
 			return 'This game is paused/crashed/finished.';
 
-		$DB->sql_put("UPDATE wD_Games SET processTime = ".time()." WHERE id = ".$Game->id);
+        error_log("Setting curr game process time to now: ".time());
+
+		$DB->sql_put("UPDATE wD_Games SET processTime = ".time()." WHERE id = ".$gameID);
 
 		return json_encode([
             "result" => "Process time scheduled to now successfully"

@@ -108,6 +108,7 @@ const BottomMiddle: FunctionComponent<BottomMiddleProps> = function ({
     <WDPositionContainer
       position={Position.BOTTOM_MIDDLE}
       bottom={width < 500 ? 14 : 4}
+      styleOverrides={{marginTop: "56px"}}
     >
       <WDBuildCounts />
       {width > 650 && (

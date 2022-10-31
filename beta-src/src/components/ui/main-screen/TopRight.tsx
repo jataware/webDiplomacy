@@ -5,12 +5,16 @@ import WDHomeIcon from "../icons/WDHomeIcon";
 
 const TopRight = function (): ReactElement {
   return (
-    <WDPositionContainer position={Position.TOP_RIGHT}>
+    <WDPositionContainer
+      styleOverrides={{marginTop: "56px"}}
+      position={Position.TOP_RIGHT}>
       <a href="/">
-        <WDHomeIcon />
       </a>
     </WDPositionContainer>
   );
 };
 
 export default TopRight;
+
+/* 
+ * <WDHomeIcon /> */

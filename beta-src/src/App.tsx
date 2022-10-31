@@ -69,10 +69,10 @@ const AuthIRBHandler = ({user, signOut, children, acceptedConsent, setAcceptedCo
     }
   }, [acceptedConsent]);
 
+  // TODO Loading animation
   if (!ready) {
     return (
       <div>
-        <p>Loading Form..</p>
       </div>
     );
   }
@@ -159,10 +159,10 @@ const App: React.FC = function (): React.ReactElement {
   const userCurrentActiveGames = useAppSelector(playerActiveGames);
   const Admin = useAppSelector(isAdmin);
 
+  // TODO loading animation?
   if (loading) {
     return (
       <div>
-        <p>Loading ..</p>
       </div>
     );
   }

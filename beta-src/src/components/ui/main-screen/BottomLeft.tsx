@@ -21,7 +21,7 @@ const BottomLeft: FunctionComponent<BottomLeftProps> = function ({
       {user && phase !== "Pre-game" && (
         <WDPositionContainer
           position={Position.BOTTOM_LEFT}
-          bottom={phaseSelectorOpen ? 40 : 4}
+          bottom={phaseSelectorOpen ? 20 : 4}
         >
           <AutoSaveToggle className="hidden mb-3 sm:block" />
           <WDOrderStatusControls orderStatus={user?.member.orderStatus} />
