@@ -825,7 +825,7 @@ ON DUPLICATE KEY UPDATE
 	;
 
 ALTER TABLE `wD_GameMessages` ADD `intentDeceive` VARCHAR(6);
-ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` BOOLEAN;
+ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` VARCHAR(6);
 
 CREATE TABLE jW_PlayerStates (
   userID INTEGER,
