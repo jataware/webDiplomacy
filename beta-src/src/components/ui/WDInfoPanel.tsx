@@ -49,16 +49,6 @@ const WDInfoPanel: React.FC<WDInfoPanelProps> = function ({
 
   return (
     <div>
-      {userCountry && !gameIsFinished && (
-        <div className="pl-4">
-          <WDVoteButtons
-            toggleVote={toggleVote}
-            voteState={userCountry.votes}
-            votingInProgress={votingInProgress}
-            gameIsPaused={gameIsPaused}
-          />
-        </div>
-      )}
       <WDCountryTable
         maxDelays={maxDelays}
         countries={allCountries}
@@ -71,6 +61,7 @@ const WDInfoPanel: React.FC<WDInfoPanelProps> = function ({
 
 export default WDInfoPanel;
 
+// NOTE Removing this warning since it was a bit scary for everyone to continously see.
 /* {intoCivilDisorder && (
  *   <div className="mt-4 ml-4 mr-3 p-3 bg-red-600 text-white text-center rounded-lg">
  *     Game has fallen into civil disorder due to move missed by one player
