@@ -34,7 +34,12 @@ const WDPositionContainer: React.FC<WDPositionContainerProps> = function ({
     }
   }, [position, bottom]);
 
-  return <div className={`absolute ${placement} z-${zIndex}`}>{children}</div>;
+  return (
+    <div
+      style={styleOverrides}
+      className={`absolute ${placement} z-${zIndex}`}>{children}
+    </div>
+  );
 };
 
 WDPositionContainer.defaultProps = {
@@ -44,9 +49,3 @@ WDPositionContainer.defaultProps = {
 };
 
 export default WDPositionContainer;
-
-// style={{
-//   touchAction: "none",
-//   pointerEvents: "none", // this component is for layout alone, it shouldn't mask out clicks behind it
-//   ...placement,
-// }}

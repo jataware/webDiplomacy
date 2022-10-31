@@ -82,8 +82,6 @@ services:
     environment:
       - PMA_ARBITRARY=1
       
-  # This is necessary for doing live React dev for the new board, but isn't needed after doing a build
-  # if the nginx config is changed to not redirect /beta/ to port 3000:
   beta:
     image: "node:16.15.1-alpine3.14"
     container_name: webdiplomacy-beta

@@ -21,7 +21,7 @@ import WDMapController from "../controllers/WDMapController";
 import getPhaseKey from "../../utils/state/getPhaseKey";
 import { ApplicationBar } from "./AuthCommon";
 
-const WDMain: React.FC = function (): React.ReactElement {
+const WDMain: React.FC = function (props): React.ReactElement {
   const { signOut } = props;
 
   // FIXME: it's not ideal for us to be fetching the whole world from store here

@@ -5,8 +5,6 @@ import useLocalStorageState from "use-local-storage-state";
 
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import useViewport from "../../hooks/useViewport";
-import getDevice from "../../utils/getDevice";
 import WDMessageList from "./WDMessageList";
 import { CountryTableData } from "../../interfaces";
 import { useAppDispatch, useAppSelector } from "../../state/hooks";
