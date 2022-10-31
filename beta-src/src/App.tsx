@@ -5,9 +5,11 @@ import { Authenticator } from "@aws-amplify/ui-react";
 import { API, Auth } from 'aws-amplify';
 import WDMain from "./components/ui/WDMain";
 import WDLobby from "./components/ui/WDLobby";
-import { fetchPlayerIsAdmin, loadGame, isAdmin} from "./state/game/game-api-slice";
 import { useAppDispatch, useAppSelector } from "./state/hooks";
-import { fetchPlayerActiveGames, playerActiveGames } from "./state/game/game-api-slice";
+import {
+  fetchPlayerIsAdmin, loadGame, isAdmin,
+  fetchPlayerActiveGames, playerActiveGames, fetchUsername
+} from "./state/game/game-api-slice";
 import TournamentDashboard from "./Tournament/Dashboard";
 import { ConsentPage } from "./Consent";
 
@@ -115,8 +117,9 @@ const App: React.FC = function (): React.ReactElement {
   const intervalRef = React.useRef();
 
   function pollGameData() {
-    console.log("refreshing user data");
-    dispatch(fetchPlayerActiveGames())
+    dispatch(fetchPlayerActiveGames());
+    dispatch(fetchPlayerIsAdmin());
+    dispatch(fetchUsername());
   }
 
   React.useEffect(() => {
@@ -128,7 +131,8 @@ const App: React.FC = function (): React.ReactElement {
     setLoading(true);
     let promises = [
       dispatch(fetchPlayerActiveGames()),
-      dispatch(fetchPlayerIsAdmin())
+      dispatch(fetchPlayerIsAdmin()),
+      dispatch(fetchUsername())
     ];
 
     Promise
@@ -177,14 +181,15 @@ const App: React.FC = function (): React.ReactElement {
       return null;
     }
 
-    const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
-      .find(g => g.gameID == currentGameID));
+    // TODO Test this out and see current behavior
+    /* const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
+     *   .find(g => g.gameID == currentGameID));
 
-    // TODO debug this next redirect. It might be redirecting non-admin users out of the Game is finished screen.
-    if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
-      window.location.replace(window.location.origin + window.location.pathname);
-      return null;
-    }
+     * // TODO debug this next redirect. It might be redirecting non-admin users out of the Game is finished screen.
+     * if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
+     *   window.location.replace(window.location.origin + window.location.pathname);
+     *   return null;
+     * } */
   }
 
   let MainElement = WDMain;

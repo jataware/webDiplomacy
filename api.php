@@ -371,6 +371,21 @@ class isAdmin extends ApiEntry {
 	}
 }
 
+class getUsername extends ApiEntry {
+	public function __construct() {
+		parent::__construct('players/username', 'GET', '', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $DB;
+		$SQL = 'SELECT username FROM wD_Users WHERE id = '.$userID;
+		$username = $DB->sql_row($SQL)[0];
+
+        return json_encode([
+            "username" => $username
+        ]);
+	}
+}
+
 /**
  * API entry game/togglevote
  */
@@ -2666,6 +2681,7 @@ try {
 	$api->load(new ResetTournament());
 	$api->load(new ProcessGameNow());
 	$api->load(new ScheduleProcess());
+	$api->load(new getUsername());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.

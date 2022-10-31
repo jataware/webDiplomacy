@@ -10,6 +10,12 @@ import Toolbar from '@mui/material/Toolbar';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
+import { useAppSelector } from "../../state/hooks";
+import {
+  isAdmin,
+  username
+} from "../../state/game/game-api-slice";
+
 const LogOutButton = ({onClick}) => {
   return (
     <Button
@@ -21,7 +27,10 @@ const LogOutButton = ({onClick}) => {
   );
 }
 
-export const ApplicationBar = ({signOut, sx, menuItems, position="static"}) => {
+export const ApplicationBar = ({signOut, sx, menuItems=[], position="static"}) => {
+
+  const currentUsername = useAppSelector(username);
+  const admin = useAppSelector(isAdmin);
 
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -35,6 +44,16 @@ export const ApplicationBar = ({signOut, sx, menuItems, position="static"}) => {
     setAnchorEl(null);
   };
 
+  let displayableMenuItems = [
+    {
+      text: currentUsername
+    }
+  ];
+  if (admin) {
+    displayableMenuItems.push({text: `Admin: ${true}`})
+  }
+  displayableMenuItems = displayableMenuItems.concat(menuItems);
+
   return (
     <AppBar
       position={position}
@@ -45,22 +64,20 @@ export const ApplicationBar = ({signOut, sx, menuItems, position="static"}) => {
         justifyContent: 'space-between',
       }}>
 
-        {menuItems && (
           <Menu
             anchorEl={anchorEl}
             open={open}
             onClose={handleClose}
           >
-            {menuItems.map(data => (
+            {displayableMenuItems.map(data => (
               <MenuItem
                 key={data.text}
                 onClick={() => {
-                handleClose();
-                data.action();
-              }}>{data.text}</MenuItem>
+                  handleClose();
+                  data.action();
+                }}>{data.text}</MenuItem>
             ))}
           </Menu>
-        )}
 
         <Box sx={{display: 'flex'}}>
           <IconButton

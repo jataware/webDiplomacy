@@ -180,10 +180,7 @@ const TournamentDashboard = ({signOut}) => {
           {
             text: "Create 1v1 Game",
             action: () => handleCreateGame(15)
-          },
-          { text: "Log off",
-            action: signOut
-          },
+          }
         ]}
         signOut={signOut}
         sx={{

@@ -257,6 +257,29 @@ export const loadGame = (gameID: string) => async (dispatch) => {
  */
 
 /* eslint-disable no-param-reassign */
+export const fetchUsername = createAsyncThunk(
+  "players/username",
+  async () => {
+    const { data } = await getGameApiRequest("players/username", {});
+    return data;
+  },
+);
+
+const userSlice = createSlice({
+  name: "user",
+  initialState: {
+    username: ""
+  },
+  extraReducers(builder) {
+    builder
+      .addCase(fetchUsername.fulfilled, (state, action) => {
+        state.username = action.payload.username;
+      })
+      .addCase(fetchPlayerIsAdmin.fulfilled, (state, action) => {
+        state.isAdmin = Boolean(action.payload);
+      })
+  }
+});
 
 const gameApiSlice = createSlice({
   name: "game",
@@ -521,4 +544,11 @@ export const playerActiveGames = ({ game: { activeGames } }: RootState) =>
   activeGames;
 export const isAdmin = ({ game: { admin } }: RootState) =>
   admin;
+
+export const username = (state) => {
+  return state.user.username;
+};
+
 export default gameApiSlice.reducer;
+
+export const gameSliceReducer = userSlice.reducer;
