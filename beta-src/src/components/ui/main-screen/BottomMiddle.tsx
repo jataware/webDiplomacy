@@ -40,6 +40,11 @@ const NextPhase = function (): ReactElement {
   } = getGamePhaseSeasonYear(phase, season, year);
   const formattedPhase = formatPhaseForDisplay(gamePhase);
 
+  React.useEffect(() => {
+    dispatch(gameApiSliceActions.setViewedPhaseToLatest());
+    dispatch(gameApiSliceActions.changeViewedPhaseIdxBy(1));
+  }, []);
+
   return (
     <div className="flex display-block px-5 sm:px-10 py-5 mt-1 bg-[#1C2B33] rounded-xl text-white items-center select-none w-fit mb-3 mx-auto">
       <div>
@@ -57,9 +62,6 @@ const NextPhase = function (): ReactElement {
         >
           <BtnArrowIcon
             className="text-white stroke-black cursor-pointer rotate-90"
-            onClick={() => {
-              dispatch(gameApiSliceActions.changeViewedPhaseIdxBy(1));
-            }}
           />
         </button>
       </div>
