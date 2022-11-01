@@ -460,8 +460,6 @@ class processGame extends Game
 	{
 		global $DB;
 
-        return; // Does nothing for now since we don't want to auto ban users on tournaments.
-
 		// Don't record NMRs for bot games
 		if( $this->playerTypes == 'MemberVsBots' ) return;
 	
@@ -512,10 +510,10 @@ class processGame extends Game
 						WHERE m.id IN ( ".implode(',',$nmrs).")");
 			}
 		}
-		 
+
 		// register a missed turn for each member who NMRed
 		$this->Members->registerNMRs($nmrs);
-		
+
 		return $nmrs;
 	}
 

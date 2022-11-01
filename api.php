@@ -697,7 +697,6 @@ class CrashedGames extends ApiEntry {
 }
 
 // TODO node script that can call this?
-// TODO test
 class UncrashGame extends ApiEntry
 {
     public function __construct()
@@ -710,7 +709,7 @@ class UncrashGame extends ApiEntry
 		$args = $this->getArgs();
 		$gameID = $args['gameID'];
         require_once(l_r('gamemaster/game.php'));
-        $DB->sql_put("UPDATE wD_Games SET processStatus = 'Not-processing', processTime = ".time()." + 60*phaseMinutes, pauseTimeRemaining=NULL WHERE id = ".$gameID);
+        $DB->sql_put("UPDATE wD_Games SET processStatus = 'Not-processing', processTime = ".time()." + phaseMinutes, pauseTimeRemaining=NULL WHERE id = ".$gameID);
         $DB->sql_put("COMMIT");
 
         return "Success";
@@ -1130,32 +1129,38 @@ class CreateGame extends ApiEntry
 	}
 }
 
-class ProcessGameNow extends ApiEntry
-{
-	public function __construct()
-	{
-		parent::__construct('game/process', 'GET', 'getStateOfAllGames', array('gameID'), true);
-	}
-	public function run($userID, $permissionIsExplicit)
-	{
-		global $DB;
-		$args = $this->getArgs();
-		$gameID = (int)$args['gameID'];
+// NOTE this doesn't work, removing for now
+// class ProcessGameNow extends ApiEntry
+// {
+// 	public function __construct()
+// 	{
+// 		parent::__construct('game/process', 'GET', 'getStateOfAllGames', array('gameID'), true);
+// 	}
+// 	public function run($userID, $permissionIsExplicit)
+// 	{
+// 		global $DB;
+// 		$args = $this->getArgs();
+// 		$gameID = (int)$args['gameID'];
 
-        $DB->sql_put("BEGIN");
-		require_once(l_r('gamemaster/game.php'));
-        $Variant=libVariant::loadFromGameID($gameID);
-        $Game = $Variant->processGame($gameID);
-        $Game->process();
-        $DB->sql_put("COMMIT");
+//         $DB->sql_put("BEGIN");
+// 		require_once(l_r('gamemaster/game.php'));
+//         $Variant=libVariant::loadFromGameID($gameID);
+//         $Game = $Variant->processGame($gameID);
+//         $Game->process();
+//         $DB->sql_put("COMMIT");
 
-        return json_encode([
-            "success" => true
-        ]);
-    }
-}
+//         return json_encode([
+//             "success" => true
+//         ]);
+//     }
+// }
 
 
+/**
+ * This works as expected
+ *
+ *
+ */
 class ScheduleProcess extends ApiEntry
 {
 	public function __construct()
@@ -2680,7 +2685,7 @@ try {
 	$api->load(new TotalPlayerScore());
 	$api->load(new FinishGames());
 	$api->load(new ResetTournament());
-	$api->load(new ProcessGameNow());
+	// $api->load(new ProcessGameNow());
 	$api->load(new ScheduleProcess());
 	$api->load(new getUsername());
 
