@@ -3,20 +3,11 @@ html, body {
   box-sizing: border-box;
   margin: 0;
   font-style: normal;
+  /* @media only screen and (min-width: 1400px) { */
+  /*   font-size: 120%; */
+  /* } */
   overflowX: hidden;
 }
-
-/* TODO debug and enable this later, maybe. Nice to have but not required. */
-/* @media only screen and (min-width: 1400px) { */
-/*   html, body { */
-/*     font-size: 140%; */
-/*   } */
-/* } */
-/* @media only screen and (min-width: 2100px) { */
-/*   html, body { */
-/*     font-size: 150%; */
-/*   } */
-/* } */
 
 *, *:before, *:after {
   box-sizing: inherit;
