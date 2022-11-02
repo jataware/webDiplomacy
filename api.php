@@ -2700,8 +2700,8 @@ try {
 	$api->load(new GetGameData());
 	$api->load(new GetGameMembers());
 	$api->load(new SetOrders());
-	$api->load(new ToggleVote());
-	$api->load(new SetVote());
+	// $api->load(new ToggleVote());
+	// $api->load(new SetVote());
 	$api->load(new WebSocketsAuthentication());
 	$api->load(new SendMessage());
 	$api->load(new AnnotateMessage());
