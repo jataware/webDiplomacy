@@ -58,25 +58,11 @@ const WDGameProgressOverlay: React.FC<WDGameProgressOverlayProps> = function ({
       innerElem = (
         <Stack direction="column" alignItems="center">
           <div className="m-2">
-            You failed to enter orders and had no excused absences.
+            You failed to enter orders and ran out of excused absences.
           </div>
           <div className="m-2">
-            You are in Civil Disorder
-            {overview.isTempBanned
-              ? " and cannot rejoin due to a temp ban"
-              : ""}
-            .
+            You are in Civil Disorder.
           </div>
-
-          <Button
-            size="large"
-            variant="contained"
-            color="success"
-            onClick={clickHandler}
-            disabled={overview.isTempBanned}
-          >
-            Rejoin Game
-          </Button>
         </Stack>
       );
     } else if (status.phases.length <= 1) {

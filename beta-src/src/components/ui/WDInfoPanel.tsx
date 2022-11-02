@@ -49,6 +49,11 @@ const WDInfoPanel: React.FC<WDInfoPanelProps> = function ({
 
   return (
     <div>
+      {intoCivilDisorder && (
+        <div className="mt-4 ml-4 mr-3 p-3 text-center rounded-lg">
+          NOTE: One or more players have fallen into civil disorder due to moves missed. They'll auto-hold until all their units are eliminated.
+        </div>
+      )}
       <WDCountryTable
         maxDelays={maxDelays}
         countries={allCountries}

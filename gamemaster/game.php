@@ -665,24 +665,24 @@ class processGame extends Game
 
 			$this->setDrawn();
 		}
-		elseif( $this->Members->withActiveNMRs() )
-		{
-			require_once(l_r('lib/gamemessage.php'));
-			/*
-			 * There are NMRs by active members. The game will not be processed, but instead
-			 * the phase will be extended.
-			 * 
-			 * All orders are unreadied, the phase time is reset and members are notified.
-			 */
-			$extendMessage = 'Game was extended due to at least 1 member failing to enter orders and having an excused missed turn available. This has un-readied all orders.';
-			
-			$this->Members->unreadyMembers();
-			$this->resetProcessTimeForMissedTurns();
-			$this->Members->notifyGameExtended();
-			
-			libGameMessage::send('Global','GameMaster', $extendMessage);
-		} 
-		else 
+		// elseif( $this->Members->withActiveNMRs() )
+		// {
+		// 	require_once(l_r('lib/gamemessage.php'));
+		// 	/*
+		// 	 * There are NMRs by active members. The game will not be processed, but instead
+		// 	 * the phase will be extended.
+		// 	 * 
+		// 	 * All orders are unreadied, the phase time is reset and members are notified.
+		// 	 */
+		// 	$extendMessage = 'Game was extended due to at least 1 member failing to enter orders and having an excused missed turn available. This has un-readied all orders.';
+
+		// 	$this->Members->unreadyMembers();
+		// 	$this->resetProcessTimeForMissedTurns();
+		// 	$this->Members->notifyGameExtended();
+
+		// 	libGameMessage::send('Global','GameMaster', $extendMessage);
+		// }
+		else
 		{
 			/*
 			 * Except for wiping redundant TerrStatus data after a new turn and generating new orders
