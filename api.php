@@ -2194,7 +2194,8 @@ class FinishGames extends ApiEntry {
 		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 12;";
 		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
-		$SQL = "UPDATE wD_Members join wD_Games on wD_Members.gameID = wD_Games.id SET status = 'Survived' where wD_Games.phase='Finished';";
+        // Updates remaining "Playing" members to "Survived". TODO What about if a player "won" (as in had highest score/units when we finished the game?)
+		$SQL = "UPDATE wD_Members join wD_Games on wD_Members.gameID = wD_Games.id SET status = 'Survived' where wD_Games.phase='Finished' and status = 'Playing';";
 		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
 		return "Success";
