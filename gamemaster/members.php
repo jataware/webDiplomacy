@@ -659,7 +659,7 @@ class processMembers extends Members
 		global $DB;
 
 		// Bot games don't factor into NMR calcs
-		if( $this->Game->playerTypes == "MemberVsBots" ) return;
+		// if( $this->Game->playerTypes == "MemberVsBots" ) return;
 
 		// Check if there is at least one active NMR and for that case reduce the excuses of all active members with NMRs and set members with no excuses as left.
 		$this->activeNMRs = false;
@@ -675,16 +675,9 @@ class processMembers extends Members
 			else
 			{
 				$Member->setLeft();
+                error_log("======== Setting member to left since they missed a turn");
 				$needReset = 1;
 			}
-		}
-
-		// If anyone is removed from the game the minimum bet needs to be reset so someone else can take over the position.
-		if ($needReset == 1)
-		{
-			$Variant=libVariant::loadFromGameID($this->Game->id);
-			$Game = $Variant->processGame($this->Game->id);
-			$Game->resetMinimumBet();
 		}
 
 		/*
