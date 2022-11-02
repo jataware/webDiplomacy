@@ -435,7 +435,7 @@ const GameAssignment = (props) => {
                 <List
                   sx={{
                     overflowY: "auto",
-                    height: 100
+                    height: "inherit"
                   }}
                   component="div"
                   role="list">
