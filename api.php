@@ -639,8 +639,6 @@ class GetGamesStates extends ApiEntry {
 }
 
 /**
- * Internal dev create player, should not be called from APP itself
- * TODO test Admin and|or System priviledges only
  *
  */
 class CreatePlayer extends ApiEntry {
@@ -658,7 +656,7 @@ class CreatePlayer extends ApiEntry {
 		$newPassword = $this->getArgs()['password'];
 		$hashed_pwd = libAuth::pass_Hash($newPassword);
 		$sql_hashed_pwd = "UNHEX('".$hashed_pwd."')";
-		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$email."',50,'','','Yes',".time().",'English',".time().",0,".$sql_hashed_pwd.",'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,10,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
+		$sql = "INSERT INTO webdiplomacy.wD_Users (username,email,points,comment,homepage,hideEmail,timeJoined,locale,timeLastSessionEnded,lastMessageIDViewed,password,`type`,notifications,ChanceEngland,ChanceFrance,ChanceItaly,ChanceGermany,ChanceAustria,ChanceRussia,ChanceTurkey,muteReports,silenceID,cdCount,nmrCount,cdTakenCount,phaseCount,gameCount,reliabilityRating,deletedCDs,tempBan,emergencyPauseDate,yearlyPhaseCount,tempBanReason,optInFeatures,mobileCountryCode,mobileNumber,isMobileValidated,groupTag) VALUES ('".$uname."','".$email."',50,'','','Yes',".time().",'English',".time().",0,".$sql_hashed_pwd.",'User','',0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,0.142857,'Yes',NULL,0,0,0,0,0,50,0,NULL,0,0,NULL,0,NULL,NULL,0,NULL)";
 		$DB->sql_put($sql);
 		$DB->sql_put("COMMIT");
 		$sql = "select id from wD_Users where username = '".$uname."'";
@@ -667,20 +665,14 @@ class CreatePlayer extends ApiEntry {
 	}
 }
 
-// TODO test
-// TODO have util script to call and check this maybe from node
 class CrashedGames extends ApiEntry {
 	public function __construct() {
 		parent::__construct('game/crashedgames', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
 
-		//$params['userID'] = (int)$params['userID'];
-
 		global $DB;
 		$tabl = $DB->sql_tabl("Select id from wD_Games where processStatus = 'Crashed' and phase != \"Finished\";");
-
-		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
@@ -1482,6 +1474,9 @@ class JoinGame extends ApiEntry
 		$DB->sql_put("INSERT INTO wD_Members SET
 			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 0");
 		$Game->Members->load();
+
+        // TODO if game now has 7 members, set process time to now
+
 		$DB->sql_put("COMMIT");
 
 		return "done";
