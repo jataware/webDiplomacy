@@ -345,70 +345,112 @@ const GameAssignment = (props) => {
           flexWrap: "wrap"
         }}>
 
-          <Box>
-            <Typography
-              sx={{
-                color: grayColor,
-                marginTop: 2,
-              }}
-              variant="h6"
-              gutterBottom
-            >
-              Waiting Players
-            </Typography>
-
-            <Paper
-              sx={{
-                width: 200,
-                height: 250,
-                display: "flex",
-                flexDirection: "column"
-              }}>
-              <List
+          <Box className="waiting-players-admins-wrapper"
+          >
+            <Box>
+              <Typography
                 sx={{
-                  overflowY: "auto",
-                  height: 210
+                  color: grayColor,
+                  marginTop: 2,
                 }}
-                component="div"
-                role="list">
-                {unassignedPlayers.map(player => (
-                  <DraggableListItem
-                    onDrop={handleIndividualPlayerAdd}
-                    player={player}
-                    key={player.id}
-                  >
-                    {player.username} ({player.lastScore})
-                  </DraggableListItem>
-                ))}
-              </List>
-              <Button
-                onClick={assignAllPlayers}
-                disabled={isEmpty(unassignedPlayers)}
-                sx={{
-                  width: "100%",
-                  fontWeight: "bold",
-                  flex: 1,
-                  borderRadius: "1px",
-                  backgroundColor: purpleColor,
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: purpleColor,
-                    filter: "brightness(1.1)"
-                  }
-                }}
-                variant="contained"
-                color="info"
+                variant="h6"
+                gutterBottom
               >
-                Assign All
-                &nbsp;
-                <span
-                  style={{fontSize: "0.5rem"}}
-                >
-                  ({unassignedPlayers.length})
-                </span>
-              </Button>
+                Waiting Players
+              </Typography>
 
-            </Paper>
+              <Paper
+                sx={{
+                  width: 200,
+                  height: 200,
+                  display: "flex",
+                  flexDirection: "column"
+                }}>
+                <List
+                  sx={{
+                    overflowY: "auto",
+                    height: "inherit"
+                  }}
+                  component="div"
+                  role="list">
+                  {unassignedPlayers.map(player => (
+                    <DraggableListItem
+                      onDrop={handleIndividualPlayerAdd}
+                      player={player}
+                      key={player.id}
+                    >
+                      {player.username} ({player.lastScore})
+                    </DraggableListItem>
+                  ))}
+                </List>
+                <Button
+                  onClick={assignAllPlayers}
+                  disabled={isEmpty(unassignedPlayers)}
+                  sx={{
+                    width: "100%",
+                    fontWeight: "bold",
+                    flex: 1,
+                    borderRadius: "1px",
+                    backgroundColor: purpleColor,
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: purpleColor,
+                      filter: "brightness(1.1)"
+                    }
+                  }}
+                  variant="contained"
+                  color="info"
+                >
+                  Assign All
+                  &nbsp;
+                  <span
+                    style={{fontSize: "0.5rem"}}
+                  >
+                    ({unassignedPlayers.length})
+                  </span>
+                </Button>
+
+              </Paper>
+            </Box>
+
+            <Box>
+              <Typography
+                sx={{
+                  color: grayColor,
+                  marginTop: 2,
+                }}
+                variant="h6"
+                gutterBottom
+              >
+                Waiting Admins
+              </Typography>
+
+              <Paper
+                sx={{
+                  width: 200,
+                  height: 150,
+                  display: "flex",
+                  flexDirection: "column"
+                }}>
+                <List
+                  sx={{
+                    overflowY: "auto",
+                    height: 100
+                  }}
+                  component="div"
+                  role="list">
+                  {unassignedAdmins.map(player => (
+                    <DraggableListItem
+                      onDrop={handleIndividualPlayerAdd}
+                      player={player}
+                      key={player.id}
+                    >
+                      {player.username}
+                    </DraggableListItem>
+                  ))}
+                </List>
+              </Paper>
+            </Box>
           </Box>
 
           <ArrowRightIcon sx={{
@@ -458,51 +500,7 @@ const GameAssignment = (props) => {
           </Box>
         </Box>
 
-<Box sx={{
-          display: "flex",
-          flexWrap: "wrap"
-        }}>
-
-          <Box>
-            <Typography
-              sx={{
-                color: grayColor,
-                marginTop: 2,
-              }}
-              variant="h6"
-              gutterBottom
-            >
-              Waiting Admins
-            </Typography>
-
-            <Paper
-              sx={{
-                width: 200,
-                height: 250,
-                display: "flex",
-                flexDirection: "column"
-              }}>
-              <List
-                sx={{
-                  overflowY: "auto",
-                  height: 210
-                }}
-                component="div"
-                role="list">
-                {unassignedAdmins.map(player => (
-                  <DraggableListItem
-                    onDrop={handleIndividualPlayerAdd}
-                    player={player}
-                    key={player.id}
-                  >
-                    {player.username}
-                  </DraggableListItem>
-                ))}
-              </List>
-            </Paper>
-          </Box>
-        </Box>
-
+        
       </section>
     </DndProvider>
   );
