@@ -54,7 +54,7 @@ class processMembers extends Members
 	 */
 	function notifyGameExtended()
 	{
-		$this->sendToPlaying('No', l_t("Game phase extended due to missing orders by at least one country."));
+		$this->sendToPlaying('No', l_t("Game phase extended loadedind due to missing orders by at least one country."));
 	}
 
 	/**

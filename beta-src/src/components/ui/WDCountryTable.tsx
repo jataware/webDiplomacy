@@ -1,6 +1,8 @@
 import React, { Fragment } from "react";
 import { useWindowSize } from "react-use";
 
+import SadIcon from '@mui/icons-material/MoodBad';
+
 import BetIcon from "./icons/country-table/WDBet";
 import CentersIcon from "./icons/country-table/WDCenters";
 import { CountryTableData } from "../../interfaces";
@@ -89,17 +91,21 @@ const WDCountryTable: React.FC<WDCountryTableProps> = function ({
                     case "orderStatus":
                       return (
                         <td key={column.id} align={column.align}>
-                          {country.status !== "Left" ? (
-                            <WDOrderStatusIcon
-                              orderStatus={country.orderStatus}
-                              isHidden={
-                                country.orderStatus.Hidden &&
-                                country.countryID !== userCountry?.countryID
-                              }
-                            />
-                          ) : (
-                            <LeftGameIcon height={13} />
-                          )}
+                          {country.status == "Defeated" ? (
+                            <SadIcon color="error" />
+                          ) :
+                           country.status !== "Left" ? (
+                             <WDOrderStatusIcon
+                               orderStatus={country.orderStatus}
+                               isHidden={
+                               country.orderStatus.Hidden &&
+                               country.countryID !== userCountry?.countryID
+                               }
+                             />
+                           ) : (
+                             <LeftGameIcon height={13} />
+                           )
+                          }
                         </td>
                       );
                     case "excusedMissedTurns":

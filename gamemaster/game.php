@@ -531,10 +531,10 @@ class processGame extends Game
 	/**
 	 * Resets the phase timer to one phase time or 24 hours, which is shorter.
 	 */
-	protected function resetProcessTimeForMissedTurns() 
+	protected function resetProcessTimeForMissedTurns()
 	{
 		global $DB;
-	
+
 		$newProcessTime = time() + 1440*60;
 		$minPhaseMinutes = $this->getMinPhaseMinutes();
 		if ($minPhaseMinutes < 1440)
@@ -542,7 +542,9 @@ class processGame extends Game
 			$newProcessTime = time() + $minPhaseMinutes*60;
 		}
 
-		$this->processTime = $newProcessTime;
+		// $this->processTime = $newProcessTime;
+        // NOTE game extended by 6 seconds after missed turn | CD
+		$this->processTime = time() + 6;
 		$DB->sql_put("UPDATE wD_Games SET processTime = ".$this->processTime." WHERE id = ".$this->id);
 	}
 
@@ -671,17 +673,17 @@ class processGame extends Game
 			/*
 			 * There are NMRs by active members. The game will not be processed, but instead
 			 * the phase will be extended.
-			 * 
+			 *
 			 * All orders are unreadied, the phase time is reset and members are notified.
 			 */
-			$extendMessage = 'Game was extended due to at least 1 member failing to enter orders and having an excused missed turn available. This has un-readied all orders.';
-			
-			$this->Members->unreadyMembers();
+			$extendMessage = 'Game has extended loading due to at least 1 member failing to enter orders and getting set to Civil Disorder (CD).';
+
+			// $this->Members->unreadyMembers();
 			$this->resetProcessTimeForMissedTurns();
-			$this->Members->notifyGameExtended();
-			
+			// $this->Members->notifyGameExtended();
+
 			libGameMessage::send('Global','GameMaster', $extendMessage);
-		} 
+		}
 		else 
 		{
 			/*

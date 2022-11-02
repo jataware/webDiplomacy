@@ -51,7 +51,7 @@ const WDInfoPanel: React.FC<WDInfoPanelProps> = function ({
     <div>
       {intoCivilDisorder && (
         <div className="mt-4 ml-4 mr-3 p-3 text-center rounded-lg">
-          NOTE: One or more players have fallen into civil disorder due to moves missed. They'll auto-hold until all their units are eliminated.
+          NOTE: One or more players have fallen into civil disorder due to moves missed. They'll auto-hold until all their units are eliminated. This notice will be removed once they are defeated.
         </div>
       )}
       <WDCountryTable
