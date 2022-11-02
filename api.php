@@ -678,7 +678,7 @@ class CrashedGames extends ApiEntry {
 		//$params['userID'] = (int)$params['userID'];
 
 		global $DB;
-		$tabl = $DB->sql_tabl("Select id from wD_Games where processStatus = 'Crashed';");
+		$tabl = $DB->sql_tabl("Select id from wD_Games where processStatus = 'Crashed' and phase != \"Finished\";");
 
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 
