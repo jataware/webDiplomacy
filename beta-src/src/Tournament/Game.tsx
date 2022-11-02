@@ -42,11 +42,14 @@ const Game = ({game, displayProperties, style, hideActions}) => {
   };
 
   const endGame = () => {
-    if (endGameName === game.name) {
+    if (endGameName.replaceAll(" ", "") === game.name.replaceAll(" ", "")) {
       setLoadingEndGame(true); // Remove/reset this state once we refetch data on ~intervals
       getGameApiRequest("game/draw", {gameID: game.gameID});
       setConfirmEndGameOpen(false);
       setEndGameName("");
+    } else {
+      setEndGameName("No match");
+      console.log("names didnt match:", endGameName, game.name);
     }
   };
 
