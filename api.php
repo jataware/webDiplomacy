@@ -930,7 +930,6 @@ class ResetTournament extends ApiEntry {
 
 class WaitingPlayers extends ApiEntry {
 	public function __construct() {
-        // TODO allow others to request waiting players count?
 		parent::__construct('players/waiting', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
@@ -973,6 +972,52 @@ class WaitingPlayers extends ApiEntry {
 
 		return $return_array;
 	}
+}
+
+class WaitingAdmins extends ApiEntry {
+	public function __construct() {
+		parent::__construct('admins/waiting', 'GET', 'getStateOfAllGames', array(), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+
+		global $DB;
+
+		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id not in (select userID from jW_PlayerStates where state = 'Banned' or state = 'Cut') and type like '%Admin%';");
+
+		$return_array = array();
+		$ret = $DB->tabl_row($tabl);
+
+		while ($ret) {
+			$stats = $DB->sql_row("select count(*), sum(score) from wD_Members where userID = ".$ret[0]);
+			$gameCount = $stats[0];
+			$totalScore = $stats[1];
+			$SQL = "select * from wD_Members where userID = ".$ret[0]." and gameID = (select max(gameID) from wD_Members where userID = ".$ret[0].");";
+
+			$row = $DB->sql_hash($SQL);
+			$lastScore = 0;
+
+			if ($row) {
+				$lastScore = $row['score'];
+			}
+
+            $toPush = [
+                "id"=> intval($ret[0]),
+                "username" => $ret[1],
+                "type" => $ret[2],
+                "tempBan" => $ret[3],
+                "gameCount" => intval($gameCount[0]),
+                "lastScore" => intval($lastScore),
+                "totalScore" => intval($totalScore)
+            ];
+
+            array_push($return_array, $toPush);
+            $ret = $DB->tabl_row($tabl); //userid
+        }
+
+        $return_array = json_encode($return_array);
+
+        return $return_array;
+    }
 }
 
 class AllPlayers extends ApiEntry {
@@ -2689,6 +2734,7 @@ try {
 	// $api->load(new ProcessGameNow());
 	$api->load(new ScheduleProcess());
 	$api->load(new getUsername());
+	$api->load(new WaitingAdmins());
 
 	$jsonEncodedResponse = $api->run();
 	// Set JSON header.

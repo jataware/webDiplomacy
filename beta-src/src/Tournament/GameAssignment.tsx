@@ -25,7 +25,7 @@ import {
 } from "../utils/api";
 
 import { randomColors, grayColor, purpleColor } from ".";
-import { fetchWaitingPlayers, fetchWaitingGames, fetchAllGameDataforIDs } from "./endpoints";
+import { fetchWaitingPlayers, fetchWaitingAdmins, fetchWaitingGames, fetchAllGameDataforIDs } from "./endpoints";
 
 /**
  *
@@ -204,6 +204,7 @@ function formatWaitTime(secondsInput) {
 const GameAssignment = (props) => {
 
   const [unassignedPlayers, setUnassignedPlayers] = React.useState([]);
+  const [unassignedAdmins, setUnassignedAdmins] = React.useState([]);
 
   const [waitingGames, setWaitingGames] = React.useState([]);
 
@@ -219,6 +220,13 @@ const GameAssignment = (props) => {
                                         ["totalScore", "lastScore", "username"],
                                         ["desc", "desc", "asc"])
           setUnassignedPlayers(sortedPlayers);
+        }
+      });
+
+    fetchWaitingAdmins()
+      .then(response => {
+        if (response) {
+          setUnassignedAdmins(response);
         }
       });
 
@@ -449,6 +457,52 @@ const GameAssignment = (props) => {
             </Grid>
           </Box>
         </Box>
+
+<Box sx={{
+          display: "flex",
+          flexWrap: "wrap"
+        }}>
+
+          <Box>
+            <Typography
+              sx={{
+                color: grayColor,
+                marginTop: 2,
+              }}
+              variant="h6"
+              gutterBottom
+            >
+              Waiting Admins
+            </Typography>
+
+            <Paper
+              sx={{
+                width: 200,
+                height: 250,
+                display: "flex",
+                flexDirection: "column"
+              }}>
+              <List
+                sx={{
+                  overflowY: "auto",
+                  height: 210
+                }}
+                component="div"
+                role="list">
+                {unassignedAdmins.map(player => (
+                  <DraggableListItem
+                    onDrop={handleIndividualPlayerAdd}
+                    player={player}
+                    key={player.id}
+                  >
+                    {player.username}
+                  </DraggableListItem>
+                ))}
+              </List>
+            </Paper>
+          </Box>
+        </Box>
+
       </section>
     </DndProvider>
   );

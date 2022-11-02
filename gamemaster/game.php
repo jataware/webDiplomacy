@@ -649,7 +649,14 @@ class processGame extends Game
 		 * Handle the NMRs. This method does record 
 		 */
 		$this->Members->handleNMRs();
-			
+
+        if ($this->Members->withActiveNMRs()) {
+            require_once(l_r('lib/gamemessage.php'));
+            $MissedOrderMessage = 'At least one player missed their play deadline. They auto-held their units and have been placed in Civil Disorder.';
+
+            libGameMessage::send('Global','GameMaster', $missedOrderMessage);
+        }
+
  		// If all remaining players NMRed the same turn put all Left players back into the game and Draw.
 		if (count($this->Members->ByStatus['Playing']) == 0)
 		{

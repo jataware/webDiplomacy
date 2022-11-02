@@ -159,3 +159,22 @@ export async function fetchWaitingPlayers() {
     return [];
   }
 }
+
+export async function fetchWaitingAdmins() {
+  try {
+    const players = await getGameApiRequest(
+      "admins/waiting",
+      {hello: "world"}
+    );
+
+    if (!players.data) {
+      console.log('waiting admins data response empty, debug:', players);
+    }
+
+    return players.data ? players.data : [];
+
+  } catch(e) {
+    console.log('Request to fetch players failed, e:', e);
+    return [];
+  }
+}
