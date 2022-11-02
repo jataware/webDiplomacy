@@ -52,6 +52,7 @@ const WDMainController: React.FC = function ({ children }): React.ReactElement {
       );
 
       overviewChannel.bind("overview", async (content) => {
+        console.log("Overview msg, dispatch game overview refresh");
         dispatchFetchOverview();
       });
 
@@ -76,6 +77,7 @@ const WDMainController: React.FC = function ({ children }): React.ReactElement {
     noPhase || (overviewKey === statusKey && overviewKey === dataKey);
 
   if (needsGameOverview && !noPhase) {
+    console.log("needs game overview");
     dispatch(gameApiSliceActions.setNeedsGameOverview(false));
     dispatch(fetchGameOverview({ gameID: String(overview.gameID) }));
   }

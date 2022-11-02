@@ -3,6 +3,7 @@ import React, {
   FunctionComponent,
   useEffect,
   useState,
+  useRef
 } from "react";
 import { useKeyPressEvent, useWindowSize } from "react-use";
 import { Badge } from "@mui/material";
@@ -39,9 +40,11 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
   allCountries,
   userTableData,
 }: BottomRightProps): ReactElement {
+
   const { width } = useWindowSize();
   const popoverTrigger = React.useRef<HTMLDivElement>(null);
   const [currentTab, setCurrentTab] = useState(ModalViews.PRESS);
+
   const {
     ref: modalRef,
     isComponentVisible,
@@ -66,6 +69,7 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
   const maps = useAppSelector(gameMaps);
 
   const dispatch = useAppDispatch();
+
   const dispatchFetchMessages = () => {
     const { game } = store.getState();
     const { outstandingMessageRequests } = game;
@@ -80,10 +84,14 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
     }
   };
 
+  const pollRef = useRef(null); // In case websockets isn't available
+
   const countryID = user?.member.countryID;
   useEffect(() => {
     if (gameID === 0) return;
+
     dispatchFetchMessages();
+
     console.log("creating press socket");
     const channel = client.subscribe(
       `private-game${gameID}-country${user?.member.countryID}`,
@@ -104,10 +112,26 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
     channel.bind("pusher:subscription_error", (data) => {
       // eslint-disable-next-line no-console
       console.error("messages subscription error", data);
+
+      console.log("Calling fetch messages manually");
+
+      if (!pollRef.current) {
+        // Since websock connection failed, poll for mssages as fallback instead
+        pollRef.current = setInterval(dispatchFetchMessages, 5000);
+      }
+
     });
+
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    }
   }, [gameID, countryID]);
 
   const toggleControlModal = () => {
+    dispatchFetchMessages();
     setIsComponentVisible(!isComponentVisible);
   };
   const inputMessage = document.getElementById("user-msg");

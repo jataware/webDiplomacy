@@ -936,6 +936,7 @@ class WaitingPlayers extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		//$params['userID'] = (int)$params['userID'];
 		global $DB;
+        // TODO maybe pass flag to allow admins/moderators here too.
 		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id not in (select userID from jW_PlayerStates where state = 'Banned' or state = 'Cut') and type = 'User';");
 		//$Game->Members->ByUserID[$userID]->makeBet($bet);
 		$return_array = array();
@@ -1120,7 +1121,7 @@ class CreateGame extends ApiEntry
 			"Normal",             // missingPlayerPolicy
 			"draw-votes-hidden",  // drawType
 			0,                    // rrLimit, reliability rating. 0 is no limit?
-			1,                    // excusedMissedTurns // what we want
+			0,                    // excusedMissedTurns // We wish as nice-to-have for 1, but will use 0 for now
 			"Members"             // playerTypes
 		);
 		$DB->sql_put("COMMIT");
@@ -1434,7 +1435,7 @@ class JoinGame extends ApiEntry
 		// It is assumed this is being run within a transaction
 
 		$DB->sql_put("INSERT INTO wD_Members SET
-			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 1");
+			userID = ".(int)$args['userID'].", gameID = ".$gameID.", countryID=".$countryID.", orderStatus='None,Completed,Ready', bet = 0, timeLoggedIn = ".time().", excusedMissedTurns = 0");
 		$Game->Members->load();
 		$DB->sql_put("COMMIT");
 

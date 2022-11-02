@@ -90,6 +90,7 @@ const GamePlayerBox = ({gameId, gameName, players, timeRemaining}) => {
       }}
     >
       <Typography
+        title={gameId}
         sx={{
           color: color,
           fontSize: "1rem",
