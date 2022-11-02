@@ -592,7 +592,7 @@ class processMembers extends Members
 		global $DB;
 
 		// Don't count games against bots
-		if( $this->Game->playerTypes == 'MemberVsBots' ) return;
+		// if( $this->Game->playerTypes == 'MemberVsBots' ) return;
 
 		// enter a turn for each active player with orders
 		$DB->sql_put("INSERT INTO wD_TurnDate (gameID, userID, countryID, turn, turnDateTime, isInReliabilityPeriod)
@@ -675,9 +675,16 @@ class processMembers extends Members
 			else
 			{
 				$Member->setLeft();
-                error_log("======== Setting member to left since they missed a turn");
 				$needReset = 1;
 			}
+		}
+
+		// If anyone is removed from the game the minimum bet needs to be reset so someone else can take over the position.
+		if ($needReset == 1)
+		{
+			$Variant=libVariant::loadFromGameID($this->Game->id);
+			$Game = $Variant->processGame($this->Game->id);
+			// $Game->resetMinimumBet();
 		}
 
 		/*
@@ -706,83 +713,83 @@ class processMembers extends Members
 			list( $phaseMinutes ) = $DB->sql_row("SELECT phaseMinutes FROM wD_Games WHERE id = ".$this->Game->id);
 
 			// Check, if there was at last one other unexcused NMR during the last 72 hours. In this case, this NMR will not be sanctionized.
-			if( $samePeriodExcused )
-			{
-				$Member->send('No','No',$memberMsg." ".l_t("Due to other unexcused missed deadlines in the past 72 hours, this will only affect your Reliability Rating."));
-			}
+			// if( $samePeriodExcused )
+			// {
+			// 	$Member->send('No','No',$memberMsg." ".l_t("Due to other unexcused missed deadlines in the past 72 hours, this will only affect your Reliability Rating."));
+			// }
 
-			else if ($phaseMinutes < 61)
-			{
-				/*
-				 * This NMR might be sanctionized according to the monthly missed turn count for live games
-				 *
-				 * misses:
-				 *
-				 * 0-2: warning
-				 * 3+: 1-day temp ban
-				 */
-				$memberMsg.=" ".l_t("You missed %s ".(($liveMonthlyCount == 1)?"deadline":"deadlines"). " without an excuse during live games this past month.",$liveMonthlyCount);
+			// else if ($phaseMinutes < 61)
+			// {
+			// 	/*
+			// 	 * This NMR might be sanctionized according to the monthly missed turn count for live games
+			// 	 *
+			// 	 * misses:
+			// 	 *
+			// 	 * 0-2: warning
+			// 	 * 3+: 1-day temp ban
+			// 	 */
+			// 	$memberMsg.=" ".l_t("You missed %s ".(($liveMonthlyCount == 1)?"deadline":"deadlines"). " without an excuse during live games this past month.",$liveMonthlyCount);
 
-				// if( $liveMonthlyCount <= 2 )
-				// {
-				// 	$Member->send('No','No',$memberMsg." ".l_t("%s more ". ((3-$liveMonthlyCount == 1)?"miss":"misses"). " will impose a 1 day ban on you.", 3-$liveMonthlyCount));
-				// }
+			// 	if( $liveMonthlyCount <= 2 )
+			// 	{
+			// 		$Member->send('No','No',$memberMsg." ".l_t("%s more ". ((3-$liveMonthlyCount == 1)?"miss":"misses"). " will impose a 1 day ban on you.", 3-$liveMonthlyCount));
+			// 	}
 
-				// else
-				// {
-				// 	User::tempBanUser($Member->userID, 1, 'System', FALSE);
-				// 	$Member->send('No','No',$memberMsg." ".l_t("Due to your unreliable behavior in live games you will be prevented from joining games for a day."));
-				// }
-			}
+			// 	else
+			// 	{
+			// 		User::tempBanUser($Member->userID, 1, 'System', FALSE);
+			// 		$Member->send('No','No',$memberMsg." ".l_t("Due to your unreliable behavior in live games you will be prevented from joining games for a day."));
+			// 	}
+			// }
 
-			else
-			{
-				/*
-				 * This NMR might be sanctionized according to the yearly missed
-				 * turn count and the following table:
-				 *
-				 * misses:
-				 *
-				 * up to 3: warning
-				 * 4: 1-day temp ban
-				 * 5: 3-day
-				 * 6: 7-day
-				 * 7: 14-day
-				 * 8: 30-days
-				 * 9 or more: infinite (1 year)
-				 */
-				$memberMsg.=" ".l_t("You missed %s ".(($yearlyCount == 1)?"deadline":"deadlines"). " without an excuse during this year.",$yearlyCount);
+			// else
+			// {
+			// 	/*
+			// 	 * This NMR might be sanctionized according to the yearly missed
+			// 	 * turn count and the following table:
+			// 	 *
+			// 	 * misses:
+			// 	 *
+			// 	 * up to 3: warning
+			// 	 * 4: 1-day temp ban
+			// 	 * 5: 3-day
+			// 	 * 6: 7-day
+			// 	 * 7: 14-day
+			// 	 * 8: 30-days
+			// 	 * 9 or more: infinite (1 year)
+			// 	 */
+			// 	$memberMsg.=" ".l_t("You missed %s ".(($yearlyCount == 1)?"deadline":"deadlines"). " without an excuse during this year.",$yearlyCount);
 
-				// if( $yearlyCount <= 3 )
-				// {
-				// 	$Member->send('No','No',$memberMsg." ".l_t("%s more ". ((4-$yearlyCount == 1)?"miss":"misses"). " will impose a temporary ban on you.", 4-$yearlyCount));
-				// }
+			// 	if( $yearlyCount <= 3 )
+			// 	{
+			// 		$Member->send('No','No',$memberMsg." ".l_t("%s more ". ((4-$yearlyCount == 1)?"miss":"misses"). " will impose a temporary ban on you.", 4-$yearlyCount));
+			// 	}
 
-				// elseif( $yearlyCount >= 9)
-				// {
-				// 	User::tempBanUser($Member->userID, 365, 'System', FALSE);
-				// 	$Member->send('No','No',$memberMsg." ".l_t("Due to your unreliable behavior you will be prevented from joining games for a year. "
-				// 	. "Contact the Mods to lift the ban."));
-				// }
+			// 	elseif( $yearlyCount >= 9)
+			// 	{
+			// 		User::tempBanUser($Member->userID, 365, 'System', FALSE);
+			// 		$Member->send('No','No',$memberMsg." ".l_t("Due to your unreliable behavior you will be prevented from joining games for a year. "
+			// 		. "Contact the Mods to lift the ban."));
+			// 	}
 
-				// else
-				// {
-				// 	$days = 0;
-				// 	switch($yearlyCount)
-				// 	{
-				// 		case 4: $days = 1; break;
-				// 		case 5: $days = 3; break;
-				// 		case 6: $days = 7; break;
-				// 		case 7: $days = 14; break;
-				// 		case 8: $days = 30; break;
-				// 	}
+			// 	else
+			// 	{
+			// 		$days = 0;
+			// 		switch($yearlyCount)
+			// 		{
+			// 			case 4: $days = 1; break;
+			// 			case 5: $days = 3; break;
+			// 			case 6: $days = 7; break;
+			// 			case 7: $days = 14; break;
+			// 			case 8: $days = 30; break;
+			// 		}
 
-				// 	User::tempBanUser($Member->userID, $days,'System', FALSE);
-				// 	$Member->send('No','No',$memberMsg." ".l_t("You are temporarily banned from joining, rejoining, or making games for %s "
-				// 			. (($days==1)?"day":"days")	. ". Be more reliable!", $days));
-				// }
+			// 		User::tempBanUser($Member->userID, $days,'System', FALSE);
+			// 		$Member->send('No','No',$memberMsg." ".l_t("You are temporarily banned from joining, rejoining, or making games for %s "
+			// 				. (($days==1)?"day":"days")	. ". Be more reliable!", $days));
+			// 	}
 
-			}
+			// }
 		}
 	}
 

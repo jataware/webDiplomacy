@@ -265,6 +265,12 @@ class Member
 	 */
 	function markBackFromLeft()
 	{
+
+        error_log("===== objects/member.php:markBackFromLeft: called. Should not do anything ===");
+        // NOTE We can't allow users to come back form LEFT during tournaments.
+        // So we disable this function entirely.
+        return;
+
 		global $DB,$Game,$User;
 		
 		if ( $this->Game->Members->isTempBanned() )

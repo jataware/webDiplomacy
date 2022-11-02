@@ -461,8 +461,8 @@ class processGame extends Game
 		global $DB;
 
 		// Don't record NMRs for bot games
-		if( $this->playerTypes == 'MemberVsBots' ) return;
-	
+		// if ( $this->playerTypes == 'MemberVsBots' ) return;
+
 		// detect which players NMR this turn, exclude anyone who is left to avoid giving them unearned un-excused missed turns. 
 		$tabl = $DB->sql_tabl("SELECT m.id 
 				FROM wD_Members m 
@@ -470,7 +470,7 @@ class processGame extends Game
 					AND m.status='Playing'
 					AND EXISTS(SELECT o.id FROM wD_Orders o WHERE o.gameID = m.gameID AND o.countryID = m.countryID)
 					AND NOT m.orderStatus LIKE '%Saved%' AND NOT m.orderStatus LIKE '%Ready%' AND NOT m.orderStatus LIKE '%Completed%'");
-		
+
 		$nmrs = array();
 		while( list($id) = $DB->tabl_row($tabl) )
 			$nmrs[] = $id;
@@ -649,14 +649,7 @@ class processGame extends Game
 		 * Handle the NMRs. This method does record 
 		 */
 		$this->Members->handleNMRs();
-
-        if ($this->Members->withActiveNMRs()) {
-            require_once(l_r('lib/gamemessage.php'));
-            $MissedOrderMessage = 'At least one player missed their play deadline. They auto-held their units and have been placed in Civil Disorder.';
-
-            libGameMessage::send('Global','GameMaster', $missedOrderMessage);
-        }
-
+			
  		// If all remaining players NMRed the same turn put all Left players back into the game and Draw.
 		if (count($this->Members->ByStatus['Playing']) == 0)
 		{
@@ -672,24 +665,24 @@ class processGame extends Game
 
 			$this->setDrawn();
 		}
-		// elseif( $this->Members->withActiveNMRs() )
-		// {
-		// 	require_once(l_r('lib/gamemessage.php'));
-		// 	/*
-		// 	 * There are NMRs by active members. The game will not be processed, but instead
-		// 	 * the phase will be extended.
-		// 	 * 
-		// 	 * All orders are unreadied, the phase time is reset and members are notified.
-		// 	 */
-		// 	$extendMessage = 'Game was extended due to at least 1 member failing to enter orders and having an excused missed turn available. This has un-readied all orders.';
-
-		// 	$this->Members->unreadyMembers();
-		// 	$this->resetProcessTimeForMissedTurns();
-		// 	$this->Members->notifyGameExtended();
-
-		// 	libGameMessage::send('Global','GameMaster', $extendMessage);
-		// }
-		else
+		elseif( $this->Members->withActiveNMRs() )
+		{
+			require_once(l_r('lib/gamemessage.php'));
+			/*
+			 * There are NMRs by active members. The game will not be processed, but instead
+			 * the phase will be extended.
+			 * 
+			 * All orders are unreadied, the phase time is reset and members are notified.
+			 */
+			$extendMessage = 'Game was extended due to at least 1 member failing to enter orders and having an excused missed turn available. This has un-readied all orders.';
+			
+			$this->Members->unreadyMembers();
+			$this->resetProcessTimeForMissedTurns();
+			$this->Members->notifyGameExtended();
+			
+			libGameMessage::send('Global','GameMaster', $extendMessage);
+		} 
+		else 
 		{
 			/*
 			 * Except for wiping redundant TerrStatus data after a new turn and generating new orders
