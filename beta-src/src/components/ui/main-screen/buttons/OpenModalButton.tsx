@@ -84,6 +84,11 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
     }
   };
 
+  const pollingFetchMessages = () => {
+    console.log("Polling for new messages...");
+    dispatchFetchMessages();
+  };
+
   const pollRef = useRef(null); // In case websockets isn't available
 
   const countryID = user?.member.countryID;
@@ -97,6 +102,22 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
       `private-game${gameID}-country${user?.member.countryID}`,
     );
 
+    console.log("channel", channel);
+
+    if (!channel.subscribed) {
+      console.log("Calling fetch messages manually");
+
+      if (!pollRef.current) {
+        // Since websock connection failed, poll for mssages as fallback instead
+        pollRef.current = setInterval(pollingFetchMessages, 5000);
+      }
+    } else {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    }
+
     channel.bind("message", (message) => {
       // it would be ideal to push the message in the state manager but
       // I couldn't find an elegant way to do it with redux-toolkit
@@ -106,21 +127,21 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
 
     channel.bind("pusher:subscription_succeeded", () => {
       // eslint-disable-next-line no-console
+      console.log("pusher:subscription_succeeded");
       console.info("messages subscription succeeded");
     });
 
     channel.bind("pusher:subscription_error", (data) => {
       // eslint-disable-next-line no-console
       console.error("messages subscription error", data);
-
-      console.log("Calling fetch messages manually");
-
-      if (!pollRef.current) {
-        // Since websock connection failed, poll for mssages as fallback instead
-        pollRef.current = setInterval(dispatchFetchMessages, 5000);
-      }
-
+      console.log("pusher:subscription_error");
     });
+
+    /* channel.bind("pusher:subscription_count", (data) => {
+     *   console.log("pusher:subscription_count");
+     *   console.log(data.subscription_count);
+     *   console.log(channel.subscription_count);
+     * }); */
 
     return () => {
       if (pollRef.current) {
