@@ -21,6 +21,17 @@ import WDMapController from "../controllers/WDMapController";
 import getPhaseKey from "../../utils/state/getPhaseKey";
 import { ApplicationBar } from "./AuthCommon";
 
+// TODO redirect players out of here if they arent part of game, as useEffect, after 15 seconds
+/* 
+ * else if (currentGameID && !isUserInCurrentGame) {
+ *   console.log("======= Redirecting to Lobby in 15.");
+ *   // Wait 15 seconds at most (for return back to lobby, or redirect from lobby to game)
+ *   setTimeout(() => {
+ *     window.history.pushState(null, "", location.href.split("?")[0]);
+ *   }, 15000);
+ * }
+ * 
+ *  */
 const WDMain: React.FC = function (props): React.ReactElement {
   const { signOut } = props;
 

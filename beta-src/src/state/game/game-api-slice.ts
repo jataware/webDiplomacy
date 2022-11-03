@@ -268,12 +268,24 @@ export const fetchUsername = createAsyncThunk(
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    username: ""
+    username: "",
+    errorCode: null
   },
   extraReducers(builder) {
     builder
       .addCase(fetchUsername.fulfilled, (state, action) => {
+        state.errorCode = null;
         state.username = action.payload.username;
+      })
+      .addCase(fetchUsername.rejected, (state, action) => {
+
+        console.log("Failed to fetch username", action);
+
+        if (action?.error?.message && action.error.message.includes("401")) {
+          // Let's have the user log off. Either tell them or auto do it.
+          console.log("Username call not authorized");
+          state.errorCode = "401";
+        }
       })
       .addCase(fetchPlayerIsAdmin.fulfilled, (state, action) => {
         state.isAdmin = Boolean(action.payload);
@@ -548,6 +560,8 @@ export const isAdmin = ({ game: { admin } }: RootState) =>
 export const username = (state) => {
   return state.user.username;
 };
+
+export const userErrorCode = (state) => state.user.errorCode;
 
 export default gameApiSlice.reducer;
 

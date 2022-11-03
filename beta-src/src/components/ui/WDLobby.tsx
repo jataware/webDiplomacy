@@ -79,6 +79,7 @@ const dispatch = useAppDispatch();
       if (response?.payload) {
         setPlayerStatus(response.payload.state);
       } else {
+        // Probably related to 401s when backend doesn't know of the user
         console.warn("No player state payload. DEBUG.")
       }
       return null;

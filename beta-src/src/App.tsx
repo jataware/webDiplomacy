@@ -13,6 +13,8 @@ import {
 import TournamentDashboard from "./Tournament/Dashboard";
 import { ConsentPage } from "./Consent";
 
+import { SnackbarBus, GlobalNotificationsDialog } from "./components/ui/UserErrorNotifiers";
+
 function userAPIConsent(authUser) {
   const token = authUser.signInUserSession.idToken.jwtToken;
 
@@ -75,6 +77,7 @@ const AuthIRBHandler = ({user, signOut, children, acceptedConsent, setAcceptedCo
   if (!ready) {
     return (
       <div>
+        Loading...
       </div>
     );
   }
@@ -172,22 +175,25 @@ const App: React.FC = function (): React.ReactElement {
   }
 
   if (!Admin) {
-    const shouldRedirectToGameNow = userCurrentActiveGames.length && !currentGameID;
+
+    const shouldRedirectToGameNow = Boolean(userCurrentActiveGames.length && !currentGameID);
     const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
       .find(g => g.gameID == currentGameID));
 
-    const userActiveGame = userCurrentActiveGames.length && userCurrentActiveGames[0].gameID;
+    const userActiveGame = userCurrentActiveGames.length ? userCurrentActiveGames[0].gameID : null;
     const gameUrl = window.location.origin + window.location.pathname + `?gameID=${userActiveGame}`;
 
+    /* console.log("shouldRedirectToGameNow", shouldRedirectToGameNow);
+     * console.log("isUserInCurrentGame", isUserInCurrentGame);
+     * console.log("userActiveGame", userActiveGame)
+     * console.log("gameUrl", gameUrl); */
+
+    // We're in Lobby and should go our active game:
     if (shouldRedirectToGameNow) {
       // This works because user active games are where the player member is "Playing" and game isn't "Finished"
+      console.log("======= Redirecting to game now.");
       window.location.href = gameUrl;
       return null;
-    } else if (!isUserInCurrentGame && userCurrentActiveGames.length) {
-      // Wait 15 seconds at most (for return back to lobby, or redirect from lobby to game)
-      setTimeout(() => {
-        window.history.pushState(null, "", location.href.split("?")[0]);
-      }, 15000);
     }
   }
 
@@ -196,10 +202,10 @@ const App: React.FC = function (): React.ReactElement {
   if (adminDashboard && Admin) {
     MainElement = TournamentDashboard;
     // This works because users should only have 1 active game at a time during tournament:
-  } else if ((userCurrentActiveGames.length === 0 && !Admin) || (!currentGameID && Admin)) {
-     MainElement = WDLobby;
-  } else if (currentGameID) {
+  }  else if (currentGameID) {
     dispatch(loadGame(String(currentGameID)));
+  } else {
+    MainElement = WDLobby;
   }
 
   return (
@@ -223,6 +229,8 @@ const App: React.FC = function (): React.ReactElement {
           </AuthIRBHandler>
         )}
       </Authenticator>
+      <SnackbarBus />
+      <GlobalNotificationsDialog />
     </div>
   )
 };

@@ -2185,9 +2185,9 @@ class FinishGames extends ApiEntry {
 	public function run($userID, $permissionIsExplicit) {
 		global $DB;
 
-        error_log("Called finish games after turn 12 endpoint.");
+        error_log("Called finish games after turn 12+ endpoint.");
 
-		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 12;";
+		$SQL = "UPDATE wD_Games SET phase = 'Finished' where turn > 13;";
 		$DB->sql_put($SQL);
 		$DB->sql_put("COMMIT");
         // Updates remaining "Playing" members to "Survived". TODO What about if a player "won" (as in had highest score/units when we finished the game?)
@@ -2506,12 +2506,15 @@ class IdToken extends ApiAuth {
 
         $email = $decoded->email;
 
+        // For now log, incase that email special characters are causing issues...
+        // error_log($DB->escape($email));
+
         // TODO match to HASH instead
 		$rowUserID = $DB->sql_hash("SELECT id, type from wD_Users WHERE email = '".$DB->escape($email)."'");
 
 		if (!$rowUserID) {
             error_log('$$$$$$$$$$$ A token WITHOUT a user exists. ========= THIS IS BAD. ========== $$$$$$$$$$$$$$$$ ');
-			throw new ClientUnauthorizedException('No user associated to this token.');
+			throw new ClientUnauthorizedException('No user associated to this id token.');
         }
 		$this->userID = intval($rowUserID['id']);
 
