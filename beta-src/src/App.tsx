@@ -172,21 +172,21 @@ const App: React.FC = function (): React.ReactElement {
   }
 
   if (!Admin) {
-    const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
-
-    if (shouldRedirectToGame) {
-      // This works because user active games are where the player member is "Playing" and game isn't "Finished"
-      window.location.replace(window.location.origin + window.location.pathname + `?gameID=${userCurrentActiveGames[0].gameID}`);
-      return null;
-    }
-
+    const shouldRedirectToGameNow = userCurrentActiveGames.length && !currentGameID;
     const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
       .find(g => g.gameID == currentGameID));
 
-    if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
+    const userActiveGame = userCurrentActiveGames.length && userCurrentActiveGames[0].gameID;
+    const gameUrl = window.location.origin + window.location.pathname + `?gameID=${userActiveGame}`;
+
+    if (shouldRedirectToGameNow) {
+      // This works because user active games are where the player member is "Playing" and game isn't "Finished"
+      window.location.href = gameUrl;
+      return null;
+    } else if (!isUserInCurrentGame && userCurrentActiveGames.length) {
       // Wait 15 seconds at most (for return back to lobby, or redirect from lobby to game)
       setTimeout(() => {
-        window.location.replace(window.location.origin + window.location.pathname);
+        window.history.pushState(null, "", location.href.split("?")[0]);
       }, 15000);
     }
   }
