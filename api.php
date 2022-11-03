@@ -1152,9 +1152,9 @@ class CreateGame extends ApiEntry
             // TODO dont ever use nextPhase minutes. Unsubmitted orders turned into holds instead. next round auto-advances.
 			15,                    // nextPhaseMinutes. DEBUG. What does this mean? fall. maybe for fall? // TODO maybe check if there's a (unset)
 			-1,                    // phaseSwitchPeriod // TODO (check if there is an unset feature here.)
-			10,                    // joinPeriod . minimum is 5?
+			10,                   // joinPeriod . minimum is 5?
 			"no",                 // anon -> are anonymous users allowed?
-			"Regular",            // press
+			"RulebookPress",      // press
 			"Normal",             // missingPlayerPolicy
 			"draw-votes-hidden",  // drawType
 			0,                    // rrLimit, reliability rating. 0 is no limit?
