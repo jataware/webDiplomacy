@@ -1615,6 +1615,7 @@ class GetGameOverview extends ApiEntry {
 		$SQL = "SELECT userID, score from wD_Members WHERE gameID = ".$args['gameID'].";";
 		$tabl = $DB->sql_tabl($SQL);
 		$members = array();
+
 		while(list($memberID, $score) = $DB->tabl_row($tabl)) {
 			$members[$memberID] = $score;
 		}

@@ -30,6 +30,12 @@ const columns: readonly Column[] = [
     label: "Status",
     icon: WDCheckmarkIcon,
     align: "center",
+  },
+  {
+    id: "score",
+    label: "Game Score",
+    icon: BetIcon,
+    align: "center",
   }
 ];
 
@@ -73,7 +79,7 @@ const WDGameFinishedOverlay: React.FC<WDGameFinishedOverlayProps> = function ({
                           : country.power.toUpperCase();
                       className = `text-${country.power.toLowerCase()}-main font-bold`;
                       break;
-                    case "pointsWon":
+                    case "score":
                       value = `${country[column.id] || "-"}`;
                       break;
                     default:
