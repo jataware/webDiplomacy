@@ -174,22 +174,21 @@ const App: React.FC = function (): React.ReactElement {
   if (!Admin) {
     const shouldRedirectToGame = userCurrentActiveGames.length && !currentGameID;
 
-    /* console.log("window.location", window.location); */
-
     if (shouldRedirectToGame) {
+      // This works because user active games are where the player member is "Playing" and game isn't "Finished"
       window.location.replace(window.location.origin + window.location.pathname + `?gameID=${userCurrentActiveGames[0].gameID}`);
       return null;
     }
 
-    // TODO Test this out and see current behavior
-    /* const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
-     *   .find(g => g.gameID == currentGameID));
+    const isUserInCurrentGame = Boolean(currentGameID && userCurrentActiveGames.length && userCurrentActiveGames
+      .find(g => g.gameID == currentGameID));
 
-     * // TODO debug this next redirect. It might be redirecting non-admin users out of the Game is finished screen.
-     * if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
-     *   window.location.replace(window.location.origin + window.location.pathname);
-     *   return null;
-     * } */
+    if (!isUserInCurrentGame && userCurrentActiveGames.length && currentGameID) {
+      // Wait 15 seconds at most (for return back to lobby, or redirect from lobby to game)
+      setTimeout(() => {
+        window.location.replace(window.location.origin + window.location.pathname);
+      }, 15000);
+    }
   }
 
   let MainElement = WDMain;
