@@ -35,11 +35,9 @@ import {
   getGameApiRequest
 } from "../../utils/api";
 
-
 import clipboardImg from "../../assets/png/clipboard-3.png";
-/* import discordLogoSvg from "../../assets/svg/discord.svg"; */
-import ph1 from "../../assets/png/ph1.png";
-import ph2 from "../../assets/png/ph2.png";
+import guide1 from "../../assets/gif/Ani_12.gif";
+import guide2 from "../../assets/gif/Ani_13.gif";
 import discordLogoSvgFull from "../../assets/svg/discord-logo-blue.svg";
 
 const RedHeading = ({sx={}, ...props}) => {
@@ -234,8 +232,8 @@ const ResearchInterfaceOverview = (props) => {
             sx={{maxWidth: "50%"}}
             lg={6}>
             <ScreenshotCaptionBox
-              image={ph1}
-              text="We have customized your message interface so that it is easy to share your strategies with out research team! Just annotate your outgoing messages and click 'send!'"
+              image={guide2}
+              text="We have customized your message interface so that it is easy to share your strategies with our research team! Just annotate your outgoing messages and click 'send!'"
             />
           </Grid>
           <Grid
@@ -244,7 +242,7 @@ const ResearchInterfaceOverview = (props) => {
             xs={6}
             lg={6}>
             <ScreenshotCaptionBox
-              image={ph2}
+              image={guide1}
               text="Use our custom interface to keep track of your oponent's deceit! You can easily mark incoming messages as 'Deceptive' or 'Trustworthy'. Use this feature to keep track of who can be trusted!"
             />
           </Grid>
@@ -385,8 +383,8 @@ const Lobby = ({signOut}) => {
   React.useEffect(() => {
 
     intervalRef2.current = setInterval(() => {
-      setSeconds(seconds => seconds + 10);
-    }, 1000);
+      setSeconds(seconds => seconds + 5);
+    }, 2000);
 
     return () => {
       clearInterval(intervalRef2.current);

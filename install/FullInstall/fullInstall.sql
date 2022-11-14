@@ -1973,9 +1973,6 @@ ON DUPLICATE KEY UPDATE
 	day6hour23 = day6hour23 + IF(d=6 AND h=23,c,0),
   totalHits = totalHits + c
 	;
--- ADD COLUMN `mobileCountryCode` MEDIUMINT UNSIGNED NULL DEFAULT NULL AFTER `optInFeatures`,
--- ADD COLUMN `mobileNumber` BIGINT UNSIGNED NULL DEFAULT NULL AFTER `mobileCountryCode`,
--- ADD COLUMN `isMobileValidated` BIT NOT NULL DEFAULT 0 AFTER `mobileNumber`;
 
 ALTER TABLE `wD_GameMessages` ADD `intentDeceive` VARCHAR(6);
 ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` VARCHAR(6);
