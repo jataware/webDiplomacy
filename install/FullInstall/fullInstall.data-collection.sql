@@ -1969,9 +1969,6 @@ ON DUPLICATE KEY UPDATE
 	day6hour23 = day6hour23 + IF(d=6 AND h=23,c,0),
   totalHits = totalHits + c
 	;
--- ADD COLUMN `mobileCountryCode` MEDIUMINT UNSIGNED NULL DEFAULT NULL AFTER `optInFeatures`,
--- ADD COLUMN `mobileNumber` BIGINT UNSIGNED NULL DEFAULT NULL AFTER `mobileCountryCode`,
--- ADD COLUMN `isMobileValidated` BIT NOT NULL DEFAULT 0 AFTER `mobileNumber`;
 
 ALTER TABLE `wD_GameMessages` ADD `intentDeceive` VARCHAR(6);
 ALTER TABLE `wD_GameMessages` ADD `suspectedIncomingDeception` VARCHAR(6);
@@ -1985,3 +1982,15 @@ ALTER TABLE jW_PlayerStates ADD PRIMARY KEY (userID);
 
 ALTER TABLE wD_Members
   ADD score INT;
+
+CREATE TABLE `wD_API_Sessions`
+  (
+    `userID` mediumint(8) unsigned NOT NULL,
+    `lastRequest` int(11) unsigned NOT NULL,
+    `ip` varchar(15) NOT NULL,
+    `userAgent` varchar(30) NOT NULL,
+    PRIMARY KEY (`userID`),
+    KEY `lastrequesttime` (`lastRequest`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+UPDATE `wD_Misc` SET `value` = '173' WHERE `name` = 'Version';

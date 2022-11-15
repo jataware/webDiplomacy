@@ -351,7 +351,44 @@ class ListActiveGamesForUser extends ApiEntry {
 		parent::__construct('players/active_games', 'GET', '', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
+
+		global $DB;
+
 		$activeGames = new \webdiplomacy_api\ActiveGames($userID);
+
+        $ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+
+        if ( isset($_SERVER['HTTP_USER_AGENT']) )
+			$userAgent = $_SERVER['HTTP_USER_AGENT'];
+		else
+			$userAgent = '0000';
+
+        $lastRequest = time();
+
+        // Check if theres an api session entry for users
+        $SQL = 'SELECT userID FROM wD_API_Sessions WHERE userID = '.$userID;
+		$preExistingEntry = $DB->sql_row($SQL);
+
+        if (isset($preExistingEntry[0])) {
+            // Already a user entry, update it
+            // If user session already exists, update it
+            $result = $DB->sql_put_safe(
+                "UPDATE wD_API_Sessions
+                   SET lastRequest = ?,
+                       ip = ?,
+                       userAgent = ?
+                   WHERE userID = ?;",
+                [$lastRequest, $ip, $userAgent, $userID],
+                "issi");
+        } else {
+            $result = $DB->sql_put_safe(
+                "INSERT INTO wD_API_Sessions
+                   (userID, lastRequest, ip, userAgent)
+                   VALUES (?,?,?,?);",
+                [$userID, $lastRequest, $ip, $userAgent],
+                "iiss");
+        }
+
 		return $activeGames->toJson();
 	}
 }
@@ -925,11 +962,25 @@ class WaitingPlayers extends ApiEntry {
 		parent::__construct('players/waiting', 'GET', 'getStateOfAllGames', array(), false);
 	}
 	public function run($userID, $permissionIsExplicit) {
-		//$params['userID'] = (int)$params['userID'];
 		global $DB;
-        // TODO maybe pass flag to allow admins/moderators here too.
-		$tabl = $DB->sql_tabl("Select id, username, type, tempBan from wD_Users where id not in (Select userID from wD_Members where status = 'Playing') and id not in (select userID from jW_PlayerStates where state = 'Banned' or state = 'Cut') and type = 'User';");
-		//$Game->Members->ByUserID[$userID]->makeBet($bet);
+
+		$tabl = $DB->sql_tabl(
+            "SELECT
+               u.id, u.username, u.type, u.tempBan, ps.state, aps.lastRequest
+             FROM wD_Users AS u
+             LEFT JOIN jW_PlayerStates AS ps
+               ON u.id = ps.userID
+             LEFT JOIN wD_API_Sessions AS aps
+               ON u.id = aps.userID
+	         WHERE
+               ps.state NOT IN ('Banned', 'Cut') OR ps.state IS NULL
+	           AND u.id NOT IN
+                 (SELECT userID FROM wD_Members WHERE status = 'Playing')
+               AND aps.lastRequest > UNIX_TIMESTAMP(NOW() - INTERVAL 2 MINUTE)
+         	   AND u.type = 'User';
+            "
+        );
+
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
 
