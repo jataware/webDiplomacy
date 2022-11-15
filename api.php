@@ -388,6 +388,7 @@ class ListActiveGamesForUser extends ApiEntry {
                 [$userID, $lastRequest, $ip, $userAgent],
                 "iiss");
         }
+		$DB->sql_put("COMMIT");
 
 		return $activeGames->toJson();
 	}
