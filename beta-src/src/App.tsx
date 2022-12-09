@@ -120,9 +120,11 @@ const App: React.FC = function (): React.ReactElement {
   const intervalRef = React.useRef();
 
   function pollGameData() {
-    dispatch(fetchPlayerActiveGames());
-    dispatch(fetchPlayerIsAdmin());
-    dispatch(fetchUsername());
+    return [
+      dispatch(fetchPlayerActiveGames()),
+      dispatch(fetchPlayerIsAdmin()),
+      dispatch(fetchUsername()),
+    ]
   }
 
   React.useEffect(() => {
@@ -132,11 +134,7 @@ const App: React.FC = function (): React.ReactElement {
     let isMounted = true
 
     setLoading(true);
-    let promises = [
-      dispatch(fetchPlayerActiveGames()),
-      dispatch(fetchPlayerIsAdmin()),
-      dispatch(fetchUsername())
-    ];
+    let promises = pollGameData();
 
     Promise
       .all(promises)
@@ -146,7 +144,7 @@ const App: React.FC = function (): React.ReactElement {
         }
       })
     .catch((e) => {
-      // TODO Snackbar
+      // TODO Snackbar (toast) describing the error?
     });
 
     if (!adminDashboard) {
@@ -183,16 +181,11 @@ const App: React.FC = function (): React.ReactElement {
     const userActiveGame = userCurrentActiveGames.length ? userCurrentActiveGames[0].gameID : null;
     const gameUrl = window.location.origin + window.location.pathname + `?gameID=${userActiveGame}`;
 
-    /* console.log("shouldRedirectToGameNow", shouldRedirectToGameNow);
-     * console.log("isUserInCurrentGame", isUserInCurrentGame);
-     * console.log("userActiveGame", userActiveGame)
-     * console.log("gameUrl", gameUrl); */
-
     // We're in Lobby and should go our active game:
     if (shouldRedirectToGameNow) {
       // This works because user active games are where the player member is "Playing" and game isn't "Finished"
       console.log("======= Redirecting to game now.");
-      window.location.href = gameUrl;
+      window.location = gameUrl;
       return null;
     }
   }
