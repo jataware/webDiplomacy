@@ -60,9 +60,11 @@ else
 
   echo "Start gamemaster"
   while true; do
-    echo "Running gamemaster tick every 5"
-    find . -name "cache" -exec chown -R www-data:www-data {} \;
+    echo "\n===== Running gamemaster tick every 5\n"
+    id;
+    # gameMasterSecret='' QUERY_STRING='' php -f ./gamemaster.php;
     gameMasterSecret='' QUERY_STRING='' php -f ./gamemaster.php > /dev/null 2>&1
+    # chown -R www-data:www-data cache;
     sleep 5
     echo -n "."
   done

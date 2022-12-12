@@ -65,6 +65,7 @@ services:
     working_dir: /application
     volumes:
       - "./:/application"
+      - dbdata:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=mypassword123
       - MYSQL_DATABASE=webdiplomacy
@@ -99,7 +100,7 @@ services:
     volumes:
       - "./:/application"
       - "./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini"
-    command: /bin/sh -c "install/gamemaster-entrypoint.sh > /application/gamemaster-entrypoint.txt"
+    command: /bin/sh -c "install/gamemaster-entrypoint.sh"
     depends_on:
       - "mariadb"
     #environment:
@@ -111,6 +112,8 @@ services:
   webserver:
       image: 'nginx:alpine'
       working_dir: /application
+      depends_on:
+        - "php-fpm"
       volumes:
           - './:/application'
           - './phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf'
@@ -147,3 +150,6 @@ services:
       - API_KEY_USER_05=bot5
       - API_KEY_USER_06=bot6
       - API_KEY_USER_07=bot7
+
+volumes:
+  dbdata:
