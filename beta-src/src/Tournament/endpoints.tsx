@@ -67,13 +67,13 @@ export async function fetchWaitingGames() {
     );
 
     if (!waitingGames.data) {
-      console.log('waiting games data rsponse empty, debug:', waitingGames);
+      console.log('waiting games data response empty, debug:', waitingGames);
     }
 
     return waitingGames.data ? waitingGames.data : []; // Array with IDs for all ongoing games
 
   } catch(e) {
-    console.log('Request to fetch ongoinggames failed, e:', e);
+    console.log('Request to fetch waiting games failed, e:', e);
     return [];
   }
 }
@@ -89,11 +89,15 @@ export async function fetchGameOverview(ID) {
       {gameID: ID}
     );
 
-    return overview.data.data;
+    if (overview.data.data) {
+      return overview.data.data;
+    }
+
+    throw new Error("Response does not contain data. Possibly an error with a HTTP 200.")
 
   } catch(e) {
-    console.log('Request to fetch ongoinggames failed, e:', e);
-    return {};
+    console.log('Request to fetch game overview failed, e:', e);
+    return null;
   }
 
 }
@@ -130,13 +134,21 @@ export async function fetchAllGameDataforIDs(IDs=[]) {
   try {
 
     const result = await Promise
-      .all(IDs.map(fetchGameOverview));
+      .all(IDs.map(i => {
+        const response = fetchGameOverview(i);
+        if (!response) {
+          console.log("no valid response for game overview..");
+          throw new Error(`Failed to fetch game overview with id: ${i}`);
+        } else {
+          return response;
+        }
+      }));
 
     return result;
 
   } catch(e) {
     console.log('Request to fetch all game data by IDs failed, e:', e);
-    return [];
+    return null;
   }
 
 }

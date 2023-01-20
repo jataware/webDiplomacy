@@ -2,6 +2,7 @@ import * as React from "react";
 import { styled } from "@mui/material/styles";
 import isEmpty from "lodash/isEmpty";
 import random from "lodash/random";
+import identity from "lodash/identity";
 import orderBy from "lodash/orderBy";
 
 import { useDrag, useDrop, DndProvider } from 'react-dnd';
@@ -235,8 +236,9 @@ const GameAssignment = (props) => {
 
         fetchAllGameDataforIDs(waitingGameIDs)
           .then(games => {
-            if (games) {
-              setWaitingGames(games);
+
+            if (games && !isEmpty(games)) {
+              setWaitingGames(games.filter(identity));
             }
           });
       });

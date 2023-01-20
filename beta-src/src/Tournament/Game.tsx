@@ -7,6 +7,9 @@ import IconButton from "@mui/material/IconButton";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import EyeIcon from "@mui/icons-material/RemoveRedEye";
 import EndIcon from "@mui/icons-material/DoDisturbOn";
+import PauseIcon from '@mui/icons-material/Pause';
+import UnpauseIcon from '@mui/icons-material/Games';
+import ChatIcon from '@mui/icons-material/Chat';
 import { useAppDispatch, useAppSelector } from "../state/hooks";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -29,8 +32,10 @@ const Game = ({game, displayProperties, style, hideActions}) => {
   const [loadingEndGame, setLoadingEndGame] = React.useState(false);
 
   const [confirmEndGameOpen, setConfirmEndGameOpen] = React.useState(false);
-
   const [endGameName, setEndGameName] = React.useState("");
+
+  const [pauseGameOpen, setPauseGameOpen] = React.useState(false);
+  const [pauseGameReason, setPauseGameReason] = React.useState("");
 
   const observeGame = () => {
     const gameUrl = `?gameID=${game.gameID}`;
@@ -41,21 +46,33 @@ const Game = ({game, displayProperties, style, hideActions}) => {
     setConfirmEndGameOpen(true);
   };
 
+  const startPauseGame = () => {
+    setPauseGameOpen(true);
+  };
+
+  const pauseGame = () => {
+    setLoadingEndGame(true);
+    const response = getGameApiRequest("game/togglePause", {gameID: game.gameID, reason: pauseGameReason});
+    setPauseGameOpen(false);
+    setPauseGameReason("");
+    response.finally(() => {setLoadingEndGame(false);});
+  };
+
   const endGame = () => {
     if (endGameName.replaceAll(" ", "") === game.name.replaceAll(" ", "")) {
-      setLoadingEndGame(true); // Remove/reset this state once we refetch data on ~intervals
+      setLoadingEndGame(true);
       getGameApiRequest("game/draw", {gameID: game.gameID});
       setConfirmEndGameOpen(false);
       setEndGameName("");
     } else {
       setEndGameName("No match");
-      console.log("names didnt match:", endGameName, game.name);
+      console.log("Names didnt match:", endGameName, game.name);
     }
   };
 
   const downloadMessages = () => {
     getGameApiRequest("game/messages", {gameID: game.gameID}).then(results => {
-      console.log('result', results);
+      /* console.log('result', results); */
       const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
         JSON.stringify(results)
       )}`;
@@ -145,6 +162,14 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                 </PurpleButton>
               &nbsp;&nbsp;
               <BaseButton
+                onClick={startPauseGame}
+                color="warning"
+                variant="outlined"
+              >
+                {game.processStatus == "Paused" ? "Unpause" : "Pause"}
+              </BaseButton>
+              &nbsp;&nbsp;
+              <BaseButton
                 onClick={startEndGame}
                 color="warning"
                 variant="outlined"
@@ -161,6 +186,21 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                   }}>
                   <EyeIcon />
                 </IconButton>
+
+                <IconButton
+                  onClick={startPauseGame}
+                  color="warning"
+                >
+                  {game.processStatus == "Paused" ? <UnpauseIcon /> : <PauseIcon />}
+                </IconButton>
+
+                <IconButton
+                  onClick={downloadMessages}
+                  color="warning"
+                >
+                  <ChatIcon />
+                </IconButton>
+
                 <IconButton
                   onClick={startEndGame}
                   color="warning"
@@ -210,6 +250,50 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                 </Box>
               </DialogContent>
             </Dialog>
+
+            <Dialog
+              open={pauseGameOpen}
+              onClose={() => { setPauseGameOpen(false); setPauseGameReason(""); }}
+              fullWidth
+              sx={{
+                "& .MuiDialog-paper": {
+                  maxWidth: 500,
+                  border: "2px solid #000",
+                  p: 1
+                },
+              }}
+            >
+              <DialogTitle>
+                {game.processStatus == "Paused" ? "Unpause" : "Pause"} Game
+              </DialogTitle>
+              <DialogContent>
+                <Typography
+                  variant="body1"
+                  gutterBottom>
+                  Please enter a reason to inform players for pausing/unpausing the game.
+                </Typography>
+                <Box>
+                  <br />
+                  <TextField
+                    sx={{width: "90%"}}
+                    autoFocus
+                    placeholder="Enter reason here"
+                    label="Toggle Game Pause Reason"
+                    variant="outlined"
+                    value={pauseGameReason}
+                    onChange={e => setPauseGameReason(e.target.value)}
+                  />
+                  <br />
+                  <br />
+                  <PurpleButton
+                    onClick={pauseGame}
+                    variant="outlined">
+                    {game.processStatus == "Paused" ? "Unpause" : "Pause"}
+                  </PurpleButton>
+                </Box>
+              </DialogContent>
+            </Dialog>
+
           </Box>
         )}
       </ul>

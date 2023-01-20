@@ -726,6 +726,30 @@ class CrashedGames extends ApiEntry {
 	}
 }
 
+class AdminTogglePauseGame extends ApiEntry
+{
+    public function __construct()
+    {
+        parent::__construct('game/togglePause', 'GET', 'getStateOfAllGames', array('gameID', 'reason'), false);
+    }
+    public function run($userID, $permissionIsExplicit)
+    {
+        global $DB;
+		$args = $this->getArgs();
+		$gameID = (int)$args['gameID'];
+		$reasonMessage = $args['reason'];
+        require_once(l_r('gamemaster/game.php'));
+
+		$DB->sql_put("BEGIN");
+
+		$Variant=libVariant::loadFromGameID($gameID);
+		$Game = $Variant->processGame($gameID);
+		$Game->togglePause($reasonMessage);
+		$DB->sql_put("COMMIT");
+		return "Game Pause Toggled";
+    }
+}
+
 // TODO node script that can call this?
 class UncrashGame extends ApiEntry
 {
@@ -2779,6 +2803,9 @@ try {
 	$api->load(new GetGameMessages());
 	$api->load(new LeaveGame());
 	$api->load(new ScoreGame());
+
+	$api->load(new AdminTogglePauseGame());
+
 	$api->load(new ScoreAllGames());
 	$api->load(new TotalPlayerScore());
 	$api->load(new FinishGames());

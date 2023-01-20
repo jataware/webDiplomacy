@@ -1273,6 +1273,8 @@ class processGame extends Game
 
 		// Any votes to toggle the pause are now void
 		$DB->sql_put("UPDATE wD_Members SET votes = REPLACE(votes,'Pause','') WHERE gameID = ".$this->id);
+
+        libGameMessage::send('Global','Tournament Admin', $customMessage, $this->id);
 	}
 
 	/**
