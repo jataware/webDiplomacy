@@ -113,9 +113,6 @@ const dispatch = useAppDispatch();
     );
   }
 
-  // TODO test
-  console.log("player status", playerStatus);
-
   const displayablePlayerStatus = ["Cut", "Banned"].includes(playerStatus) ? playerStatus : "Queued";
 
   return (
@@ -365,31 +362,31 @@ const Lobby = ({signOut}) => {
   const [forcedPanel, setForcedPanel] = React.useState(false);
   const [seconds, setSeconds] = React.useState(0);
 
-  const intervalRef2 = React.useRef();
+  // const intervalRef2 = React.useRef();
 
-  const forceNextPanel = () => {
-    setForcedPanel(true);
-    setPanelNumber(!panelNumber);
-  };
+  // const forceNextPanel = () => {
+  //   setForcedPanel(true);
+  //   setPanelNumber(!panelNumber);
+  // };
 
-  if (forcedPanel) {
-    setSeconds(0);
-    setForcedPanel(false);
-  } else if (seconds >= 100) {
-    setSeconds(0);
-    setPanelNumber(!panelNumber);
-  }
+  // if (forcedPanel) {
+  //   setSeconds(0);
+  //   setForcedPanel(false);
+  // } else if (seconds >= 100) {
+  //   setSeconds(0);
+  //   setPanelNumber(!panelNumber);
+  // }
 
-  React.useEffect(() => {
+  // React.useEffect(() => {
 
-    intervalRef2.current = setInterval(() => {
-      setSeconds(seconds => seconds + 5);
-    }, 2000);
+  //   intervalRef2.current = setInterval(() => {
+  //     setSeconds(seconds => seconds + 5);
+  //   }, 2000);
 
-    return () => {
-      clearInterval(intervalRef2.current);
-    };
-  }, []);
+  //   return () => {
+  //     clearInterval(intervalRef2.current);
+  //   };
+  // }, []);
 
   return (
     <div style={{height: "100vh"}}>
@@ -462,33 +459,10 @@ const Lobby = ({signOut}) => {
                   width: "100%",
                   margin: "auto",
                   display: "flex",
-                  justifyContent: "space-between",
+                  justifyContent: "flex-end",
                   alignItems: "center"
                 }}
               >
-                <Box sx={{
-                  mt: 1,
-                  width: "50%"
-                }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={seconds}
-                  />
-                  <br />
-                  <div style={{margin: "auto", textAlign: "center"}}>
-                    {panelNumber ? 1 : 2} / 2
-                    &nbsp;
-                    <span
-                      onClick={forceNextPanel}
-                      style={{
-                        cursor: "pointer",
-                        fontWeight: "bold"
-                      }}>
-                       &gt;
-                    </span>
-                  </div>
-                </Box>
-
                 <Button
                   sx={{marginTop: 1}}
                   component="a"
@@ -506,3 +480,26 @@ const Lobby = ({signOut}) => {
 };
 
 export default Lobby;
+
+// <Box sx={{
+//        mt: 1,
+//        width: "50%"
+//      }}>
+//   <LinearProgress
+//     variant="determinate"
+//     value={seconds}
+//   />
+//   <br />
+//   <div style={{margin: "auto", textAlign: "center"}}>
+//     {panelNumber ? 1 : 2} / 2
+//     &nbsp;
+//     <span
+//       onClick={forceNextPanel}
+//       style={{
+//         cursor: "pointer",
+//         fontWeight: "bold"
+//       }}>
+//       &gt;
+//     </span>
+//   </div>
+// </Box>

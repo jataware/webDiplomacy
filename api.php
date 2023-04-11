@@ -1223,7 +1223,7 @@ class CreateGame extends ApiEntry
 			"",                   // password
 			1,                    // bet
 			"Unranked",           // potType
-			15,                   // phaseMinutes
+			10,                   // phaseMinutes
 			5,                    // phaseMinutesRB Retreats | Builds
             // TODO dont ever use nextPhase minutes. Unsubmitted orders turned into holds instead. next round auto-advances.
 			15,                    // nextPhaseMinutes. DEBUG. What does this mean? fall. maybe for fall? // TODO maybe check if there's a (unset)
