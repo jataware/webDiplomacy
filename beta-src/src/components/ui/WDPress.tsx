@@ -42,7 +42,7 @@ const WDPress: FC<WDPressProps> = function ({
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user, gameID, pressType, phase } = useAppSelector(gameOverview);
+  const { user, gameID, pressType, phase, processStatus } = useAppSelector(gameOverview);
   const messages = useAppSelector(({ game }) => game.messages.messages);
   const countryIDSelected = useAppSelector(
     ({ game }) => game.messages.countryIDSelected,
@@ -210,7 +210,8 @@ const WDPress: FC<WDPressProps> = function ({
     pressType === "Regular" ||
     (pressType === "PublicPressOnly" && countryIDSelected === 0) ||
     (pressType === "RulebookPress" &&
-      ["Diplomacy"].includes(phase));
+      ["Diplomacy"].includes(phase)) &&
+      processStatus.toLowerCase() !== "paused"
 
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
