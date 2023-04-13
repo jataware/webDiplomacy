@@ -470,7 +470,27 @@ class Game
 		$row = $DB->sql_row('SELECT * from wD_WatchedGames WHERE gameID='.$this->id.' AND userID=' . $User->id);
 		return $row != false;
 	}
-	function watch() 
+
+    function getPreprocessing() {
+        global $DB;
+
+		$row = $DB->sql_row('SELECT preprocessing from wD_Games WHERE id='.$this->id);
+		return $row[0];
+    }
+
+    function preprocessing($toggle=true) {
+        global $DB;
+
+        $id = $this->id;
+
+        if ($toggle) {
+            $DB->sql_put("UPDATE wD_Games SET processStatus='Paused', pauseTimeRemaining=2, processTime=NULL, preprocessing=1 WHERE id=".$id);
+        } else {
+            $DB->sql_put("UPDATE wD_Games SET processStatus='Not-processing', processTime=".time().", pauseTimeRemaining=NULL, preprocessing=NULL WHERE id=".$id);
+        }
+    }
+
+	function watch()
 	{
         global $DB, $User;
 
@@ -756,6 +776,7 @@ class Game
 		 * 			- It's a normal order-related phase and everyone is ready to proceed
 		 * 			- Or it's a pre-game phase and enough people have joined, and it's not a live game
 		 */
+
 		if( self::gamesCanProcess() && $this->phase!='Finished' && $this->processStatus=='Not-processing' &&
 			( $this->Members->isCompleted() || $this->missingPlayerPolicy!='Wait' ) && (
 				time() >= $this->processTime

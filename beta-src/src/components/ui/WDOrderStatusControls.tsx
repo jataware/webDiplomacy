@@ -63,11 +63,14 @@ const WDOrderStatusControls: React.FC<WDOrderStatsControlsProps> = function ({
   const saveText = "Save";
   const { user } = overview;
   const extraSCs = user ? user.member.supplyCenterNo - user.member.unitNo : 0;
+
   const canSave =
     ordersLength > 0 &&
     (overview.phase === "Diplomacy" ||
       ordersLength !== ordersSaved ||
       (overview.phase === "Builds" && extraSCs > 0));
+
+  const gamePaused = overview.processStatus.toLowerCase() === "paused";
 
   // orderStatus contains what the server thinks our order status is.
   if (savingOrdersInProgress === "readying") {
@@ -185,7 +188,7 @@ const WDOrderStatusControls: React.FC<WDOrderStatsControlsProps> = function ({
       <WDButton
         color="primary"
         className={buttonClass}
-        disabled={!readyEnabled}
+        disabled={!readyEnabled || gamePaused}
         onClick={() => readyEnabled && clickButton(OrderStatusButton.READY)}
       >
         {readyButtonText}

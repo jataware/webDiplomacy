@@ -232,6 +232,17 @@ while( (time() - $startTime)<30 && $gameRow=$DB->tabl_hash($tabl) )
 		}
 		elseif( $Game->needsProcess() )
 		{
+
+            if ($Game->phase!='Pre-game') {
+                if ( is_null($Game->getPreprocessing()) ) {
+                    $Game->preprocessing();
+                    break;
+                }
+                else {
+                    $Game->preprocessing(false);
+                }
+            }
+
 			$DB->sql_put("UPDATE wD_Games SET attempts=attempts+1 WHERE id=".$Game->id);
 			$DB->sql_put("COMMIT");
 			print 'Rechecking.. ';
@@ -244,7 +255,7 @@ while( (time() - $startTime)<30 && $gameRow=$DB->tabl_hash($tabl) )
 				$DB->sql_put("UPDATE wD_Games SET attempts=0 WHERE id=".$Game->id);
 				$DB->sql_put("COMMIT");
 				print l_t('Processed.');
-				
+
 				// Flush any memcached data about this game which is may be dirty
 				$stabl = $DB->sql_tabl("SELECT apiKey FROM wD_Members m INNER JOIN wD_ApiKeys a ON m.userID = a.userID WHERE m.gameID = ".$Game->id);
 				while(list($apiKey) = $DB->tabl_row($stabl))

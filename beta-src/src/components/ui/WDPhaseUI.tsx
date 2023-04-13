@@ -80,7 +80,7 @@ const WDPhaseUI: React.FC<WDPhaseUIProps> = function ({
           gamePhase={gamePhase}
           gameSeason={gameSeason}
           gameYear={gameYear}
-          isPaused={processStatus === "Paused" || false}
+          isPaused={processStatus === "Paused"}
         />
       )}
     </div>

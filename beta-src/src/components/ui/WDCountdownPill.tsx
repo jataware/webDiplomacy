@@ -52,6 +52,8 @@ const WDCountdownPill: React.FC<WDCountdownPillProps> = function ({
         const newFormattedTimeLeft = getFormattedTimeLeft(endTime);
         setFormattedTimeLeft(newFormattedTimeLeft);
       }, milli);
+    } else if (isPaused && getFormattedTimeLeft(endTime) !== formattedTimeLeft) {
+      setFormattedTimeLeft(getFormattedTimeLeft(endTime));
     }
 
     return () => clearInterval(timer);
@@ -63,7 +65,6 @@ const WDCountdownPill: React.FC<WDCountdownPillProps> = function ({
     viewedSeason !== gameSeason ||
     viewedYear !== gameYear;
 
-  useEffect(() => {
     let cd = formattedTimeLeft;
     if (viewport.width >= 600) {
       if (shouldDisplayGamePhase) {
@@ -82,8 +83,9 @@ const WDCountdownPill: React.FC<WDCountdownPillProps> = function ({
       cd = `PAUSED (${cd})`;
     }
 
-    setChipDisplay(cd);
-  }, [formattedTimeLeft, setChipDisplay]);
+    if (cd !== chipDisplay) {
+      setChipDisplay(cd);
+    }
 
   return (
     <div
@@ -91,10 +93,9 @@ const WDCountdownPill: React.FC<WDCountdownPillProps> = function ({
         rest.className
       } flex items-center py-1 px-3 rounded-md text-white bg-opacity-60 text-xs w-fit select-none ${
         // eslint-disable-next-line no-nested-ternary
-        isTimeRunningOut
-          ? "bg-red-600"
-          : isPaused
-          ? "bg-yellow-300 text-black"
+        isPaused ?
+          "bg-yellow-300 text-black" :
+        isTimeRunningOut ? "bg-red-600"
           : "bg-black"
       }`}
     >

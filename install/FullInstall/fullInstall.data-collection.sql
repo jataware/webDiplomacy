@@ -1994,3 +1994,6 @@ CREATE TABLE `wD_API_Sessions`
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 UPDATE `wD_Misc` SET `value` = '173' WHERE `name` = 'Version';
+
+ALTER TABLE `wD_Games`
+  ADD COLUMN `preprocessing` boolean;

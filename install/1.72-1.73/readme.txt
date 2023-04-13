@@ -1,1 +1,2 @@
 * Adding api sessions table in order to track active beta users waiting for games.
+* Added `preprocessing` column to wD_Games in order to check if we've tried processing already once (almost processing; ie preprocessing) in order to force a game pause once before processing/moving to next season. Will occur on every season phase change in order to allow tournament admins to send surveys to players. Pseudo-temporary change.

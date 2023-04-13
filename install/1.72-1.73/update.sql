@@ -9,3 +9,6 @@ CREATE TABLE `wD_API_Sessions`
     PRIMARY KEY (`userID`),
     KEY `lastrequesttime` (`lastRequest`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `wD_Games`
+  ADD COLUMN `preprocessing` boolean;
