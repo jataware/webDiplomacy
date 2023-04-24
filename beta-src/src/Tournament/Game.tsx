@@ -5,11 +5,14 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import useMediaQuery from "@mui/material/useMediaQuery";
+
 import EyeIcon from "@mui/icons-material/RemoveRedEye";
 import EndIcon from "@mui/icons-material/DoDisturbOn";
 import PauseIcon from '@mui/icons-material/Pause';
 import UnpauseIcon from '@mui/icons-material/Games';
 import ChatIcon from '@mui/icons-material/Chat';
+import SendMessageIcon from '@mui/icons-material/Send';
+
 import { useAppDispatch, useAppSelector } from "../state/hooks";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -17,7 +20,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import { fetchChatMessages } from "../state/game/game-api-slice";
 import {
-  getGameApiRequest
+  getGameApiRequest,
+  postGameApiRequest
 } from "../utils/api";
 
 import { BaseButton, PurpleButton, purpleColor } from ".";
@@ -32,10 +36,13 @@ const Game = ({game, displayProperties, style, hideActions}) => {
   const [loadingEndGame, setLoadingEndGame] = React.useState(false);
 
   const [confirmEndGameOpen, setConfirmEndGameOpen] = React.useState(false);
-  const [endGameName, setEndGameName] = React.useState("");
+  const [endGameName, setEndGameName] = React.useState('');
 
   const [pauseGameOpen, setPauseGameOpen] = React.useState(false);
-  const [pauseGameReason, setPauseGameReason] = React.useState("");
+  const [pauseGameReason, setPauseGameReason] = React.useState('');
+
+  const [messageSendOpen, setMessageSendOpen] = React.useState(false);
+  const [adminMessage, setAdminMessage] = React.useState('');
 
   const observeGame = () => {
     const gameUrl = `?gameID=${game.gameID}`;
@@ -46,8 +53,19 @@ const Game = ({game, displayProperties, style, hideActions}) => {
     setConfirmEndGameOpen(true);
   };
 
+  const startSendMessage = () => {
+    setMessageSendOpen(true);
+  };
+
   const startPauseGame = () => {
     setPauseGameOpen(true);
+  };
+
+  const messageGame = () => {
+    const body = {gameID: game.gameID, message: adminMessage};
+    const response = postGameApiRequest("game/adminmessagegame", body);
+    setAdminMessage('');
+    setMessageSendOpen(false);
   };
 
   const pauseGame = () => {
@@ -154,13 +172,6 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                   Observe
                 </PurpleButton>
               &nbsp;&nbsp;
-                <PurpleButton
-                  onClick={downloadMessages}
-                  variant="outlined"
-                >
-                  Chat
-                </PurpleButton>
-              &nbsp;&nbsp;
               <BaseButton
                 onClick={startPauseGame}
                 color="warning"
@@ -168,7 +179,22 @@ const Game = ({game, displayProperties, style, hideActions}) => {
               >
                 {game.processStatus == "Paused" ? "Unpause" : "Pause"}
               </BaseButton>
+
+                &nbsp;&nbsp;
+                <PurpleButton
+                  onClick={startSendMessage}
+                  variant="outlined"
+                >
+                  Message
+                </PurpleButton>
               &nbsp;&nbsp;
+                <PurpleButton
+                  onClick={downloadMessages}
+                  variant="outlined"
+                >
+                  Chat Log
+                </PurpleButton>
+                &nbsp;&nbsp;
               <BaseButton
                 onClick={startEndGame}
                 color="warning"
@@ -195,8 +221,19 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                 </IconButton>
 
                 <IconButton
+                  onClick={startSendMessage}
+                  sx={{
+                    color: purpleColor
+                  }}
+                >
+                  <SendMessageIcon />
+                </IconButton>
+
+                <IconButton
                   onClick={downloadMessages}
-                  color="warning"
+                  sx={{
+                    color: purpleColor
+                  }}
                 >
                   <ChatIcon />
                 </IconButton>
@@ -246,6 +283,50 @@ const Game = ({game, displayProperties, style, hideActions}) => {
                     onClick={endGame}
                     variant="outlined">
                     End
+                  </PurpleButton>
+                </Box>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog
+              open={messageSendOpen}
+              onClose={() => { setMessageSendOpen(false);}}
+              fullWidth
+              sx={{
+                "& .MuiDialog-paper": {
+                  maxWidth: 500,
+                  border: "2px solid #000",
+                  p: 1
+                },
+              }}
+            >
+              <DialogTitle>
+                Message Game Players
+              </DialogTitle>
+
+              <DialogContent>
+                <Typography
+                  variant="body1"
+                  gutterBottom>
+                  Enter message to send to all players in a game.
+                </Typography>
+                <Box>
+                  <br />
+                  <TextField
+                    sx={{width: "90%"}}
+                    autoFocus
+                    placeholder="Message text"
+                    label="Message"
+                    variant="outlined"
+                    value={adminMessage}
+                    onChange={e => setAdminMessage(e.target.value)}
+                  />
+                  <br />
+                  <br />
+                  <PurpleButton
+                    onClick={messageGame}
+                    variant="outlined">
+                    Send
                   </PurpleButton>
                 </Box>
               </DialogContent>

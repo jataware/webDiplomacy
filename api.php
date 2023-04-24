@@ -2252,6 +2252,36 @@ class SendMessage extends ApiEntry {
 }
 
 /**
+ * API entry: Send messages to all players within a game
+ */
+class AdminMessageGame extends ApiEntry {
+	public function __construct() {
+		parent::__construct('game/adminmessagegame', 'JSON', 'getStateOfAllGames', array('gameID', 'message'), false);
+	}
+	public function run($userID, $permissionIsExplicit) {
+		global $Game, $DB;
+		$args = $this->getArgs();
+		$messages = array();
+
+		if ($args['message'] === null)
+			throw new RequestException('Message is required.');
+
+		$gameID = intval($args['gameID']);
+
+		$message = $args['message'];
+
+		$Game = $this->getAssociatedGame();
+
+		$timeSent = libGameMessage::send('Global', 'Tournament Admin', $message, $Game->id);
+
+		$ret = [
+			"success" => true
+		];
+		return json_encode($ret);
+	}
+}
+
+/**
  * Ends any game that is after Winter 1907 turn
  */
 class FinishGames extends ApiEntry {
@@ -2805,6 +2835,8 @@ try {
 	$api->load(new ScoreGame());
 
 	$api->load(new AdminTogglePauseGame());
+
+	$api->load(new AdminMessageGame());
 
 	$api->load(new ScoreAllGames());
 	$api->load(new TotalPlayerScore());
