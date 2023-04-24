@@ -6,6 +6,7 @@ import WDPillScroller from "./WDPillScroller";
 import { abbrMap } from "../../enums/Country";
 import Season from "../../enums/Season";
 import { IOrderDataHistorical } from "../../models/Interfaces";
+import WDPausedTime from "./WDPausedTime";
 
 const getCurPhaseMinutes = function (phaseMinutes, phaseMinutesRB, phase) {
   if (phaseMinutesRB !== -1 && (phase === "Retreats" || phase === "Builds")) {
@@ -57,7 +58,6 @@ const WDPhaseUI: React.FC<WDPhaseUIProps> = function ({
         <div
           className={`py-1 px-2 rounded-md w-fit font-medium select-none text-white bg-${user.member.country.toLocaleLowerCase()}-main`}
         >
-          {/* title={`Currently playing as ${user.member.country}`} */}
           {abbrMap[user.member.country]}
         </div>
       )}
@@ -82,6 +82,9 @@ const WDPhaseUI: React.FC<WDPhaseUIProps> = function ({
           gameYear={gameYear}
           isPaused={processStatus === "Paused"}
         />
+      )}
+      {pauseTimeRemaining && !gameIsFinished && (
+        <WDPausedTime />
       )}
     </div>
   );
