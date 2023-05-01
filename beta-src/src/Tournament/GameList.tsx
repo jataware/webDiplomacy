@@ -67,7 +67,6 @@ export const GameList = ({title, games, hideActions=false, loading=false}) => {
                 </Typography>
               </li>
           ))}
-          {!hideActions && (
             <li
               style={{textTransform: "uppercase", width: "8rem"}}
             >
@@ -77,7 +76,6 @@ export const GameList = ({title, games, hideActions=false, loading=false}) => {
                 Actions
               </Typography>
             </li>
-          )}
         </Box>
         <div
           style={{

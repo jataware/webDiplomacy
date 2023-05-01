@@ -90,9 +90,8 @@ const Game = ({game, displayProperties, style, hideActions}) => {
 
   const downloadMessages = () => {
     getGameApiRequest("game/messages", {gameID: game.gameID}).then(results => {
-      /* console.log('result', results); */
       const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
-        JSON.stringify(results)
+        JSON.stringify(results.data, null, 2)
       )}`;
       const link = document.createElement("a");
       link.href = jsonString;
@@ -154,7 +153,14 @@ const Game = ({game, displayProperties, style, hideActions}) => {
               </Typography>
             </li>
         ))}
-        {!hideActions && (
+        {hideActions ? (
+        <PurpleButton
+          onClick={downloadMessages}
+          variant="outlined"
+          >
+            Chat Log
+          </PurpleButton>
+        ) : (
           <Box
             component="li"
             sx={(theme) => ({
