@@ -1327,19 +1327,50 @@ class GetGameMessages extends ApiEntry
 		$return_array = array();
 		$ret = $DB->tabl_row($tabl);
 
+        $countriesMapClassic = [
+            0 => "All",
+            1 => "England",
+            2 => "France",
+            3 => "Italy",
+            4 => "Germany",
+            5 => "Austria",
+            6 => "Turkey",
+            7 => "Russia"
+        ];
+
+        $countriesMap1v1 = [
+            0 => "All",
+            1 => "France",
+            2 => "Austria"
+        ];
+
+        require_once(l_r('gamemaster/game.php'));
+		$Variant=libVariant::loadFromGameID($gameID);
+
+        // Classic
+        if ($Variant->id == 1) {
+            $countriesMap = $countriesMapClassic;
+        } else { // if not Classic, assume 1v1
+            $countriesMap = $countriesMap1v1;
+        }
+
 		while ($ret){
       	$toPush = [
-				"id"=> $ret[0],
-				"timeSent"=> $ret[1],
-				"message"=> $ret[2],
-				"turn" => $ret[3],
-				"toCountry" => $ret[4],
-				"toUsername" => $gameMembers[$ret[4]],
-				"fromCountry" => $ret[5],
-				"fromUsername" => $gameMembers[$ret[5]],
-				"gameID" => $ret[6],
-				"phaseType" => $ret[7]
-			];
+            "id"=> (int)$ret[0],
+            "timeSent"=> (int)$ret[1],
+            "message"=> $ret[2],
+            "turn" => (int)$ret[3],
+            "toCountryID" => (int)$ret[4],
+            "toCountryName" => $countriesMap[(int)$ret[4]],
+            "toUsername" => $gameMembers[$ret[4]],
+            "fromCountryName" => $countriesMap[(int)$ret[5]],
+            "fromCountryID" => (int)$ret[5],
+            "fromUsername" => $gameMembers[$ret[5]],
+            "gameID" => (int)$ret[6],
+            "phaseMarker" => $ret[7],
+            "intentDeceive" => $ret[8],
+            "suspectedIncomingDeception" => $ret[9]
+        ];
 
 			array_push($return_array, $toPush);
 			$ret = $DB->tabl_row($tabl); //userid
