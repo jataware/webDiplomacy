@@ -78,14 +78,14 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
         fetchGameMessages({
           gameID: String(gameID),
           countryID: user ? String(user.member.countryID) : undefined,
-          sinceTime: String(game.messages.time),
+          // sinceTime: String(game.messages.time),
         }),
       );
     }
   };
 
   const pollingFetchMessages = () => {
-    console.log("Polling for new messages...");
+    // console.log("Polling for new messages...");
     dispatchFetchMessages();
   };
 
@@ -97,15 +97,15 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
 
     dispatchFetchMessages();
 
-    console.log("creating press socket");
+    // console.log("creating press socket");
     const channel = client.subscribe(
       `private-game${gameID}-country${user?.member.countryID}`,
     );
 
-    console.log("channel", channel);
+    // console.log("channel", channel);
 
     if (!channel.subscribed) {
-      console.log("Calling fetch messages manually");
+      // console.log("Calling fetch messages manually");
 
       if (!pollRef.current) {
         // Since websock connection failed, poll for mssages as fallback instead
@@ -127,14 +127,14 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
 
     channel.bind("pusher:subscription_succeeded", () => {
       // eslint-disable-next-line no-console
-      console.log("pusher:subscription_succeeded");
-      console.info("messages subscription succeeded");
+      // console.log("pusher:subscription_succeeded");
+      // console.info("messages subscription succeeded");
     });
 
     channel.bind("pusher:subscription_error", (data) => {
       // eslint-disable-next-line no-console
-      console.error("messages subscription error", data);
-      console.log("pusher:subscription_error");
+      // console.error("messages subscription error", data);
+      // console.log("pusher:subscription_error");
     });
 
     /* channel.bind("pusher:subscription_count", (data) => {

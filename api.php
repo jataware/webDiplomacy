@@ -286,14 +286,14 @@ abstract class ApiEntry {
 
 	public function getAssociatedGame($useCache = true) {
 		global $DB;
-			
+
 		if( $useCache && !is_null($this->gameCache) ) return $this->gameCache;
 		$gameID = $this->getAssociatedGameID();
-	
+
 		// This seems to happen when the client loses the game it was on
 		if( $gameID == 0 )
 			throw new RequestException("Game ID = 0, invalid request");
-	
+
 		$lockMode = $this->gameLocking ? UPDATE : NOLOCK;
 
 		$gameRow = Game::fetchRow($gameID, $lockMode);
@@ -1300,6 +1300,9 @@ class ScheduleProcess extends ApiEntry
 	}
 }
 
+/** This is to get all messages for admins to download chat logs.
+  Not to be confused with game/getmessages
+ */
 class GetGameMessages extends ApiEntry
 {
     public function __construct()
@@ -2204,6 +2207,7 @@ w            {
 		return json_encode($currentOrders);
 	}
 }
+
 /**
  * API entry game/sendmessage
  */
@@ -2230,7 +2234,7 @@ class SendMessage extends ApiEntry {
 
 		$Game = $this->getAssociatedGame();
 
-		$allowed = ($Game->pressType == 'Regular') || 
+		$allowed = ($Game->pressType == 'Regular') ||
 		           ($countryID == $toCountryID) ||
 		           ($Game->pressType == 'RulebookPress' && ($Game->phase == 'Diplomacy' || $Game->phase == 'Finished')) ||
 		           ($Game->pressType == 'PublicPressOnly' && $toCountryID == 0);
@@ -2393,7 +2397,9 @@ class AnnotateMessage extends ApiEntry {
 }
 
 /**
- * API entry game/getmessages
+ * API entry game/getmessages: for all players/users to see the current chat while playing the game
+ * Not to be confused with endpoint used by admins to download full chat log for research purposes.
+ *
  */
 class GetMessages extends ApiEntry {
 	public function __construct() {
@@ -2449,25 +2455,33 @@ class GetMessages extends ApiEntry {
 			$where = "($where) AND timeSent >= $sinceTime";
 		}
 
-		$tabl = $DB->sql_tabl("SELECT message, toCountryID, fromCountryID, turn, timeSent, phaseMarker, intentDeceive, suspectedIncomingDeception
+		$tabl = $DB->sql_tabl("SELECT id, message, toCountryID, fromCountryID, turn, timeSent, phaseMarker, intentDeceive, suspectedIncomingDeception
 		FROM wD_GameMessages WHERE gameID = $gameID AND ($where)");
 		while ($message = $DB->tabl_hash($tabl)) {
 
             // Only expose/fill suspectedIncomingDeception annotation if user countryId matches toCountryId (user received this message)
             $supectedIncomingExposed = $message['suspectedIncomingDeception'];
-            if($countryID !== $message['toCountryID']) {
+            if ($countryID !== $message['toCountryID']) {
                 $supectedIncomingExposed = null;
+            }
+            // Only expose/fill intentDeceive if user countryId matches fromCountryId (user sent this message)
+            $intentDeceive = $message['intentDeceive'];
+            if ($countryID !== $message['fromCountryID']) {
+                $intentDeceive = null;
             }
 
 			$messages[] = [
+                'id' => (int) $message['id'],
 				'fromCountryID' => (int) $message['fromCountryID'],
 				'message' => $message['message'],
 				'timeSent' => (int) $message['timeSent'],
 				'toCountryID' => (int) $message['toCountryID'],
 				'turn' => (int) $message['turn'],
 				'phaseMarker' => $message['phaseMarker'],
-                // 'intentDeceive' => $message['intentDeceive'],
-                'suspectedIncomingDeception' => $supectedIncomingExposed
+                // dont expose incorrectly, or other players get an advantage when inspecting network tab or
+                // interact directly with the API:
+                'intentDeceive' => $intentDeceive,
+                'suspectedIncomingDeception' => $supectedIncomingExposed // null if player not recipient
 			];
 		}
 		// Return Messages.

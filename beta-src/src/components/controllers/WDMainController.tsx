@@ -52,18 +52,18 @@ const WDMainController: React.FC = function ({ children }): React.ReactElement {
       );
 
       overviewChannel.bind("overview", async (content) => {
-        console.log("Overview msg, dispatch game overview refresh");
+        // console.log("Overview msg, dispatch game overview refresh");
         dispatchFetchOverview();
       });
 
       overviewChannel.bind("pusher:subscription_succeeded", () => {
         // eslint-disable-next-line no-console
-        console.info("overview channel subscription succeeded");
+        // console.info("overview channel subscription succeeded");
       });
 
       overviewChannel.bind("pusher:subscription_error", (error) => {
         // eslint-disable-next-line no-console
-        console.error("overview channel subscription error", error);
+        // console.error("overview channel subscription error", error);
       });
     }
   }, [overview.gameID]);
@@ -77,7 +77,7 @@ const WDMainController: React.FC = function ({ children }): React.ReactElement {
     noPhase || (overviewKey === statusKey && overviewKey === dataKey);
 
   if (needsGameOverview && !noPhase) {
-    console.log("needs game overview");
+    // console.log("needs game overview");
     dispatch(gameApiSliceActions.setNeedsGameOverview(false));
     dispatch(fetchGameOverview({ gameID: String(overview.gameID) }));
   }

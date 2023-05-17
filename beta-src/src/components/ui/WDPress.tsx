@@ -1,7 +1,9 @@
 import React, { FC, ReactNode, ReactElement, useRef, useEffect } from "react";
 import { IconButton, TextField, Divider } from "@mui/material";
-import { Email, Send } from "@mui/icons-material";
+import { Email as EmailIcon, Send } from "@mui/icons-material";
 import useLocalStorageState from "use-local-storage-state";
+
+import last from 'lodash/last';
 
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -53,14 +55,11 @@ const WDPress: FC<WDPressProps> = function ({
   );
 
   const [researchDialogOpen, setResearchDialogOpen] = React.useState(false);
-  const [lastMessageData, setLastMessageData] = React.useState({
-    gameID: 0,
-    fromCountryID: 3,
-    fromCountry: "",
-    toCountry: "",
-    toCountryID: 0,
-    message: ""
-  });
+
+  const lastCurrentUserMessage = last(
+    messages
+      .filter(message => message.fromCountryID === userCountry?.countryID)
+  )
 
   useEffect(() => {
     // scroll to the bottom of the message list
@@ -73,25 +72,18 @@ const WDPress: FC<WDPressProps> = function ({
     }
   }, [messages]);
 
+  // This only runs when reloading the page and coming back-
+  // if the intent to deceive annotation has not been done for the
+  // last message the player sent, they'll be prompted to annotate it.
+  useEffect(() => {
+    if (lastCurrentUserMessage && !researchDialogOpen && !lastCurrentUserMessage.intentDeceive) {
+      setResearchDialogOpen(true);
+    }
+  }, [lastCurrentUserMessage?.id]);
+
   async function saveResearchResponse (answer) {
 
-    const savedMessage = messages.find(message => {
-      return message.fromCountryID === lastMessageData.fromCountryID &&
-             message.toCountryID === lastMessageData.toCountryID &&
-             message.message === lastMessageData.message;
-    });
-
-    // TODO Display Snackbar of success/failure of annotation.
-
-    if (!savedMessage) {
-      console.error('There\'s been an error and we couldn\'t find the saved message to annotate.');
-
-      // TODO this occurred during demo. Discuss how to find messages (better?)
-      //      and maybe ensure we do capture this one
-      setResearchDialogOpen(false);
-    }
-
-    const { fromCountryID, toCountryID, timeSent } = savedMessage;
+    const { fromCountryID, toCountryID, timeSent } = lastCurrentUserMessage;
 
     try {
       const response = await postGameApiRequest(
@@ -105,11 +97,12 @@ const WDPress: FC<WDPressProps> = function ({
           direction: "outgoing"
         },
       );
+      setResearchDialogOpen(false);
 
     } catch(e) {
       console.log('Request to annotate message failed, e:', e);
     } finally {
-      setResearchDialogOpen(false);
+      // setresearchdialogopen(false);
     }
   }
 
@@ -121,26 +114,21 @@ const WDPress: FC<WDPressProps> = function ({
     const message = messageStack[countryIDSelected];
 
     if (message) {
-      dispatch(
+      let dispatchCompletedPromise = dispatch(
         sendMessage({
           gameID: String(gameID),
           countryID: String(userCountry.countryID),
           toCountryID: String(countryIDSelected),
           message
-        }),
+        })
       );
 
       const recipientCountryData = allCountries.find(country => country.countryID === countryIDSelected);
 
-      setLastMessageData({
-        gameID: gameID,
-        fromCountryID: userCountry.countryID,
-        fromCountry: userCountry.country,
-        toCountry: recipientCountryData?.country || ALL_COUNTRY, // Special constant
-        toCountryID: recipientCountryData?.countryID || 0,
-        message
+      dispatchCompletedPromise.then(() => {
+        setResearchDialogOpen(true);
       });
-      setResearchDialogOpen(true);
+
     }
     const ms = { ...messageStack };
 
@@ -190,7 +178,7 @@ const WDPress: FC<WDPressProps> = function ({
           dispatch(gameApiSliceActions.selectMessageCountryID(countryID));
         }}
       >
-        {newMessagesFrom.includes(countryID) && <Email />}
+        {newMessagesFrom.includes(countryID) && <EmailIcon />}
         {country.slice(0, 3).toUpperCase()}
       </button>
     );
@@ -211,10 +199,10 @@ const WDPress: FC<WDPressProps> = function ({
     (pressType === "PublicPressOnly" && countryIDSelected === 0) ||
     (pressType === "RulebookPress" &&
       ["Diplomacy"].includes(phase)) &&
-      processStatus.toLowerCase() !== "paused"
+        processStatus.toLowerCase() !== "paused";
 
-  return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+  return (
     <div
       className="p-0"
       onClick={() => dispatchMessagesSeen(countryIDSelected)} // clicking anywhere in the window means you've seen it
@@ -292,14 +280,18 @@ const WDPress: FC<WDPressProps> = function ({
           </div>
         </div>
       )}
-      <MessageResearchDialog
-        open={researchDialogOpen}
-        setOpen={setResearchDialogOpen}
-        toCountry={lastMessageData.toCountry}
-        message={lastMessageData.message}
-        saveResponse={saveResearchResponse}
-      />
-    </div>
+     {lastCurrentUserMessage && (
+       <MessageResearchDialog
+         open={researchDialogOpen}
+         setOpen={setResearchDialogOpen}
+         toCountry={
+           allCountries.find(country => lastCurrentUserMessage.toCountryID === country.countryID)?.country || ALL_COUNTRY
+         }
+         message={lastCurrentUserMessage.message}
+         saveResponse={saveResearchResponse}
+       />
+     )}
+     </div>
   );
 };
 
