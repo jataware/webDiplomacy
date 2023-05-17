@@ -4,9 +4,9 @@ import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import identity from "lodash/identity";
-import { useAppSelector } from "../../state/hooks";
 import {
   gameOverview,
+  gameApiSliceActions
 } from "../../state/game/game-api-slice";
 import ApiRoute from "../../enums/ApiRoute";
 import {
@@ -26,9 +26,10 @@ import Icon from "@mui/material/Icon";
 import Button from "@mui/material/Button";
 import ArrowUpIcon from "@mui/icons-material/ArrowDropUpOutlined";
 import GoodIcon from '@mui/icons-material/GppGoodRounded';
-import DoneIcon from '@mui/icons-material/DoneRounded';
 import Divider from '@mui/material/Divider';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import { useAppSelector, useAppDispatch } from "../../state/hooks";
+
 
 interface WDMessageProps {
   message: GameMessage;
@@ -192,26 +193,27 @@ const WDMessage: React.FC<WDMessageProps> = function ({
     device === Device.MOBILE_LG_LANDSCAPE ||
     device === Device.MOBILE;
 
+  const dispatch = useAppDispatch();
   const { user, gameID, turn: currentGameTurn } = useAppSelector(gameOverview);
 
-  // We don't re-fetch messages on each annotation change, so we store this locally in order
-  // to show the button as highlighted (user selected this option). Not perfect but good enough
-  // for our tournament purposes.
-  const [isAnnotatedDeceptive, setAnnotatedDeceptive] = React.useState(message.suspectedIncomingDeception === DECEPTIVE);
-  const [isAnnotatedTrustworthy, setAnnotatedTrustworthy] = React.useState(message.suspectedIncomingDeception === TRUSTWORTHY);
+  const isAnnotatedDeceptive = message.suspectedIncomingDeception === DECEPTIVE;
+  const isAnnotatedTrustworthy = message.suspectedIncomingDeception === TRUSTWORTHY;
 
-  const annotateMessage = (message, answer) => { // answer 0 or 1
-
+  const annotateMessage = (message, answer) => {
     let answerToSave = answer;
 
     if (isAnnotatedDeceptive && answer === DECEPTIVE || isAnnotatedTrustworthy && answer === TRUSTWORTHY) {
       answerToSave = NULL;
     }
 
-    saveSuspectedIncomingDeception(message, gameID, answerToSave);
+    dispatch(
+      gameApiSliceActions.annotateIncomingMessage({
+        id: message.id,
+        suspectedIncomingDeception: answerToSave
+      })
+    );
 
-    setAnnotatedDeceptive(answerToSave === DECEPTIVE);
-    setAnnotatedTrustworthy(answerToSave === TRUSTWORTHY);
+    saveSuspectedIncomingDeception(message, gameID, answerToSave);
   };
 
   const isUserRecipient = Boolean(message?.toCountryID && (message?.toCountryID === user?.member?.countryID));

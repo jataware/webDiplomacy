@@ -78,7 +78,7 @@ const OpenModalButton: FunctionComponent<BottomRightProps> = function ({
         fetchGameMessages({
           gameID: String(gameID),
           countryID: user ? String(user.member.countryID) : undefined,
-          // sinceTime: String(game.messages.time),
+          sinceTime: String(game.messages.time),
         }),
       );
     }

@@ -319,6 +319,13 @@ const gameApiSlice = createSlice({
           m.status = MessageStatus.READ;
         });
     },
+    annotateIncomingMessage(state, action) {
+      const annotatedMessageId = action.payload.id;
+      const { suspectedIncomingDeception } = action.payload;
+
+      const targetMessage = state.messages.messages.find(m => m.id == annotatedMessageId);
+      targetMessage.suspectedIncomingDeception = suspectedIncomingDeception;
+    },
     setNeedsGameOverview(state, action) {
       state.needsGameOverview = action.payload;
     },
