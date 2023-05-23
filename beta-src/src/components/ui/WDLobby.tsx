@@ -151,7 +151,7 @@ const dispatch = useAppDispatch();
             Games will begin once all players have been assigned.
           </p>
           <p>
-            In the event that we don’t have a multiple of 7 signed up, we will prioritize players who signed up first.
+            In the event that we don’t have a multiple of 7 signed up, we will randomly select players.
           </p>
         </BodyText>
       </Box>
