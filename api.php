@@ -1313,7 +1313,7 @@ class GetGameMessages extends ApiEntry
     {
 		global $DB;
 		$gameID = $this->getArgs()['gameID'];
-		$SQL = "select * from wD_GameMessages where gameID = ".$gameID.";";
+		$SQL = "select * from wD_GameMessages where gameID = ".$gameID." order by timeSent;";
 		$tabl = $DB->sql_tabl($SQL);
 		$SQL = "select wD_Members.countryID, wD_Users.username from wD_Members join wD_Users on wD_Users.id = wD_Members.userID where gameID = ".$gameID.";";
 
